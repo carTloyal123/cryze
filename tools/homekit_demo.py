@@ -55,9 +55,9 @@ options = {
         ],
     },
     "srtp": True,
-    
+
     # hard code the address if auto-detection does not work as desired: e.g. "192.168.1.226"
-    "address": util.get_local_address(), 
+    "address": util.get_local_address(),
 }
 
 
@@ -71,3 +71,5 @@ driver.add_accessory(accessory=acc)
 signal.signal(signal.SIGTERM, driver.signal_handler)
 # Start it!
 driver.start()
+
+print("Driver started")
