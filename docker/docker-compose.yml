@@ -6,6 +6,7 @@ services:
     build: .
     ports:
       - 4725:4725
+      - 3030:3030
     container_name: android
     environment:
       - APPIUM_PORT=4725

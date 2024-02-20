@@ -5,9 +5,6 @@ RED='\033[0;31m'
 YE='\033[1;33m'
 NC='\033[0m' # No Color
 
-# install jq
-apt-get update && apt-get install -y jq
-
 emulator_name=${EMULATOR_NAME}
 
 function check_hardware_acceleration() {

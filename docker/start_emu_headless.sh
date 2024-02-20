@@ -30,7 +30,6 @@ function check_hardware_acceleration() {
     echo "$hw_accel_flag"
 }
 
-
 hw_accel_flag=$(check_hardware_acceleration)
 
 function launch_emulator () {

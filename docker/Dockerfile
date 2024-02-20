@@ -1,6 +1,6 @@
 FROM openjdk:18-jdk-slim
 
-LABEL maintainer "Amr Salem"
+LABEL maintainer "Carson Loyal (from Amir)"
 
 ENV DEBIAN_FRONTEND noninteractive
 
@@ -10,7 +10,7 @@ WORKDIR /
 #=============================
 SHELL ["/bin/bash", "-c"]   
 
-RUN apt update && apt install -y curl sudo wget unzip bzip2 libdrm-dev libxkbcommon-dev libgbm-dev libasound-dev libnss3 libxcursor1 libpulse-dev libxshmfence-dev xauth xvfb x11vnc fluxbox wmctrl libdbus-glib-1-2
+RUN apt update && apt install -y curl sudo wget unzip bzip2 libdrm-dev libxkbcommon-dev libgbm-dev libasound-dev libnss3 libxcursor1 libpulse-dev libxshmfence-dev xauth xvfb x11vnc fluxbox wmctrl libdbus-glib-1-2 jq
 
 #==============================
 # Android SDK ARGS
@@ -61,28 +61,22 @@ RUN echo "no" | avdmanager --verbose create avd --force --name "${EMULATOR_NAME}
 #====================================
 # Install latest nodejs, npm & appium
 #====================================
-RUN curl -sL https://deb.nodesource.com/setup_20.x | bash && \
-    apt-get -qqy install nodejs && \
-    npm install -g npm && \
-    npm i -g appium --unsafe-perm=true --allow-root && \
-    appium driver install uiautomator2 && \
-    exit 0 && \
-    npm cache clean && \
-    apt-get remove --purge -y npm && \  
-    apt-get autoremove --purge -y && \
-    apt-get clean && \
-    rm -Rf /tmp/* && rm -Rf /var/lib/apt/lists/*
-
+# RUN curl -sL https://deb.nodesource.com/setup_20.x | bash && \
+#     apt-get -qqy install nodejs && \
+#     npm install -g npm && \
+#     npm i -g appium --unsafe-perm=true --allow-root && \
+#     appium driver install uiautomator2 && \
+#     exit 0 && \
+#     npm cache clean && \
+#     apt-get remove --purge -y npm && \  
+#     apt-get autoremove --purge -y && \
+#     apt-get clean && \
+#     rm -Rf /tmp/* && rm -Rf /var/lib/apt/lists/*
 
 #===================
 # Alias
 #===================
-ENV EMU=./start_emu.sh
-ENV EMU_HEADLESS=./start_emu_headless.sh
-ENV VNC=./start_vnc.sh
-ENV APPIUM=./start_appium.sh
 ENV INSTALLAPK=./install_apk.sh
-
 
 #===================
 # Ports
@@ -94,11 +88,7 @@ ENV APPIUM_PORT=4723
 #=========================
 COPY . /
 
-RUN chmod a+x start_vnc.sh && \
-    chmod a+x start_emu.sh && \
-    chmod a+x start_appium.sh && \
-    chmod a+x start_emu_headless.sh && \
-    chmod a+x install_apk.sh
+RUN chmod a+x install_apk.sh
 
 #=======================
 # framework entry point
