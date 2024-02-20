@@ -1,0 +1,19 @@
+version: "4"
+services:
+# Launch emulator and appium instance
+  android-service:
+    image: android-emulator
+    build: .
+    ports:
+      - 4725:4725
+    container_name: android
+    environment:
+      - APPIUM_PORT=4725
+    privileged: true
+    command:
+      - bash
+      - -c
+      - | 
+         ./install_apk.sh
+    tty: true
+    stdin_open: true
