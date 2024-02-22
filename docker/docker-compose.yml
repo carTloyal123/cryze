@@ -1,21 +1,12 @@
 version: "4"
-
-networks:
-  android_server_network:
-    driver: bridge
-
 services:
 # Launch emulator and appium instance
-  android-service:
-    image: android-emulator
+  cryze-android-service:
+    image: cryze-android-emulator
+    network_mode: host
     build: 
       context: android
-    ports:
-      - 4725:4725
-      - 3030:3030
-    container_name: android
-    environment:
-      - APPIUM_PORT=4725
+    container_name: cryze-android0-emulator
     privileged: true
     command:
       - bash
@@ -24,16 +15,11 @@ services:
          ./install_apk.sh
     tty: true
     stdin_open: true
-    networks:
-      - android_server_network
 
-  # cryze-server-service:
-  #   image: cryze-server
-  #   build:
-  #     context: server
-  #   ports:
-  #     - 8080:8080
-  #   container_name: cryze-server
-  #   networks:
-  #     - android_server_network
+  cryze-server-service:
+    image: cryze-server
+    network_mode: host
+    build:
+      context: server
+    container_name: cryze-server
   

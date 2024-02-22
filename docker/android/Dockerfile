@@ -58,30 +58,10 @@ ENV EMULATOR_NAME=$EMULATOR_NAME
 ENV DEVICE_NAME=$EMULATOR_DEVICE
 RUN echo "no" | avdmanager --verbose create avd --force --name "${EMULATOR_NAME}" --device "${EMULATOR_DEVICE}" --package "${EMULATOR_PACKAGE}"
 
-#====================================
-# Install latest nodejs, npm & appium
-#====================================
-# RUN curl -sL https://deb.nodesource.com/setup_20.x | bash && \
-#     apt-get -qqy install nodejs && \
-#     npm install -g npm && \
-#     npm i -g appium --unsafe-perm=true --allow-root && \
-#     appium driver install uiautomator2 && \
-#     exit 0 && \
-#     npm cache clean && \
-#     apt-get remove --purge -y npm && \  
-#     apt-get autoremove --purge -y && \
-#     apt-get clean && \
-#     rm -Rf /tmp/* && rm -Rf /var/lib/apt/lists/*
-
 #===================
 # Alias
 #===================
 ENV INSTALLAPK=./install_apk.sh
-
-#===================
-# Ports
-#===================
-ENV APPIUM_PORT=4723
 
 #=========================
 # Copying Scripts to root
