@@ -22,12 +22,12 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v5
         with:
-          context: "{{defaultContext}}:docker:android"
+          context: "{{defaultContext}}:docker/android"
           push: true
           tags: user/app:latest
       - name: Build and push
         uses: docker/build-push-action@v5
         with:
-          context: "{{defaultContext}}:docker:server"
+          context: "{{defaultContext}}:docker/server"
           push: true
           tags: user/app:latest
