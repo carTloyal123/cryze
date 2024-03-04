@@ -1,5 +1,4 @@
 #!/bin/bash
-
 BL='\033[0;34m'
 G='\033[0;32m'
 RED='\033[0;31m'
@@ -30,26 +29,20 @@ function check_hardware_acceleration() {
     echo "$hw_accel_flag"
 }
 
+
 hw_accel_flag=$(check_hardware_acceleration)
 
 function launch_emulator () {
   adb devices | grep emulator | cut -f1 | xargs -I {} adb -s "{}" emu kill
-  options="@${emulator_name} -no-window -no-snapshot -noaudio -no-boot-anim -memory 2048 ${hw_accel_flag} -camera-back none"
-  if [[ "$OSTYPE" == *linux* ]]; then
-    echo "${OSTYPE}: emulator ${options} -gpu off"
-    nohup emulator $options -gpu off &
-  fi
-  if [[ "$OSTYPE" == *darwin* ]] || [[ "$OSTYPE" == *macos* ]]; then
-    echo "${OSTYPE}: emulator ${options} -gpu swiftshader_indirect"
-    nohup emulator $options -gpu swiftshader_indirect &
-  fi
+  
+  # specific to mac apple silicon for some reason
+  nohup /opt/android-sdk/emulator/emulator @nexus -no-window -no-audio -ports 5554,5555 -skip-adb-auth -no-boot-anim -show-kernel -qemu -cpu max &
 
   if [ $? -ne 0 ]; then
     echo "Error launching emulator"
     return 1
   fi
 }
-
 
 function check_emulator_status () {
   printf "${G}==> ${BL}Checking emulator booting up status 🧐${NC}\n"
@@ -84,22 +77,35 @@ function check_emulator_status () {
   done
 };
 
-
-function disable_animation() {
-  adb shell "settings put global window_animation_scale 0.0"
-  adb shell "settings put global transition_animation_scale 0.0"
-  adb shell "settings put global animator_duration_scale 0.0"
-};
-
-function hidden_policy() {
-  adb shell "settings put global hidden_api_policy_pre_p_apps 1;settings put global hidden_api_policy_p_apps 1;settings put global hidden_api_policy 1"
-};
-
 launch_emulator
-sleep 2
+sleep 1
 check_emulator_status
 sleep 1
-disable_animation
-sleep 1
-hidden_policy
-sleep 1
+
+# Set up environment variables
+export ANDROID_HOME=/opt/android
+export PATH=$PATH:$ANDROID_HOME/tools:$ANDROID_HOME/platform-tools
+
+# # Install the APK on the emulator
+adb install -r app.apk
+
+echo "Running Application!"
+# Run the installed APK
+adb shell monkey -p com.tencentcs.iotvideo -v 1
+echo "APK installed and running"
+tail -f /dev/null
+
+# # Start the emulator
+# echo "Launch emulator in background"
+# nohup /opt/android-sdk/emulator/emulator @nexus -no-window -no-audio -ports 5554,5555 -skip-adb-auth -no-boot-anim -show-kernel -qemu -cpu max &
+
+# # Wait for the emulator to start
+# adb wait-for-device
+
+# # Install app
+# adb install -r app.apk
+
+# # Launch app
+# adb shell monkey -p com.tencentcs.iotvideo -v 1
+# echo "APK installed and running"
+# tail -f /dev/null

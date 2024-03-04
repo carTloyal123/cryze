@@ -60,7 +60,7 @@ function check_emulator_status () {
 
   while true; do
     result=$(adb shell getprop sys.boot_completed 2>&1)
-
+    echo "result: $result"
     if [ "$result" == "1" ]; then
       printf "\e[K${G}==> \u2713 Emulator is ready : '$result'           ${NC}\n"
       adb devices -l
@@ -92,14 +92,7 @@ sleep 1
 export ANDROID_HOME=/opt/android
 export PATH=$PATH:$ANDROID_HOME/tools:$ANDROID_HOME/platform-tools
 
-# Download the latest release APK URL from GitHub API
-GITHUB_REPO="carTloyal123/cryze-android"
-apk_url=$(curl -s "https://api.github.com/repos/$GITHUB_REPO/releases/latest" | jq -r '.assets[0].browser_download_url')
-
-# Download the APK file
-wget -q $apk_url -O app.apk
-
-# Install the APK on the emulator
+# # Install the APK on the emulator
 adb install -r app.apk
 
 # Run the installed APK

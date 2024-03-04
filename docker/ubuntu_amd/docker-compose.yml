@@ -6,7 +6,7 @@ services:
     network_mode: host
     build: 
       context: android
-    container_name: cryze-android0-emulator
+    container_name: cryze-android-emulator
     privileged: true
     command:
       - bash

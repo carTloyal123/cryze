@@ -68,8 +68,16 @@ ENV INSTALLAPK=./install_apk.sh
 #=========================
 COPY . /
 
-RUN chmod a+x install_apk.sh
+#=========================
+# Download the latest release APK URL from GitHub API
+ENV GITHUB_REPO="carTloyal123/cryze-android"
+# Download the APK file
+RUN wget -q $(curl -s "https://api.github.com/repos/$GITHUB_REPO/releases/latest" | jq -r '.assets[0].browser_download_url') -O app.apk
 
+# Install the APK on the emulator
+RUN adb install -r app.apk
+
+RUN chmod a+x install_apk.sh
 #=======================
 # framework entry point
 #=======================
