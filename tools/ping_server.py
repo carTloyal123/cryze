@@ -2,7 +2,7 @@ import asyncio
 import websockets
 
 async def send_hello():
-    async with websockets.connect('ws://localhost:3030') as websocket:
+    async with websockets.connect('ws://host.docker.internal:3033') as websocket:
         await websocket.send('Hello, World!')
         print("Message sent!")
 

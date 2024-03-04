@@ -21,8 +21,6 @@ services:
     network_mode: host
     build:
       context: server
+    ports:
+      - "3030:3030"
     container_name: cryze-arm-server
-    command:
-      - bash
-      - -c
-      - cryze-server --port 3031
