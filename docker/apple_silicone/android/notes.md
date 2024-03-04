@@ -1,5 +1,8 @@
 # Helpful Hints
 
+- Link to gist:
+https://gist.github.com/atyachin/2f7c6054c4cd6945397165a23623987d
+
 - Command to run emulator once docker container is up and running:
 
 ```bash

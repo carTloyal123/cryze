@@ -22,12 +22,12 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v5
         with:
-          context: "{{defaultContext}}:docker/android"
+          context: "{{defaultContext}}:docker/ubuntu_amd/android"
           push: true
-          tags: user/app:latest
+          tags: carTloyal123/cryze-android-proxy:latest
       - name: Build and push
         uses: docker/build-push-action@v5
         with:
-          context: "{{defaultContext}}:docker/server"
+          context: "{{defaultContext}}:docker/ubuntu_amd/server"
           push: true
-          tags: user/app:latest
+          tags: carTloyal123/cryze-server:latest
