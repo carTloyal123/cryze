@@ -24,10 +24,10 @@ jobs:
         with:
           context: "{{defaultContext}}:docker/ubuntu_amd/android"
           push: true
-          tags: carTloyal123/cryze-android-proxy:latest
+          tags: cartloyal123/cryze-android-proxy:latest
       - name: Build and push
         uses: docker/build-push-action@v5
         with:
           context: "{{defaultContext}}:docker/ubuntu_amd/server"
           push: true
-          tags: carTloyal123/cryze-server:latest
+          tags: cartloyal123/cryze-server:latest
