@@ -34,7 +34,7 @@ hw_accel_flag=$(check_hardware_acceleration)
 
 function launch_emulator () {
   adb devices | grep emulator | cut -f1 | xargs -I {} adb -s "{}" emu kill
-  
+
   # specific to mac apple silicon for some reason
   nohup /opt/android-sdk/emulator/emulator @nexus -no-window -no-audio -ports 5554,5555 -skip-adb-auth -no-boot-anim -show-kernel -qemu -cpu max &
 
@@ -85,6 +85,9 @@ sleep 1
 # Set up environment variables
 export ANDROID_HOME=/opt/android
 export PATH=$PATH:$ANDROID_HOME/tools:$ANDROID_HOME/platform-tools
+
+# Wait for the emulator to start
+adb wait-for-device
 
 # # Install the APK on the emulator
 adb install -r app.apk
