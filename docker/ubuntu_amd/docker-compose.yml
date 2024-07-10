@@ -1,6 +1,4 @@
-version: "4"
 services:
-# Launch emulator and appium instance
   cryze-android-service:
     image: cryze-android-emulator
     network_mode: host
@@ -22,4 +20,20 @@ services:
     build:
       context: server
     container_name: cryze-server
+
+  emulator:
+    image: budtmo/docker-android:emulator_11.0
+    container_name: cryze-emulator
+    ports:
+      - "6080:6080"
+      - "3030:3030"
+    volumes:
+      - D:\Documents\cryze\cryze:/home/androidusr/cryze:rw
+    environment:
+      - EMULATOR_DEVICE=Samsung Galaxy S10
+      - WEB_VNC=true
+    devices:
+      - /dev/kvm:/dev/kvm
+    restart: unless-stopped
+    privileged: true
   
