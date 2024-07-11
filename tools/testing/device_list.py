@@ -13,16 +13,15 @@ import wyze_sdk.errors
 # p2pUrl = '|wyze-test-list.cloudlinks.cn|42.194.219.201'
 # wyzeP2pUrl = '|wyze-mars-asrv.wyzecam.com'
 # mars_url = 'https://wyze-mars-service.wyzecam.com/plugin/mars/v2/regist_gw_user/GW_BE1_7C78B2A2AD34'
-# mars_path_url = '/plugin/mars/v2/regist_gw_user/GW_BE1_7C78B2A2AD34'
+mars_path_url = '/plugin/mars/v2/regist_gw_user/GW_BE1_7C78B2A2AD34'
 
 wyze_sdk.set_file_logger('wyze_sdk', filepath='wyze_out.txt', level=wyze_sdk.logging.DEBUG)
 mars_base_url = 'https://wyze-mars-service.wyzecam.com'
 email = 'carsonloyal123@me.com'
-psswd = '@Lacylulu123!!!'
-key_id = '94458b0d-2e6a-4e9e-b438-5914f735461b'
-api_key='4yWuIM9jaSRvDQJ9aIEwqlNYSe0GHDx0LJvudthmiiy1Ju3OAHiMvmiZmBju'
+psswd = 'YSHR*U*GVgn$*@u*@eT7EQ9e9r4w@bc5jGKdui&*^U84DW2o&Hcpitz@k$^F'
+key_id = '8b47866c-fbf4-4cd4-894f-694836da9887'
+api_key='AGzyRnvy4ysoicTwOlJxxNJgq9toGXEZaJDfor8k5rSvnGdUJjvkyncKV03r'
 deviceId = "GW_BE1_7C78B2A2AD34"
-
 
 last_token_fetch_time = 0
 current_response = None
@@ -38,8 +37,11 @@ async def getLoginInfo():
         email=email,
         password=psswd,
         key_id=key_id,
-        api_key=api_key
+        api_key=api_key,
+        totp_key='734700'
     )
+
+    print(response.data)
 
     wpk = WpkNetServiceClient(token=client._token, base_url=mars_base_url)
     nonce = wpk.request_verifier.clock.nonce()
@@ -55,6 +57,7 @@ async def getLoginInfo():
     except requests.HTTPError as e:
         print(f'HTTP Request Error')
         print(e.response)
+        print(str(e))
     except wyze_sdk.errors.WyzeApiError as e:
         print(f'Wyze API Error:')
         print(e.response)
@@ -109,7 +112,7 @@ async def websocket_client():
     try:
         async with websockets.connect(uri, ping_timeout=None) as websocket:  # disable the library's automatic pinging
             websocket.ping_interval = None  # disable the library's automatic pinging
-            keyboard.on_press_key('right option', spacebar_event)
+            keyboard.on_press_key('backslash', spacebar_event)
             await subscribeToLoginInfo(websocket)
             while True:
                 try:

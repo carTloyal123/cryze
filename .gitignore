@@ -36,3 +36,6 @@ google-services.json
 # Docker details
 emulator/
 .venv/
+tools/testing/*.txt
+tools/testing/*.log
+tools/testing/*.bin
