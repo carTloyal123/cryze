@@ -18,10 +18,10 @@ mars_path_url = '/plugin/mars/v2/regist_gw_user/GW_BE1_7C78B2A2AD34'
 wyze_sdk.set_file_logger('wyze_sdk', filepath='wyze_out.txt', level=wyze_sdk.logging.DEBUG)
 mars_base_url = 'https://wyze-mars-service.wyzecam.com'
 email = 'carsonloyal123@me.com'
-psswd = 'YSHR*U*GVgn$*@u*@eT7EQ9e9r4w@bc5jGKdui&*^U84DW2o&Hcpitz@k$^F'
-key_id = '8b47866c-fbf4-4cd4-894f-694836da9887'
-api_key='AGzyRnvy4ysoicTwOlJxxNJgq9toGXEZaJDfor8k5rSvnGdUJjvkyncKV03r'
-deviceId = "GW_BE1_7C78B2A2AD34"
+psswd = os.enviornment["WYZE_PASSWORD"]
+key_id = os.environment["WYZE_KEY_ID"]
+api_key = os.environment["WYZE_API_KEY"]
+deviceId = os.environment["WYZE_DOORBELL_DEVICE_ID"]
 
 last_token_fetch_time = 0
 current_response = None
