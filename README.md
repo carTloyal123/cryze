@@ -1,3 +1,8 @@
+DEPRECATED as of Sept 1, 2024. Please see the Cryze V2 repo here for actively developed solutions for Gwell based cameras:
+
+[Cryze V2](https://github.com/xerootg/cryze_v2)
+
+
 ![Cryze Logo](docs/CryzeLogo.png)
 
 # Cryze
