@@ -1,0 +1,8 @@
+build/
+logs/
+.env
+libs/
+config
+*.h264
+*.o
+*.d
