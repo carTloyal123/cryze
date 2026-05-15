@@ -328,6 +328,45 @@ int main(int argc, char** argv) {
         }
     }
 
+    // Debug: dump broadcast list entries from SDK internal state.
+    // DAT_001f0430 (termunit ptr) and DAT_001f0438 (broadcast mgr ptr) are
+    // global variables in the SDK at known offsets from lib_base.
+    {
+        uintptr_t base = reinterpret_cast<uintptr_t>(sdk.lib_base);
+        uintptr_t* p_termunit = reinterpret_cast<uintptr_t*>(base + 0x0f0430);
+        uintptr_t* p_bcast_mgr = reinterpret_cast<uintptr_t*>(base + 0x0f0438);
+        uintptr_t termunit = *p_termunit;
+        uintptr_t bcast_mgr = *p_bcast_mgr;
+        std::fprintf(stderr, "  [LAN-DBG] termunit=%p bcast_mgr=%p\n",
+                     (void*)termunit, (void*)bcast_mgr);
+
+        if (bcast_mgr != 0) {
+            // Broadcast list is a doubly-linked list. Head/sentinel at bcast_mgr+0x5c.
+            uintptr_t sentinel = bcast_mgr + 0x5c;
+            uintptr_t* node = *reinterpret_cast<uintptr_t**>(sentinel);  // first node
+            int count = 0;
+            while (reinterpret_cast<uintptr_t>(node) != sentinel && count < 20) {
+                // entry+0x1c = dst_id (8 bytes), +0x2c = port (2 bytes),
+                // +0x2e = IP (4 bytes), +0x66 = flag, +0x6a = device string
+                uint64_t dst_id = *reinterpret_cast<uint64_t*>(reinterpret_cast<uintptr_t>(node) + 0x1c);
+                uint32_t lan_ip = *reinterpret_cast<uint32_t*>(reinterpret_cast<uintptr_t>(node) + 0x2e);
+                uint16_t lan_port = *reinterpret_cast<uint16_t*>(reinterpret_cast<uintptr_t>(node) + 0x2c);
+                uint8_t flag = *reinterpret_cast<uint8_t*>(reinterpret_cast<uintptr_t>(node) + 0x66);
+                const char* dev_str = reinterpret_cast<const char*>(reinterpret_cast<uintptr_t>(node) + 0x6a);
+                uint8_t* ip_bytes = reinterpret_cast<uint8_t*>(&lan_ip);
+                std::fprintf(stderr, "  [LAN-DBG] entry[%d]: dst_id=%llu ip=%u.%u.%u.%u:%u flag=%u str='%.32s'\n",
+                             count, (unsigned long long)dst_id,
+                             ip_bytes[0], ip_bytes[1], ip_bytes[2], ip_bytes[3],
+                             lan_port, flag, dev_str);
+                node = *reinterpret_cast<uintptr_t**>(node);  // next
+                count++;
+            }
+            if (count == 0) {
+                std::fprintf(stderr, "  [LAN-DBG] broadcast list is EMPTY\n");
+            }
+        }
+    }
+
     // Open output — stdout pipe (already set up above) or file
     if (use_stdout) {
         // g_output_fd already set during --stdout setup (dup'd fd)

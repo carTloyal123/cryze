@@ -60,7 +60,34 @@ build_bridge()
     fi
 }
 
-dev_exec() { docker exec -it "$DEV" "$@"; }
+dev_exec() {
+    local tty_flag=""
+    if [ -t 0 ]; then tty_flag="-it"; else tty_flag="-i"; fi
+    docker exec $tty_flag "$DEV" "$@"
+}
+
+_run_bridge() {
+    local envfile
+    envfile=$(mktemp)
+    trap "rm -f '$envfile'" EXIT
+    echo "LD_PRELOAD=/work/libs/bionic_interpose.so" >> "$envfile"
+    echo "LD_LIBRARY_PATH=/work/libs:/apk/xapk_contents/arm64_libs/lib/arm64-v8a" >> "$envfile"
+    if [[ -f "$HERE/.env" ]]; then
+        grep -v '^\s*#' "$HERE/.env" | grep -v '^\s*$' >> "$envfile"
+    fi
+    for v in P2P_PORT_TYPE LAN_WAKEUP_DELAY LAN_WAIT; do
+        [[ -n "${!v:-}" ]] && echo "$v=${!v}" >> "$envfile"
+    done
+    local DURATION="${2:-60}"
+    echo "=== Running bridge (${DURATION}s) ==="
+    local exec_args=()
+    while IFS='=' read -r key val; do
+        [[ -z "$key" ]] && continue
+        exec_args+=("--env" "$key=$val")
+    done < "$envfile"
+    rm -f "$envfile"
+    docker exec "${exec_args[@]}" "$DEV" ./build/bridge --duration "$DURATION" ${@:3}
+}
 
 case "${1:-up}" in
 
@@ -108,10 +135,7 @@ case "${1:-up}" in
 
     run)
         ensure_dev
-        load_env_vars
-        DURATION="${2:-60}"
-        echo "=== Running bridge (${DURATION}s) ==="
-        dev_exec env $ENV_VARS ./build/bridge --duration "$DURATION" ${@:3}
+        _run_bridge "$@"
         ;;
 
     clean)
