@@ -1,41 +1,25 @@
 services:
-  # go2rtc + bridge: on-demand RTSP/WebRTC streaming
   bridge:
     build:
-      context: ../bridge
+      context: .
       dockerfile: Dockerfile
     image: wyze-bridge:latest
     container_name: wyze-bridge
     platform: linux/arm64
     working_dir: /work
+    # .env is loaded by entrypoint.py at runtime (not docker compose) to preserve
+    # literal $ in passwords. Use ./into.sh which passes --env-file /dev/null.
     volumes:
       - .:/work
       - ../apk:/apk:ro
-    env_file:
-      - .env
-    network_mode: host
+    ports:
+      - "1984:1984"     # go2rtc Web UI + API
+      - "8554:8554"     # RTSP
+      - "8555:8555/udp" # WebRTC
     cap_add:
       - NET_ADMIN
       - NET_RAW
     restart: unless-stopped
-
-  # Dev shell — same image, interactive, no go2rtc
-  dev:
-    image: wyze-bridge:latest
-    container_name: wyze-bridge-dev
-    platform: linux/arm64
-    working_dir: /work
-    volumes:
-      - .:/work
-      - ../apk:/apk:ro
-    env_file:
-      - .env
-    network_mode: host
-    cap_add:
-      - NET_ADMIN
-      - NET_RAW
-    stdin_open: true
-    tty: true
-    entrypoint: /bin/bash
-    profiles:
-      - dev
+    # Python entrypoint handles: setup, build, go2rtc lifecycle, SIGINT/SIGTERM
+    # go2rtc manages bridge on-demand (exec source spawns/kills per viewer)
+    stop_grace_period: 15s
