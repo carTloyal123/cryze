@@ -9,6 +9,7 @@ streams:
 
 rtsp:
   listen: ":8554"
+  default_query: "video&tcp"  # Force TCP interleaved — UDP RTP doesn't work through Docker NAT
 
 webrtc:
   listen: ":8555"

@@ -86,13 +86,21 @@ cameras:
         - path: rtsp://wyze-doorbell:8554/doorbell
           roles: [detect, record]
     detect:
-      width: 1920
-      height: 1080
+      width: 1440
+      height: 1440
 ```
 
 ## Scrypted
 
 Add as an RTSP Camera plugin source with URL: `rtsp://YOUR_HOST_IP:8554/doorbell`
+
+## VLC
+
+Open a network stream with: `rtsp://YOUR_HOST_IP:8554/doorbell`
+
+The first connection takes ~15s while the doorbell wakes up — VLC may show a black screen or "loading" during this time. If VLC fails to connect, go to Preferences > Input/Codecs and set "Live caching" to 3000ms or higher.
+
+> RTSP is configured for TCP interleaved transport by default (required when running in Docker). This works with VLC, ffplay, and all standard RTSP clients.
 
 ## How It Works
 
