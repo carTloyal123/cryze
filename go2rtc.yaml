@@ -9,7 +9,7 @@ streams:
 
 rtsp:
   listen: ":8554"
-  default_query: "video&tcp"  # Force TCP interleaved — UDP RTP doesn't work through Docker NAT
+  default_query: "video"  # video only (doorbell has no audio track)
 
 webrtc:
   listen: ":8555"

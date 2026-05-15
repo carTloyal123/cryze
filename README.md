@@ -31,6 +31,18 @@ First run takes ~60s (patches libraries, compiles bridge). Subsequent starts tak
 
 The stream is on-demand — the first connection takes ~15s while the doorbell wakes up.
 
+### VLC
+
+VLC defaults to UDP for RTSP, which doesn't work through Docker's port mapping. Change VLC to use TCP:
+
+1. **Preferences** > **Input / Codecs**
+2. Set **RTP over RTSP (TCP)** or **Live555 stream transport** to **TCP**
+3. Open `rtsp://localhost:8554/doorbell`
+
+Alternatively, use `ffplay` or the go2rtc Web UI — both work out of the box.
+
+> On a Linux host with `network_mode: host`, VLC works without any changes since UDP is not NATed.
+
 ## Docker Compose
 
 To add to an existing `docker-compose.yml`:
@@ -47,9 +59,11 @@ services:
       - ./bridge:/work
       - ./apk:/apk:ro
     ports:
+      - "1984:1984"     # go2rtc Web UI
       - "8554:8554"     # RTSP
       - "8555:8555/udp" # WebRTC
-      - "1984:1984"     # go2rtc Web UI
+    # On Linux, use network_mode: host instead of ports for full
+    # UDP support (VLC, etc). Remove the ports section if you do.
     cap_add:
       - NET_ADMIN
       - NET_RAW
