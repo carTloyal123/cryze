@@ -33,6 +33,7 @@ SdkSymbols load(const std::string& path) {
     s.get_version    = (fn_get_sdk_version)     resolve("get_sdk_version");
     s.get_connect_mode = (fn_iv_get_connect_mode) resolve("iv_get_connect_mode_link_chn");
     s.lan_connectable  = (fn_iv_lan_connectable)  resolve("iv_lan_device_connectable");
+    s.find_dstid       = (fn_iv_find_dstid)       resolve("iv_find_dstid_from_tid_key_map");
 
     // Get base address for crash offset reporting
     Dl_info dli{};

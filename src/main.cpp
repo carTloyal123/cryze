@@ -26,6 +26,7 @@
 #include <net/if.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <pthread.h>
 #include <thread>
 #include <unistd.h>
 
@@ -307,47 +308,135 @@ int main(int argc, char** argv) {
     // ================================================================
     std::fprintf(stderr, "\n=== Phase 3: AV Link ===\n");
 
-    // LAN discovery wait: give the doorbell time to respond to broadcast.
-    // The doorbell takes ~10-15s to appear on broadcast after cloud wakeup.
-    // iv_lan_device_connectable() never returns 1 (tid2 always empty) but
-    // iv_start_av_link() matches by numeric dst_id in the broadcast list.
-    // Default: 15s (confirmed working on both macOS/Colima and Linux).
+    // --- LAN IP Injection ---
+    // The SDK's broadcast discovery takes 20-30s because the battery doorbell
+    // is slow to respond after cloud wakeup. By that time, iv_start_av_link
+    // has already chosen the relay path. We bypass this by injecting the
+    // doorbell's known LAN IP directly into the SDK's broadcast list.
+    //
+    // Struct layout of broadcast list entry (0x8e bytes, from Ghidra RE):
+    //   +0x00: next ptr (linked list)
+    //   +0x08: prev ptr
+    //   +0x10: timestamp
+    //   +0x1c: dst_id (int64_t, numeric device ID)
+    //   +0x2c: port (uint16_t, doorbell's P2P listening port)
+    //   +0x2e: IPv4 addr (uint32_t, network byte order)
+    //   +0x66: flag byte (must be non-zero for find_dst_id_inlan)
+    //   +0x6a: device string suffix (e.g. "GW_BE1_7C78B2A5228B")
+    //
+    // Linked list sentinel at bcast_mgr+0x5c, tail at bcast_mgr+0x64.
+    // SDK globals: termunit @ ELF+0xf0430, bcast_mgr @ ELF+0xf0438.
     {
-        const char* lw = std::getenv("LAN_WAIT");
-        int lan_delay_s = lw ? std::atoi(lw) : 15;
-        if (lan_delay_s > 0) {
-            std::fprintf(stderr, "  [LAN] waiting %ds for broadcast discovery (LAN_WAIT)...\n", lan_delay_s);
-            for (int i = 0; i < lan_delay_s; i++) {
-                sleep(1);
-                if (sdk.lan_connectable) {
-                    std::string pre_devid = "_@." + creds.device_mac;
-                    sdk.lan_connectable(pre_devid.c_str());
+        const char* doorbell_ip_str = std::getenv("DOORBELL_IP");
+        if (doorbell_ip_str && doorbell_ip_str[0]) {
+            struct in_addr addr;
+            if (inet_pton(AF_INET, doorbell_ip_str, &addr) == 1) {
+                uintptr_t base = reinterpret_cast<uintptr_t>(sdk.lib_base);
+                uintptr_t termunit = *reinterpret_cast<uintptr_t*>(base + 0x0f0430);
+                uintptr_t bcast_mgr = *reinterpret_cast<uintptr_t*>(base + 0x0f0438);
+
+                if (termunit && bcast_mgr && sdk.find_dstid) {
+                    // Resolve numeric dst_id from the Mars key map
+                    std::string devid = "_@." + creds.device_mac;
+                    int64_t dst_id = sdk.find_dstid(reinterpret_cast<void*>(termunit), devid.c_str());
+
+                    if (dst_id != 0) {
+                        // Get doorbell port from env (default: 8899, the broadcast port)
+                        const char* port_str = std::getenv("DOORBELL_PORT");
+                        uint16_t db_port = port_str ? (uint16_t)std::atoi(port_str) : 8899;
+
+                        // Extract device suffix (after "_@." prefix)
+                        const char* dev_suffix = creds.device_mac.c_str();
+
+                        std::fprintf(stderr, "  [LAN-INJECT] dst_id=%lld ip=%s port=%u suffix=%s\n",
+                                     (long long)dst_id, doorbell_ip_str, db_port, dev_suffix);
+
+                        // Allocate broadcast list entry (0x8e = 142 bytes)
+                        void* entry = std::calloc(1, 0x8e);
+                        if (entry) {
+                            auto e = reinterpret_cast<uintptr_t>(entry);
+
+                            // Set dst_id
+                            *reinterpret_cast<int64_t*>(e + 0x1c) = dst_id;
+
+                            // Set IPv4 address (network byte order from inet_pton)
+                            *reinterpret_cast<uint32_t*>(e + 0x2e) = addr.s_addr;
+
+                            // Set port (host byte order — SDK byte-swaps when sending)
+                            *reinterpret_cast<uint16_t*>(e + 0x2c) = db_port;
+
+                            // Set flag byte (required for find_dst_id_inlan with dev_type=3)
+                            *reinterpret_cast<uint8_t*>(e + 0x66) = 1;
+
+                            // Set device string suffix (max 0x23 bytes + null)
+                            std::strncpy(reinterpret_cast<char*>(e + 0x6a), dev_suffix, 0x23);
+
+                            // Insert into broadcast linked list (circular doubly-linked)
+                            // Sentinel: bcast_mgr+0x5c (next=first, at +0x5c; prev=last, at +0x64)
+                            auto* mutex = reinterpret_cast<pthread_mutex_t*>(bcast_mgr + 0x1c);
+                            uintptr_t sentinel_addr = bcast_mgr + 0x5c;
+                            auto** sentinel_prev = reinterpret_cast<uintptr_t**>(bcast_mgr + 0x64);
+
+                            pthread_mutex_lock(mutex);
+
+                            // new_entry->next = sentinel
+                            *reinterpret_cast<uintptr_t*>(e + 0x00) = sentinel_addr;
+                            // new_entry->prev = old_tail (sentinel->prev)
+                            *reinterpret_cast<uintptr_t*>(e + 0x08) = reinterpret_cast<uintptr_t>(*sentinel_prev);
+                            // old_tail->next = new_entry
+                            **sentinel_prev = reinterpret_cast<uintptr_t>(entry);
+                            // sentinel->prev = new_entry
+                            *sentinel_prev = reinterpret_cast<uintptr_t*>(entry);
+
+                            pthread_mutex_unlock(mutex);
+
+                            std::fprintf(stderr, "  [LAN-INJECT] entry injected into broadcast list!\n");
+                        }
+                    } else {
+                        std::fprintf(stderr, "  [LAN-INJECT] dst_id=0 — device not in key map (subscribe failed?)\n");
+                    }
+                } else {
+                    std::fprintf(stderr, "  [LAN-INJECT] SDK not ready (termunit=%p bcast=%p find=%p)\n",
+                                 (void*)termunit, (void*)bcast_mgr, (void*)sdk.find_dstid);
                 }
+            } else {
+                std::fprintf(stderr, "  [LAN-INJECT] invalid DOORBELL_IP=%s\n", doorbell_ip_str);
             }
-            std::fprintf(stderr, "  [LAN] proceeding with AV link\n");
+        } else {
+            std::fprintf(stderr, "  [LAN] DOORBELL_IP not set — broadcast discovery only\n");
+
+            // Fallback: wait for natural broadcast discovery
+            const char* lw = std::getenv("LAN_WAIT");
+            int lan_delay_s = lw ? std::atoi(lw) : 15;
+            if (lan_delay_s > 0) {
+                std::fprintf(stderr, "  [LAN] waiting %ds for broadcast discovery (LAN_WAIT)...\n", lan_delay_s);
+                for (int i = 0; i < lan_delay_s; i++) {
+                    sleep(1);
+                    if (sdk.lan_connectable) {
+                        std::string pre_devid = "_@." + creds.device_mac;
+                        sdk.lan_connectable(pre_devid.c_str());
+                    }
+                }
+                std::fprintf(stderr, "  [LAN] proceeding with AV link\n");
+            }
         }
     }
 
-    // Debug: dump broadcast list entries from SDK internal state.
-    // DAT_001f0430 (termunit ptr) and DAT_001f0438 (broadcast mgr ptr) are
-    // global variables in the SDK at known offsets from lib_base.
+    // Debug: dump broadcast list entries and verify pointer consistency.
     {
         uintptr_t base = reinterpret_cast<uintptr_t>(sdk.lib_base);
-        uintptr_t* p_termunit = reinterpret_cast<uintptr_t*>(base + 0x0f0430);
-        uintptr_t* p_bcast_mgr = reinterpret_cast<uintptr_t*>(base + 0x0f0438);
-        uintptr_t termunit = *p_termunit;
-        uintptr_t bcast_mgr = *p_bcast_mgr;
-        std::fprintf(stderr, "  [LAN-DBG] termunit=%p bcast_mgr=%p\n",
-                     (void*)termunit, (void*)bcast_mgr);
+        uintptr_t bcast_mgr = *reinterpret_cast<uintptr_t*>(base + 0x0f0438);
+        uintptr_t termunit = *reinterpret_cast<uintptr_t*>(base + 0x0f0430);
+        uintptr_t tu_bcast = termunit ? *reinterpret_cast<uintptr_t*>(termunit + 0x20) : 0;
+        std::fprintf(stderr, "  [LAN-DBG] bcast_mgr=%p  termunit+0x20=%p  match=%s\n",
+                     (void*)bcast_mgr, (void*)tu_bcast,
+                     (bcast_mgr == tu_bcast) ? "YES" : "NO — MISMATCH!");
 
         if (bcast_mgr != 0) {
-            // Broadcast list is a doubly-linked list. Head/sentinel at bcast_mgr+0x5c.
             uintptr_t sentinel = bcast_mgr + 0x5c;
-            uintptr_t* node = *reinterpret_cast<uintptr_t**>(sentinel);  // first node
+            uintptr_t* node = *reinterpret_cast<uintptr_t**>(sentinel);
             int count = 0;
             while (reinterpret_cast<uintptr_t>(node) != sentinel && count < 20) {
-                // entry+0x1c = dst_id (8 bytes), +0x2c = port (2 bytes),
-                // +0x2e = IP (4 bytes), +0x66 = flag, +0x6a = device string
                 uint64_t dst_id = *reinterpret_cast<uint64_t*>(reinterpret_cast<uintptr_t>(node) + 0x1c);
                 uint32_t lan_ip = *reinterpret_cast<uint32_t*>(reinterpret_cast<uintptr_t>(node) + 0x2e);
                 uint16_t lan_port = *reinterpret_cast<uint16_t*>(reinterpret_cast<uintptr_t>(node) + 0x2c);
@@ -358,7 +447,7 @@ int main(int argc, char** argv) {
                              count, (unsigned long long)dst_id,
                              ip_bytes[0], ip_bytes[1], ip_bytes[2], ip_bytes[3],
                              lan_port, flag, dev_str);
-                node = *reinterpret_cast<uintptr_t**>(node);  // next
+                node = *reinterpret_cast<uintptr_t**>(node);
                 count++;
             }
             if (count == 0) {
