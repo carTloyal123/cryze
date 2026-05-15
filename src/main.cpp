@@ -192,19 +192,13 @@ int main(int argc, char** argv) {
         return 1;
     }
 
-    std::fprintf(stderr, "  device=%s access_id=%s token=%zu bytes\n",
-                 creds.device_mac.c_str(), creds.access_id.c_str(), creds.access_token.size());
+    std::fprintf(stderr, "  device=%s access_id=%s token=%zu bytes device_ip=%s\n",
+                 creds.device_mac.c_str(), creds.access_id.c_str(), creds.access_token.size(),
+                 creds.device_ip.empty() ? "(unknown)" : creds.device_ip.c_str());
 
-    // Optional post-wakeup delay: LAN_WAKEUP_DELAY env var (seconds)
-    // Battery doorbells need time to wake before they respond to broadcasts.
-    {
-        const char* wd = std::getenv("LAN_WAKEUP_DELAY");
-        int wakeup_delay = wd ? std::atoi(wd) : 0;
-        if (wakeup_delay > 0) {
-            std::fprintf(stderr, "  waiting %ds for doorbell to wake up (LAN_WAKEUP_DELAY)...\n", wakeup_delay);
-            sleep(wakeup_delay);
-        }
-    }
+    // No wakeup delay needed — the broadcast poll (Phase 3) handles waiting.
+    // The doorbell takes ~69s from cloud wakeup (sent in Phase 0) to respond.
+    // Starting SDK immediately means broadcast probes run during the boot window.
 
     // ================================================================
     // Phase 1: SDK Init — iv_access_init → wait for APP_ONLINE
@@ -388,17 +382,19 @@ int main(int argc, char** argv) {
         if (!found_real_entry) {
             std::fprintf(stderr, "  [LAN] no broadcast response after %ds\n", max_wait_s);
 
-            // Fallback: inject DOORBELL_IP if provided
-            const char* doorbell_ip_str = std::getenv("DOORBELL_IP");
-            if (doorbell_ip_str && doorbell_ip_str[0] && dst_id != 0 && bcast_mgr) {
+            // Fallback: inject known doorbell LAN IP (auto from GDM or DOORBELL_IP env)
+            const char* doorbell_ip_env = std::getenv("DOORBELL_IP");
+            std::string doorbell_ip_str = doorbell_ip_env && doorbell_ip_env[0]
+                ? std::string(doorbell_ip_env) : creds.device_ip;
+            if (!doorbell_ip_str.empty() && dst_id != 0 && bcast_mgr) {
                 struct in_addr addr;
-                if (inet_pton(AF_INET, doorbell_ip_str, &addr) == 1) {
+                if (inet_pton(AF_INET, doorbell_ip_str.c_str(), &addr) == 1) {
                     const char* port_str = std::getenv("DOORBELL_PORT");
                     uint16_t db_port = port_str ? (uint16_t)std::atoi(port_str) : 8899;
                     const char* dev_suffix = creds.device_mac.c_str();
 
                     std::fprintf(stderr, "  [LAN-INJECT] fallback: dst_id=%lld ip=%s port=%u\n",
-                                 (long long)dst_id, doorbell_ip_str, db_port);
+                                 (long long)dst_id, doorbell_ip_str.c_str(), db_port);
 
                     void* entry = std::calloc(1, 0x8e);
                     if (entry) {
@@ -427,7 +423,7 @@ int main(int argc, char** argv) {
                         std::fprintf(stderr, "  [LAN-INJECT] entry injected (last resort before iv_start_av_link)\n");
                     }
                 }
-            } else if (!doorbell_ip_str || !doorbell_ip_str[0]) {
+            } else if (doorbell_ip_str.empty()) {
                 std::fprintf(stderr, "  [LAN] no DOORBELL_IP set — relay fallback\n");
             }
         }

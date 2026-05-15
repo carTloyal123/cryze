@@ -25,6 +25,7 @@ struct StreamCreds {
     std::string access_token;    // Mars token (Base64, >= 128 bytes)
     int64_t     expire_time = 0;
     std::string user_id;         // Wyze user ID
+    std::string device_ip;       // LAN IP from GDM (e.g. "192.168.1.81")
 };
 
 // Full auth flow: checks cache first, does fresh auth if needed.

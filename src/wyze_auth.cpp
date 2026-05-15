@@ -175,6 +175,7 @@ static void save_cache(const StreamCreds& creds) {
         {"mars_access_token", creds.access_token},
         {"mars_expire_time", creds.expire_time},
         {"user_id", creds.user_id},
+        {"device_ip", creds.device_ip},
         {"wyze_access_token", s_access_token},
         {"phone_id", s_phone_id},
         {"saved_at", now_ms() / 1000},
@@ -244,6 +245,7 @@ static std::optional<StreamCreds> load_cache(const std::string& target_mac) {
     creds.access_token = mars_token;
     creds.expire_time = expire;
     creds.user_id = s_user_id;
+    creds.device_ip = j.value("device_ip", std::string{});
 
     int64_t remaining_h = (expire - now_s) / 3600;
     std::fprintf(stderr, "[cache] loaded from %s (%lld hours remaining)\n",
@@ -404,17 +406,20 @@ StreamCreds bootstrap(const std::string& target_mac) {
     // Find target device
     std::string device_mac, product_model;
     const auto& dev_list = dev_resp["data"]["device_list"];
+    std::string device_ip;
     for (const auto& d : dev_list) {
         std::string mac   = d.value("mac", std::string{});
         std::string model = d.value("product_model", std::string{});
         std::string type  = d.value("product_type", std::string{});
         std::string name  = d.value("nickname", std::string{});
-        std::fprintf(stderr, "[auth] device: %s (%s, model=%s, type=%s)\n",
-                     mac.c_str(), name.c_str(), model.c_str(), type.c_str());
+        std::string ip    = d.value("ip", std::string{});
+        std::fprintf(stderr, "[auth] device: %s (%s, model=%s, type=%s, ip=%s)\n",
+                     mac.c_str(), name.c_str(), model.c_str(), type.c_str(), ip.c_str());
         if (type != "Camera" || model.rfind("GW_", 0) != 0) continue;
         if (!target_mac.empty() && mac != target_mac) continue;
         device_mac    = mac;
         product_model = model;
+        device_ip     = ip;
     }
     if (device_mac.empty())
         throw std::runtime_error("no matching GW_ camera found on account");
@@ -466,6 +471,7 @@ StreamCreds bootstrap(const std::string& target_mac) {
     creds.access_id     = pick("access_id", "accessId");
     creds.access_token  = pick("access_token", "accessToken");
     creds.user_id       = s_user_id;
+    creds.device_ip     = device_ip;
 
     if (data.contains("expire_time")) {
         auto& et = data["expire_time"];
