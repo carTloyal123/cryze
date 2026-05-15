@@ -8,3 +8,4 @@ config
 *.d
 core
 plans/
+cache/
