@@ -20,6 +20,19 @@ COMPOSE="docker compose --env-file /dev/null -f $HERE/docker-compose.yml"
 DEV="wyze-bridge-dev"
 ENV_VARS="LD_PRELOAD=/work/libs/bionic_interpose.so LD_LIBRARY_PATH=/work/libs:/apk/xapk_contents/arm64_libs/lib/arm64-v8a"
 
+# Load .env vars for dev container commands (test/run)
+load_env_vars() {
+    local env_file="$HERE/.env"
+    if [[ -f "$env_file" ]]; then
+        while IFS='=' read -r key val; do
+            [[ -z "$key" || "$key" == \#* ]] && continue
+            val="${val#\"}" ; val="${val%\"}"
+            val="${val#\'}" ; val="${val%\'}"
+            ENV_VARS="$ENV_VARS $key=$val"
+        done < "$env_file"
+    fi
+}
+
 ensure_image() {
     if ! docker image inspect "$IMAGE" &>/dev/null; then
         echo "Building Docker image..."
@@ -88,12 +101,14 @@ case "${1:-up}" in
 
     test)
         ensure_dev
+        load_env_vars
         echo "=== Smoke test (15s) ==="
         dev_exec env $ENV_VARS ./build/bridge --duration 15 ${@:2}
         ;;
 
     run)
         ensure_dev
+        load_env_vars
         DURATION="${2:-60}"
         echo "=== Running bridge (${DURATION}s) ==="
         dev_exec env $ENV_VARS ./build/bridge --duration "$DURATION" ${@:3}
