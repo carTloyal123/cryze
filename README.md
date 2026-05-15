@@ -2,42 +2,38 @@
 
 RTSP/WebRTC bridge for Wyze Video Doorbells. Streams on-demand H.264 video via [go2rtc](https://github.com/AlexxIT/go2rtc) — the doorbell only wakes when a viewer connects.
 
-Works with Home Assistant, Frigate, Scrypted, VLC, or anything that speaks RTSP.
-
 ## Requirements
 
 - Docker with ARM64 support (native ARM64 host, or Docker Desktop with Rosetta/QEMU)
-- Wyze account with API keys
+- Wyze account with API keys from https://developer-api-console.wyze.com/
 - Decompiled Wyze APK with `libiotp2pav.so` and `libmbedtls.so` (placed in `../apk/` relative to this directory)
 
 ## Quick Start
 
 ```bash
-# 1. Clone and enter the project
-git clone <repo-url>
-cd bridge
-
-# 2. Set up credentials
+# 1. Set up credentials
 cp .env.example .env
 # Edit .env with your Wyze email, password, and API keys
 
-# 3. Start the bridge
+# 2. Start the bridge
 ./into.sh
 ```
 
 First run takes ~60s (patches libraries, compiles bridge). Subsequent starts take ~3s.
 
-Once running:
+## Stream Endpoints
 
 | Endpoint | URL |
 |----------|-----|
+| Web UI (easiest) | http://localhost:1984 |
 | RTSP | `rtsp://localhost:8554/doorbell` |
-| Web UI | http://localhost:1984 |
-| WebRTC | http://localhost:1984 (click stream) |
+| ffplay | `ffplay -rtsp_transport tcp rtsp://localhost:8554/doorbell` |
+
+The stream is on-demand — the first connection takes ~15s while the doorbell wakes up.
 
 ## Docker Compose
 
-Add this to your existing `docker-compose.yml`:
+To add to an existing `docker-compose.yml`:
 
 ```yaml
 services:
@@ -61,46 +57,7 @@ services:
     stop_grace_period: 15s
 ```
 
-> **Note:** Do not use `env_file:` in your compose config. The `.env` file is loaded at runtime inside the container to preserve literal `$` characters in passwords. Place your `.env` in the `bridge/` directory.
-
-## Home Assistant
-
-Add to `configuration.yaml`:
-
-```yaml
-camera:
-  - platform: generic
-    stream_source: rtsp://YOUR_HOST_IP:8554/doorbell
-    name: Wyze Doorbell
-```
-
-## Frigate
-
-Add to your Frigate config:
-
-```yaml
-cameras:
-  wyze_doorbell:
-    ffmpeg:
-      inputs:
-        - path: rtsp://wyze-doorbell:8554/doorbell
-          roles: [detect, record]
-    detect:
-      width: 1440
-      height: 1440
-```
-
-## Scrypted
-
-Add as an RTSP Camera plugin source with URL: `rtsp://YOUR_HOST_IP:8554/doorbell`
-
-## VLC
-
-Open a network stream with: `rtsp://YOUR_HOST_IP:8554/doorbell`
-
-The first connection takes ~15s while the doorbell wakes up — VLC may show a black screen or "loading" during this time. If VLC fails to connect, go to Preferences > Input/Codecs and set "Live caching" to 3000ms or higher.
-
-> RTSP is configured for TCP interleaved transport by default (required when running in Docker). This works with VLC, ffplay, and all standard RTSP clients.
+> Do not use `env_file:` in your compose config. The `.env` is loaded at runtime inside the container to preserve literal `$` characters in passwords.
 
 ## How It Works
 
@@ -109,24 +66,21 @@ Viewer connects ─> go2rtc ─> spawns bridge ─> Wyze auth + P2P ─> H.264 s
 Viewer disconnects ─> go2rtc ─> kills bridge ─> doorbell sleeps
 ```
 
-The bridge is **on-demand**: go2rtc launches it when the first viewer connects and kills it (SIGINT) when the last viewer disconnects. First connection takes ~15s (authentication + doorbell wake + P2P handshake). The doorbell is not streaming when no one is watching.
-
 ## Development
 
 ```bash
-./into.sh shell        # Interactive shell inside the container
+./into.sh              # Start go2rtc (Ctrl+C to stop)
+./into.sh stop         # Stop and free ports
+./into.sh logs         # Tail logs
+./into.sh shell        # Interactive shell in container
 ./into.sh build        # Compile bridge only
-./into.sh test         # 15s smoke test (no go2rtc)
+./into.sh test         # 15s smoke test
 ./into.sh run 30       # Run bridge for 30 seconds
-./into.sh clean        # Stop + remove libs/ and build/
-./into.sh rebuild      # Full image rebuild from scratch
-./into.sh stop         # Stop everything
-./into.sh logs         # Tail logs from running instance
+./into.sh clean        # Stop + remove build artifacts
+./into.sh rebuild      # Full image rebuild
 ```
 
 ## Credentials
-
-You need a Wyze API key pair. Get them at https://developer-api-console.wyze.com/
 
 | Variable | Description |
 |----------|-------------|
@@ -134,19 +88,3 @@ You need a Wyze API key pair. Get them at https://developer-api-console.wyze.com
 | `WYZE_PASSWORD` | Wyze account password |
 | `WYZE_KEY_ID` | API key ID from developer console |
 | `WYZE_API_KEY` | API key secret from developer console |
-
-## Project Structure
-
-```
-bridge/
-  src/                  # C++ bridge source
-  scripts/
-    entrypoint.py       # Container entrypoint: setup, build, go2rtc lifecycle
-  go2rtc.yaml           # go2rtc stream config
-  docker-compose.yml    # Service definition
-  Dockerfile            # Alpine ARM64 image with build tools + go2rtc
-  into.sh               # Host-side convenience wrapper
-  CMakeLists.txt        # Build config
-  .env                  # Your credentials (not committed)
-  .env.example          # Credential template
-```
