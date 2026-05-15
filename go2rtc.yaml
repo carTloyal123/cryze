@@ -5,7 +5,7 @@
 
 streams:
   doorbell:
-    - exec:/work/build/bridge --stdout#killsignal=2#killtimeout=5
+    - exec:/work/build/bridge --stdout#video=h264#killsignal=2#killtimeout=5
 
 rtsp:
   listen: ":8554"
