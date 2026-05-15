@@ -4,7 +4,7 @@ RTSP/WebRTC bridge for Wyze Video Doorbells. Streams on-demand H.264 video via [
 
 ## Requirements
 
-- Docker with ARM64 support (native ARM64 host, or Docker Desktop with Rosetta/QEMU)
+- Docker (ARM64 native or x86_64 with QEMU emulation — see [x86 hosts](#x86-hosts) below)
 - Wyze account with API keys from https://developer-api-console.wyze.com/
 - Decompiled Wyze APK with `libiotp2pav.so` and `libmbedtls.so` (placed in `../apk/` relative to this directory)
 
@@ -72,6 +72,19 @@ services:
 ```
 
 > Do not use `env_file:` in your compose config. The `.env` is loaded at runtime inside the container to preserve literal `$` characters in passwords.
+
+## x86 Hosts
+
+The Wyze SDK libraries are ARM64 binaries, but the bridge runs fine on x86_64 Linux via QEMU user-mode emulation. Docker handles this transparently — you just need binfmt_misc registered:
+
+```bash
+# One-time setup on x86 Linux (most Docker Desktop installs have this already)
+docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+```
+
+The `platform: linux/arm64` in docker-compose.yml tells Docker to use QEMU automatically. First-run build takes longer under emulation (~2-3 min vs ~30s native) but subsequent starts are fast since everything is cached.
+
+Tested on Ubuntu 22.04 x86_64 with Docker 26.x — 224 frames captured, RTSP streaming works.
 
 ## How It Works
 
