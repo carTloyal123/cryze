@@ -294,9 +294,10 @@ int main(int argc, char** argv) {
 
     // Pre-AV-link LAN check: is the device visible via broadcast?
     if (sdk.lan_connectable) {
-        int lan = sdk.lan_connectable(s_devid.c_str());
+        std::string pre_devid = "_@." + creds.device_mac;
+        int lan = sdk.lan_connectable(pre_devid.c_str());
         std::fprintf(stderr, "  [LAN] pre-link: iv_lan_device_connectable(%s) = %d\n",
-                     s_devid.c_str(), lan);
+                     pre_devid.c_str(), lan);
     }
 
     // Open output — stdout pipe (already set up above) or file
