@@ -240,7 +240,11 @@ int main(int argc, char** argv) {
     param.i16(sdk::init_off::lang_code)     = 1;
     param.i16(sdk::init_off::dev_type)      = 3;
     param.i32(sdk::init_off::version)       = 0x0d000000;
-    param.i32(sdk::init_off::p2p_port_type) = 1;  // 0=IPv6 multicast only, 1=IPv4 broadcast (fixed ports 8901/51855)
+    param.i32(sdk::init_off::p2p_port_type) = 1;  // 0=IPv6 multicast only, 1=IPv4 broadcast (8901/51855), 2=IPv4 (8904+)
+    {
+        const char* pt = std::getenv("P2P_PORT_TYPE");
+        if (pt) param.i32(sdk::init_off::p2p_port_type) = std::atoi(pt);
+    }
 
     // Log LAN-relevant config for diagnostics
     std::fprintf(stderr, "  LAN config: marker_b=%d dev_type=%d p2p_port_type=%d\n",
