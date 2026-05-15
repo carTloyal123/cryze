@@ -194,6 +194,17 @@ int main(int argc, char** argv) {
     std::fprintf(stderr, "  device=%s access_id=%s token=%zu bytes\n",
                  creds.device_mac.c_str(), creds.access_id.c_str(), creds.access_token.size());
 
+    // Optional post-wakeup delay: LAN_WAKEUP_DELAY env var (seconds)
+    // Battery doorbells need time to wake before they respond to broadcasts.
+    {
+        const char* wd = std::getenv("LAN_WAKEUP_DELAY");
+        int wakeup_delay = wd ? std::atoi(wd) : 0;
+        if (wakeup_delay > 0) {
+            std::fprintf(stderr, "  waiting %ds for doorbell to wake up (LAN_WAKEUP_DELAY)...\n", wakeup_delay);
+            sleep(wakeup_delay);
+        }
+    }
+
     // ================================================================
     // Phase 1: SDK Init — iv_access_init → wait for APP_ONLINE
     // ================================================================
@@ -229,7 +240,7 @@ int main(int argc, char** argv) {
     param.i16(sdk::init_off::lang_code)     = 1;
     param.i16(sdk::init_off::dev_type)      = 3;
     param.i32(sdk::init_off::version)       = 0x0d000000;
-    param.i32(sdk::init_off::p2p_port_type) = 0;
+    param.i32(sdk::init_off::p2p_port_type) = 1;  // 0=IPv6 multicast only, 1=IPv4 broadcast (fixed ports 8901/51855)
 
     // Log LAN-relevant config for diagnostics
     std::fprintf(stderr, "  LAN config: marker_b=%d dev_type=%d p2p_port_type=%d\n",
@@ -292,12 +303,26 @@ int main(int argc, char** argv) {
     // ================================================================
     std::fprintf(stderr, "\n=== Phase 3: AV Link ===\n");
 
-    // Pre-AV-link LAN check: is the device visible via broadcast?
-    if (sdk.lan_connectable) {
-        std::string pre_devid = "_@." + creds.device_mac;
-        int lan = sdk.lan_connectable(pre_devid.c_str());
-        std::fprintf(stderr, "  [LAN] pre-link: iv_lan_device_connectable(%s) = %d\n",
-                     pre_devid.c_str(), lan);
+    // Optional LAN discovery wait: LAN_WAIT env var (seconds, default 0).
+    // The doorbell takes ~15s to respond to broadcast after cloud wakeup.
+    // KNOWN ISSUE: iv_lan_device_connectable() never returns 1 for Wyze doorbells
+    // because the broadcast response doesn't include the device ID string (tid2 empty).
+    // However, iv_start_av_link() matches by numeric dst_id in the broadcast list,
+    // so if we wait for the doorbell to respond, LAN direct may still work.
+    {
+        const char* lw = std::getenv("LAN_WAIT");
+        int lan_delay_s = lw ? std::atoi(lw) : 0;
+        if (lan_delay_s > 0) {
+            std::fprintf(stderr, "  [LAN] waiting %ds for broadcast discovery (LAN_WAIT)...\n", lan_delay_s);
+            for (int i = 0; i < lan_delay_s; i++) {
+                sleep(1);
+                if (sdk.lan_connectable) {
+                    std::string pre_devid = "_@." + creds.device_mac;
+                    sdk.lan_connectable(pre_devid.c_str());
+                }
+            }
+            std::fprintf(stderr, "  [LAN] proceeding with AV link\n");
+        }
     }
 
     // Open output — stdout pipe (already set up above) or file

@@ -46,8 +46,8 @@ ensure_dev() {
     if ! docker ps --format '{{.Names}}' | grep -qx "$DEV"; then
         docker rm -f "$DEV" 2>/dev/null || true
         docker run -d --name "$DEV" --platform linux/arm64 \
+            --network host \
             -v "$HERE:/work" -v "$HERE/../apk:/apk:ro" \
-            -p 1984:1984 -p 8554:8554 -p 8555:8555/udp \
             --cap-add NET_ADMIN --cap-add NET_RAW \
             -w /work "$IMAGE" sleep infinity
         # Run lib setup via entrypoint.py's setup function
