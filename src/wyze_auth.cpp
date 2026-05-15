@@ -1,6 +1,6 @@
-// wyze_auth.cpp — Full fresh auth from env vars. No caching. No config files.
+// wyze_auth.cpp — Wyze cloud auth with token caching.
 //
-// Flow: login → get_devices → register_mars_user → StreamCreds
+// Flow: try_cache → (login → get_devices → register_mars_user → save_cache) → wakeup
 
 #include "wyze_auth.hpp"
 
@@ -14,7 +14,9 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <fstream>
 #include <stdexcept>
+#include <sys/stat.h>
 #include <thread>
 
 namespace wyze {
@@ -145,6 +147,111 @@ static std::string s_access_token;
 static std::string s_user_id;
 static std::string s_phone_id;
 
+// --- Cache ---
+
+static std::string cache_path() {
+    const char* p = std::getenv("CACHE_FILE");
+    return p && *p ? std::string(p) : "cache/auth.json";
+}
+
+static void ensure_parent_dir(const std::string& path) {
+    auto slash = path.rfind('/');
+    if (slash != std::string::npos) {
+        std::string dir = path.substr(0, slash);
+        mkdir(dir.c_str(), 0755);
+    }
+}
+
+// Save all auth state to disk as JSON.
+static void save_cache(const StreamCreds& creds) {
+    std::string path = cache_path();
+    ensure_parent_dir(path);
+
+    nlohmann::json j = {
+        {"version", 1},
+        {"device_mac", creds.device_mac},
+        {"product_model", creds.product_model},
+        {"mars_access_id", creds.access_id},
+        {"mars_access_token", creds.access_token},
+        {"mars_expire_time", creds.expire_time},
+        {"user_id", creds.user_id},
+        {"wyze_access_token", s_access_token},
+        {"phone_id", s_phone_id},
+        {"saved_at", now_ms() / 1000},
+    };
+
+    std::ofstream f(path);
+    if (!f) {
+        std::fprintf(stderr, "[cache] failed to write %s\n", path.c_str());
+        return;
+    }
+    f << j.dump(2) << std::endl;
+    std::fprintf(stderr, "[cache] saved to %s (expires %lld)\n",
+                 path.c_str(), (long long)creds.expire_time);
+}
+
+// Load cached creds. Returns nullopt if cache missing, corrupted, or expired.
+static std::optional<StreamCreds> load_cache(const std::string& target_mac) {
+    std::string path = cache_path();
+    std::ifstream f(path);
+    if (!f) return std::nullopt;
+
+    nlohmann::json j;
+    try {
+        f >> j;
+    } catch (...) {
+        std::fprintf(stderr, "[cache] corrupt cache file %s\n", path.c_str());
+        return std::nullopt;
+    }
+
+    if (!j.contains("version") || j["version"] != 1) return std::nullopt;
+
+    // Check device MAC matches (if specified)
+    std::string cached_mac = j.value("device_mac", std::string{});
+    if (!target_mac.empty() && cached_mac != target_mac) {
+        std::fprintf(stderr, "[cache] MAC mismatch: cached=%s target=%s\n",
+                     cached_mac.c_str(), target_mac.c_str());
+        return std::nullopt;
+    }
+
+    // Check Mars token expiry (with 1-hour safety margin)
+    int64_t expire = j.value("mars_expire_time", (int64_t)0);
+    int64_t now_s = now_ms() / 1000;
+    int64_t margin = 3600; // 1 hour
+    if (expire > 0 && now_s >= (expire - margin)) {
+        int64_t hours_ago = (now_s - expire) / 3600;
+        std::fprintf(stderr, "[cache] Mars token expired %lld hours ago\n", hours_ago);
+        return std::nullopt;
+    }
+
+    // Validate required fields
+    std::string mars_id = j.value("mars_access_id", std::string{});
+    std::string mars_token = j.value("mars_access_token", std::string{});
+    if (mars_id.empty() || mars_token.empty()) {
+        std::fprintf(stderr, "[cache] missing Mars creds in cache\n");
+        return std::nullopt;
+    }
+
+    // Restore module-level state for wakeup
+    s_access_token = j.value("wyze_access_token", std::string{});
+    s_user_id = j.value("user_id", std::string{});
+    s_phone_id = j.value("phone_id", std::string{});
+
+    StreamCreds creds;
+    creds.device_mac = cached_mac;
+    creds.product_model = j.value("product_model", std::string{});
+    creds.access_id = mars_id;
+    creds.access_token = mars_token;
+    creds.expire_time = expire;
+    creds.user_id = s_user_id;
+
+    int64_t remaining_h = (expire - now_s) / 3600;
+    std::fprintf(stderr, "[cache] loaded from %s (%lld hours remaining)\n",
+                 path.c_str(), remaining_h);
+
+    return creds;
+}
+
 // --- run_action_batch helper ---
 
 void do_run_action_batch(Http& http, const std::string& device_id,
@@ -199,6 +306,57 @@ void do_run_action_batch(Http& http, const std::string& device_id,
 // --- public API ---
 
 StreamCreds bootstrap(const std::string& target_mac) {
+    // --- Try cache first ---
+    auto cached = load_cache(target_mac);
+    if (cached) {
+        std::fprintf(stderr, "[auth] using cached Mars creds (access_id=%s)\n",
+                     cached->access_id.c_str());
+
+        // Wakeup still needed — doorbell sleeps between sessions.
+        // Try with cached Wyze token; if it fails, wakeup is non-fatal.
+        try {
+            wakeup(cached->device_mac, cached->product_model);
+        } catch (const std::exception& e) {
+            std::fprintf(stderr, "[auth] cached wakeup failed: %s\n", e.what());
+            std::fprintf(stderr, "[auth] Wyze token may be expired — doing fresh login for wakeup\n");
+
+            // Re-login just for wakeup token
+            try {
+                auto email    = env_required("WYZE_EMAIL");
+                auto password = env_required("WYZE_PASSWORD");
+                auto key_id   = env_required("WYZE_KEY_ID");
+                auto api_key  = env_required("WYZE_API_KEY");
+
+                Http http;
+                nlohmann::json login_body = {
+                    {"email",    email},
+                    {"password", scramble_password(password)},
+                    {"nonce",    std::to_string(now_ms())},
+                };
+                auto login_resp = http.post(
+                    std::string(kAuthBase) + kPathLogin,
+                    login_body.dump(),
+                    {"keyid: " + key_id, "apikey: " + api_key,
+                     "phone-id: " + http.phone_id, "requestid: " + new_uuid()});
+
+                s_access_token = login_resp.value("access_token", std::string{});
+                s_user_id = login_resp.value("user_id", std::string{});
+                s_phone_id = http.phone_id;
+
+                // Update cache with fresh Wyze token
+                save_cache(*cached);
+
+                wakeup(cached->device_mac, cached->product_model);
+            } catch (const std::exception& e2) {
+                std::fprintf(stderr, "[auth] fresh wakeup also failed (non-fatal): %s\n", e2.what());
+            }
+        }
+
+        return *cached;
+    }
+
+    // --- Full fresh auth ---
+    std::fprintf(stderr, "[auth] no valid cache — doing fresh auth\n");
     auto email    = env_required("WYZE_EMAIL");
     auto password = env_required("WYZE_PASSWORD");
     auto key_id   = env_required("WYZE_KEY_ID");
@@ -338,7 +496,10 @@ StreamCreds bootstrap(const std::string& target_mac) {
         }
     }
 
-    // 4. Wakeup doorbell
+    // 4. Save cache
+    save_cache(creds);
+
+    // 5. Wakeup doorbell
     wakeup(device_mac, product_model);
 
     return creds;
