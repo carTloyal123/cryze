@@ -96,17 +96,20 @@ SLOT_STUB(15)
 
 // Slot 7: p2p_log_callback — SDK internal logging
 // Called as: callback(level, file_ptr, fmt_string, ...)
+//
+// Log verbosity controlled by g_sdk_log_level:
+//   5 = all (very verbose, for LAN/P2P debugging)
+//   6 = warn+ (default, cleaner output)
+int g_sdk_log_level = 5;  // default: show all for debugging
+
 static int64_t cb_p2p_log(uint64_t level, uint64_t file_ptr, uint64_t fmt_ptr,
                           uint64_t a3, uint64_t a4, uint64_t a5) {
-    // Only print level >= 5 (info) to reduce noise, or all if level >= 6 (warn)
     int lvl = (int)level;
     const char* fmt = (const char*)fmt_ptr;
-    if (lvl >= 6 && fmt) {
-        // Try to print the format string with up to 3 varargs
+    if (lvl >= g_sdk_log_level && fmt) {
         char buf[512];
         int n = snprintf(buf, sizeof(buf), fmt, a3, a4, a5);
         if (n > 0) {
-            // Strip trailing newline
             if (n > 0 && buf[n-1] == '\n') buf[n-1] = 0;
             std::fprintf(stderr, "  [sdk L%d] %s\n", lvl, buf);
         }

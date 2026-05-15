@@ -99,8 +99,10 @@ int main(int argc, char** argv) {
         if      (a == "--device")   device_mac = next();
         else if (a == "--output")   output_path = next();
         else if (a == "--duration") duration = std::atoi(next());
+        else if (a == "--verbose" || a == "-v") cb::g_sdk_log_level = 5;
+        else if (a == "--quiet"   || a == "-q") cb::g_sdk_log_level = 7;
         else if (a == "--help" || a == "-h") {
-            printf("Usage: bridge2 [--device MAC] [--output PATH] [--duration SECS]\n");
+            printf("Usage: bridge2 [--device MAC] [--output PATH] [--duration SECS] [-v|-q]\n");
             return 0;
         }
         else { fprintf(stderr, "unknown arg: %s\n", a.c_str()); return 2; }

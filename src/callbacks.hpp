@@ -14,6 +14,7 @@ extern std::atomic<uint32_t> g_sub_error;        // slot 12 → error code
 extern std::atomic<int>      g_video_frames;     // decode_video frame count
 extern std::atomic<size_t>   g_video_bytes;      // decode_video total bytes
 extern int                   g_output_fd;        // fd for H.264 output
+extern int                   g_sdk_log_level;    // 5=all, 6=warn+
 
 // Get the array of 16 iv_access_init callback function pointers.
 void** get_init_callbacks();
