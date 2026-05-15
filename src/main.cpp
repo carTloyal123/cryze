@@ -231,6 +231,13 @@ int main(int argc, char** argv) {
     param.i32(sdk::init_off::version)       = 0x0d000000;
     param.i32(sdk::init_off::p2p_port_type) = 0;
 
+    // Log LAN-relevant config for diagnostics
+    std::fprintf(stderr, "  LAN config: marker_b=%d dev_type=%d p2p_port_type=%d\n",
+                 param.i32(sdk::init_off::marker_b),
+                 param.i16(sdk::init_off::dev_type),
+                 param.i32(sdk::init_off::p2p_port_type));
+    std::fprintf(stderr, "  Broadcast discovery: port 8899/8900 (UDP)\n");
+
     // Install callbacks
     void** cbs = cb::get_init_callbacks();
     for (int i = 0; i < 16; ++i)
@@ -284,6 +291,13 @@ int main(int argc, char** argv) {
     // Phase 3: AV Link — iv_start_av_link with corrected struct
     // ================================================================
     std::fprintf(stderr, "\n=== Phase 3: AV Link ===\n");
+
+    // Pre-AV-link LAN check: is the device visible via broadcast?
+    if (sdk.lan_connectable) {
+        int lan = sdk.lan_connectable(s_devid.c_str());
+        std::fprintf(stderr, "  [LAN] pre-link: iv_lan_device_connectable(%s) = %d\n",
+                     s_devid.c_str(), lan);
+    }
 
     // Open output — stdout pipe (already set up above) or file
     if (use_stdout) {
@@ -368,6 +382,21 @@ int main(int argc, char** argv) {
 
     int chn_id = av_rc;
     std::fprintf(stderr, "  AV link established! channel=%d\n", chn_id);
+
+    // --- LAN diagnostics ---
+    if (sdk.lan_connectable) {
+        int lan = sdk.lan_connectable(s_devid.c_str());
+        std::fprintf(stderr, "  [LAN] iv_lan_device_connectable(%s) = %d (%s)\n",
+                     s_devid.c_str(), lan, lan ? "FOUND on LAN" : "not on LAN");
+    }
+    if (sdk.get_connect_mode) {
+        uint32_t mode = 0, sub_mode = 0;
+        int cm_rc = sdk.get_connect_mode((uint32_t)chn_id, &mode, &sub_mode);
+        const char* mode_name = mode == 0 ? "UNKNOWN" : mode == 1 ? "RELAY" :
+                                mode == 2 ? "LAN" : mode == 3 ? "NAT" : "OTHER";
+        std::fprintf(stderr, "  [LAN] connect_mode: rc=%d mode=%u (%s) sub=%u\n",
+                     cm_rc, mode, mode_name, sub_mode);
+    }
 
     // ================================================================
     // Phase 4: Wait for frames

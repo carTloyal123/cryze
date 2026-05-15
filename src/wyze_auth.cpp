@@ -323,6 +323,21 @@ StreamCreds bootstrap(const std::string& target_mac) {
     std::fprintf(stderr, "[auth] Mars creds OK: access_id=%s, expires=%lld\n",
                  creds.access_id.c_str(), (long long)creds.expire_time);
 
+    // Log full Mars response for LAN-related fields
+    std::fprintf(stderr, "[auth] Mars response keys:");
+    for (auto& [k, v] : data.items()) {
+        std::fprintf(stderr, " %s", k.c_str());
+    }
+    std::fprintf(stderr, "\n");
+    // Check for known LAN-relevant fields
+    for (const char* key : {"peerlanip", "lan_ip", "localip", "natType",
+                            "p2pMode", "lanPort", "peer_lan_ip"}) {
+        if (data.contains(key)) {
+            std::fprintf(stderr, "[auth] Mars LAN field: %s = %s\n",
+                         key, data[key].dump().c_str());
+        }
+    }
+
     // 4. Wakeup doorbell
     wakeup(device_mac, product_model);
 

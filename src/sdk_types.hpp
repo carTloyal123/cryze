@@ -136,6 +136,8 @@ using fn_iv_subscribe_dev     = uint32_t (*)(const char* token, const char* dev_
 using fn_iv_start_av_link     = int  (*)(void* av_req, int* out_err);
 using fn_iv_stop_av_link      = int  (*)(uint32_t chn_id, int reason, uint16_t flags);
 using fn_get_sdk_version      = int  (*)(void);
+using fn_iv_get_connect_mode  = int  (*)(uint32_t chn_id, uint32_t* mode, uint32_t* sub_mode);
+using fn_iv_lan_connectable   = int  (*)(const char* dev_id);
 
 // SDK symbol bundle
 struct SdkSymbols {
@@ -146,6 +148,8 @@ struct SdkSymbols {
     fn_iv_start_av_link     start_av_link;
     fn_iv_stop_av_link      stop_av_link;
     fn_get_sdk_version      get_version;
+    fn_iv_get_connect_mode  get_connect_mode;   // iv_get_connect_mode_link_chn
+    fn_iv_lan_connectable   lan_connectable;    // iv_lan_device_connectable
     void*                   lib_handle;
     void*                   lib_base;
 };

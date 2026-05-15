@@ -31,6 +31,8 @@ SdkSymbols load(const std::string& path) {
     s.start_av_link  = (fn_iv_start_av_link)    resolve("iv_start_av_link");
     s.stop_av_link   = (fn_iv_stop_av_link)     resolve("iv_stop_av_link");
     s.get_version    = (fn_get_sdk_version)     resolve("get_sdk_version");
+    s.get_connect_mode = (fn_iv_get_connect_mode) resolve("iv_get_connect_mode_link_chn");
+    s.lan_connectable  = (fn_iv_lan_connectable)  resolve("iv_lan_device_connectable");
 
     // Get base address for crash offset reporting
     Dl_info dli{};

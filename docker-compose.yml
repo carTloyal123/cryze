@@ -12,6 +12,8 @@ services:
       - "1984:1984"     # go2rtc Web UI + API
       - "8554:8554"     # RTSP
       - "8555:8555/udp" # WebRTC
+      - "8899:8899/udp" # P2P broadcast send
+      - "8900:8900/udp" # P2P broadcast listen
     cap_add:
       - NET_ADMIN
       - NET_RAW
