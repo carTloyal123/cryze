@@ -6,3 +6,5 @@ config
 *.h264
 *.o
 *.d
+core
+plans/

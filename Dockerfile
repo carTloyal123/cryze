@@ -21,6 +21,7 @@ RUN apk add --no-cache \
         nlohmann-json \
         openssl-dev \
         patchelf \
+        python3 \
         util-linux-dev
 
 # Install go2rtc (single static binary)
@@ -41,6 +42,7 @@ WORKDIR /work
 # RTSP, WebRTC, Web UI
 EXPOSE 8554 8555 1984
 
-# Default: run entrypoint (setup + go2rtc).  Override with --entrypoint
-# for dev use (e.g. --entrypoint sleep infinity).
-CMD ["sh", "/work/scripts/entrypoint.sh"]
+# Lifecycle: entrypoint.py handles setup, build, go2rtc, and SIGINT/SIGTERM.
+# Override for dev: docker run ... wyze-bridge sleep infinity
+STOPSIGNAL SIGINT
+CMD ["python3", "/work/scripts/entrypoint.py"]

@@ -1,14 +1,10 @@
 services:
   bridge:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    build: .
     image: wyze-bridge:latest
     container_name: wyze-bridge
     platform: linux/arm64
     working_dir: /work
-    # .env is loaded by entrypoint.py at runtime (not docker compose) to preserve
-    # literal $ in passwords. Use ./into.sh which passes --env-file /dev/null.
     volumes:
       - .:/work
       - ../apk:/apk:ro
@@ -20,6 +16,7 @@ services:
       - NET_ADMIN
       - NET_RAW
     restart: unless-stopped
-    # Python entrypoint handles: setup, build, go2rtc lifecycle, SIGINT/SIGTERM
-    # go2rtc manages bridge on-demand (exec source spawns/kills per viewer)
     stop_grace_period: 15s
+    # entrypoint.py: setup libs, build bridge, start go2rtc, handle SIGINT
+    # .env loaded at runtime by entrypoint.py (not docker compose) to
+    # preserve literal $ in passwords. into.sh passes --env-file /dev/null.

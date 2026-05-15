@@ -146,10 +146,10 @@ int main(int argc, char** argv) {
         else { fprintf(stderr, "unknown arg: %s\n", a.c_str()); return 2; }
     }
 
-    // --stdout mode: pipe H.264 to stdout for go2rtc, default to quiet + indefinite
+    // --stdout mode: pipe H.264 to stdout for go2rtc, run indefinitely
+    // Logs stay on stderr (safe — won't pollute the H.264 pipe) so they
+    // are visible via `docker compose logs -f`.  Use -q to suppress.
     if (use_stdout) {
-        if (cb::g_sdk_log_level == 5)  // only override if user didn't set -v
-            cb::g_sdk_log_level = 7;   // quiet by default in pipe mode
         duration = 0;                  // indefinite until SIGINT
 
         // The SDK internally uses printf/write(1,...) for some log messages.
