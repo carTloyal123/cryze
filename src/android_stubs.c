@@ -114,84 +114,10 @@ void arc4random_buf(void *buf, size_t n) {
 }
 
 /* ---------------------------------------------------------------- __sF stdio
- *
- * Bionic exposes stdin/stdout/stderr as macros into an array of 3 FILE objects:
- *     #define stdin   (&__sF[0])
- *     #define stdout  (&__sF[1])
- *     #define stderr  (&__sF[2])
- *
- * The SDK was compiled against bionic. On aarch64-bionic, sizeof(FILE) is 152
- * bytes — confirmed empirically by the SDK's adrp/ldr/add fprintf prep at
- * libiotp2pav.so:0xaf030, which computes &__sF[2] as __sF + 0x130 (= __sF + 304).
- *
- * We expose __sF with slots large enough to cover bionic's layout and translate
- * by RANGE rather than exact pointer match: any address that falls in the first
- * third of our __sF buffer is stdin, second third is stdout, last third is
- * stderr. This is resilient to changes in bionic's sizeof(FILE) between NDK
- * versions and correct as long as bionic's slot size is ≤ kSlotSize.
- *
- * Without range-based translation, `fprintf(stderr, ...)` from the SDK gives us
- * a pointer that doesn't exactly match `&__sF[2]` in our array (different slot
- * stride), so `_translate` returns it unchanged, musl's vfprintf interprets the
- * random memory as a FILE struct, reads function pointers from wrong offsets,
- * gets NULL, and crashes with pc=0 inside vfprintf.
+ * __sF and fprintf/vfprintf/fputc/fclose/pthread_create interposition are now
+ * in bionic_interpose.c (compiled as a separate .so and LD_PRELOAD'd) to avoid
+ * re-entrancy in musl's dynamic linker during dlopen.
  */
-#define SF_SLOT_SIZE 512    /* ≥ both bionic FILE (152B) and any future growth */
-typedef struct { char _pad[SF_SLOT_SIZE]; } _bionic_file_slot;
-_bionic_file_slot __sF[3];
-
-static int (*real_vfprintf)(FILE *, const char *, va_list);
-static int (*real_fputc)(int, FILE *);
-static int (*real_fclose)(FILE *);
-
-__attribute__((constructor))
-static void _init_libc_passthrough(void) {
-    real_vfprintf = dlsym(RTLD_NEXT, "vfprintf");
-    real_fputc    = dlsym(RTLD_NEXT, "fputc");
-    real_fclose   = dlsym(RTLD_NEXT, "fclose");
-}
-
-/* Returns 0/1/2 for stdin/stdout/stderr if f falls inside our __sF buffer,
- * or -1 if it's a real FILE* from outside. Range-based so we don't depend on
- * bionic's exact sizeof(FILE). */
-static int _sf_slot(FILE *f) {
-    char *p = (char *)f;
-    char *base = (char *)&__sF[0];
-    char *end  = base + sizeof(__sF);
-    if (p < base || p >= end) return -1;
-    size_t off = (size_t)(p - base);
-    /* Each slot is SF_SLOT_SIZE bytes from our perspective; bionic's
-     * slot stride could be anything ≤ SF_SLOT_SIZE. We just need to know
-     * which "third" of the buffer it falls in. */
-    if (off < SF_SLOT_SIZE)         return 0;  /* stdin */
-    if (off < 2 * SF_SLOT_SIZE)     return 1;  /* stdout */
-    return 2;                                  /* stderr */
-}
-
-static FILE *_translate(FILE *f) {
-    switch (_sf_slot(f)) {
-        case 0:  return stdin;
-        case 1:  return stdout;
-        case 2:  return stderr;
-        default: return f;
-    }
-}
-static int _is_dummy(FILE *f) { return _sf_slot(f) >= 0; }
-
-/* These wrappers replace glibc's by name in our process. Probe code that
- * targets real FILE* keeps working because _translate() returns f unchanged. */
-int fprintf(FILE *f, const char *fmt, ...) {
-    va_list ap;
-    va_start(ap, fmt);
-    int r = real_vfprintf(_translate(f), fmt, ap);
-    va_end(ap);
-    return r;
-}
-int vfprintf(FILE *f, const char *fmt, va_list ap) {
-    return real_vfprintf(_translate(f), fmt, ap);
-}
-int fputc(int c, FILE *f) { return real_fputc(c, _translate(f)); }
-int fclose(FILE *f) { return _is_dummy(f) ? 0 : real_fclose(f); }
 
 /* ----------------------------------------- additional bionic-only symbols
  * Needed by libgwbase.so / libc++_shared.so / libiotvideo.so. Most are
@@ -246,7 +172,7 @@ int __vsprintf_chk(char *s, int flags, size_t bos, const char *fmt, va_list ap) 
  * _ctype_[c] gets the right classification flags. Flag bits taken from
  * bionic <ctype.h>: _U=0x01 _L=0x02 _N=0x04 _S=0x08 _P=0x10 _C=0x20 _X=0x40 _B=0x80. */
 #include <ctype.h>
-const unsigned char _ctype_[257] = {0};
+unsigned char _ctype_[257];
 __attribute__((constructor)) static void _init_ctype(void) {
     unsigned char *t = (unsigned char *)_ctype_ + 1;
     for (int c = 0; c < 256; ++c) {
@@ -338,47 +264,4 @@ int __register_atfork(void (*prepare)(void), void (*parent)(void),
     return 0;
 }
 
-/* --------------------------------------------------- pthread_create stack
- *
- * The Wyze SDK was compiled targeting bionic, where the default pthread
- * stack is 1 MB. musl's default is 80 KB, which is far too small for the
- * SDK's encode/decode threads — `avctl_start_enc_and_send` does a 141 KB
- * alloca for a raw video frame buffer and crashes (memset SIGSEGV) when
- * it overflows musl's tiny default stack.
- *
- * Interpose pthread_create: if the caller passed no attr or an attr with
- * stacksize < 2 MB, replace with 4 MB. This matches bionic behavior closely
- * enough that all SDK threads have headroom for their internal allocas.
- */
-#include <pthread.h>
-typedef int (*real_pthread_create_t)(pthread_t *, const pthread_attr_t *,
-                                     void *(*)(void *), void *);
-static real_pthread_create_t real_pthread_create;
-__attribute__((constructor))
-static void _init_pthread_passthrough(void) {
-    real_pthread_create = dlsym(RTLD_NEXT, "pthread_create");
-}
-
-int pthread_create(pthread_t *t, const pthread_attr_t *a,
-                   void *(*fn)(void *), void *arg) {
-    if (!real_pthread_create) {
-        real_pthread_create = dlsym(RTLD_NEXT, "pthread_create");
-    }
-    pthread_attr_t my;
-    pthread_attr_init(&my);
-    if (a) {
-        size_t sz = 0;
-        pthread_attr_getstacksize((pthread_attr_t *)a, &sz);
-        /* Copy detach state from caller (we ignore other attrs — none matter). */
-        int ds = 0;
-        pthread_attr_getdetachstate((pthread_attr_t *)a, &ds);
-        pthread_attr_setdetachstate(&my, ds);
-        if (sz < (4u << 20)) sz = 4u << 20;
-        pthread_attr_setstacksize(&my, sz);
-    } else {
-        pthread_attr_setstacksize(&my, 4u << 20);
-    }
-    int rc = real_pthread_create(t, &my, fn, arg);
-    pthread_attr_destroy(&my);
-    return rc;
-}
+/* pthread_create stack enlargement is in bionic_interpose.c (LD_PRELOAD'd) */

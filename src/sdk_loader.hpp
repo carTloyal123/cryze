@@ -8,6 +8,6 @@ namespace sdk {
 
 // Load libiotp2pav.so and resolve all required symbols.
 // Returns populated SdkSymbols or throws std::runtime_error.
-SdkSymbols load(const std::string& path = "libs/libiotp2pav.so");
+SdkSymbols load(const std::string& path = "/work/libs/libiotp2pav.so");
 
 }  // namespace sdk

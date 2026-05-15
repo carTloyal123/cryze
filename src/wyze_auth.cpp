@@ -341,9 +341,7 @@ void wakeup(const std::string& device_mac, const std::string& product_model) {
         do_run_action_batch(http, device_mac, product_model,
                             "iot-device", "wakeup",
                             {{"wakeup-live-view", 1}});
-        std::fprintf(stderr, "[auth] wakeup sent, waiting 8s for doorbell...\n");
-        // Give the doorbell time to wake from deep sleep
-        std::this_thread::sleep_for(std::chrono::seconds(8));
+        std::fprintf(stderr, "[auth] wakeup sent (doorbell wakes async while SDK initializes)\n");
     } catch (const std::exception& e) {
         std::fprintf(stderr, "[auth] wakeup failed (non-fatal): %s\n", e.what());
     }

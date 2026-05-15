@@ -1,16 +1,16 @@
 #!/usr/bin/env bash
-# into.sh — Drop into the bridge2 dev container or run bridge2
+# into.sh — Drop into the bridge dev container or run bridge
 #
 # Usage:
 #   ./into.sh          # interactive shell
 #   ./into.sh build    # cmake + ninja build
-#   ./into.sh run      # build + run bridge2
+#   ./into.sh run      # build + run bridge
 #   ./into.sh run 30   # build + run with 30s duration
 #   ./into.sh test     # build + run with 15s timeout (quick smoke test)
 
 set -euo pipefail
 HERE="$(cd "$(dirname "$0")" && pwd)"
-CONTAINER="wyze-bridge2-dev"
+CONTAINER="wyze-bridge-dev"
 IMAGE="wyze-bridge-dev:latest"
 
 # Ensure image exists
@@ -26,7 +26,6 @@ if ! docker ps --format '{{.Names}}' | grep -qx "$CONTAINER"; then
     docker run -d --name "$CONTAINER" \
         --platform linux/arm64 \
         -v "$HERE:/work" \
-        -v "$HERE/../bridge/libs:/work/libs:ro" \
         -v "$HERE/../apk:/apk:ro" \
         --env-file "$HERE/.env" \
         --network host \
@@ -34,6 +33,8 @@ if ! docker ps --format '{{.Names}}' | grep -qx "$CONTAINER"; then
         -w /work \
         "$IMAGE" sleep infinity
     echo "Container $CONTAINER started."
+    # Setup: install deps and create musl-compatible lib shims
+    docker exec "$CONTAINER" sh -c "apk add --quiet mbedtls patchelf 2>/dev/null; sh /work/scripts/setup-libs.sh"
 fi
 
 run_in() { docker exec -it "$CONTAINER" "$@"; }
@@ -53,14 +54,14 @@ case "${1:-shell}" in
         do_build
         DURATION="${2:-60}"
         echo ""
-        echo "=== Running bridge2 (duration=${DURATION}s) ==="
-        run_in ./build/bridge2 --duration "$DURATION" ${@:3}
+        echo "=== Running bridge (duration=${DURATION}s) ==="
+        run_in env LD_PRELOAD=/work/libs/bionic_interpose.so LD_LIBRARY_PATH=/work/libs:/apk/xapk_contents/arm64_libs/lib/arm64-v8a ./build/bridge --duration "$DURATION" ${@:3}
         ;;
     test)
         do_build
         echo ""
         echo "=== Smoke test (15s) ==="
-        run_in ./build/bridge2 --duration 15 ${@:2}
+        run_in env LD_PRELOAD=/work/libs/bionic_interpose.so LD_LIBRARY_PATH=/work/libs:/apk/xapk_contents/arm64_libs/lib/arm64-v8a ./build/bridge --duration 15 ${@:2}
         ;;
     stop)
         docker rm -f "$CONTAINER" 2>/dev/null || true

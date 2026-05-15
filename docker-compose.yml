@@ -4,12 +4,11 @@ services:
       context: ../bridge
       dockerfile: Dockerfile
     image: wyze-bridge-dev:latest
-    container_name: wyze-bridge2-dev
+    container_name: wyze-bridge-dev
     platform: linux/arm64
     working_dir: /work
     volumes:
       - .:/work
-      - ../bridge/libs:/work/libs:ro
       - ../apk:/apk:ro
     env_file:
       - .env

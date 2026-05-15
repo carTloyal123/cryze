@@ -1,4 +1,4 @@
-// main.cpp — bridge2: Wyze Doorbell Pro H.264 frame capture
+// main.cpp — bridge: Wyze Doorbell Pro H.264 frame capture
 //
 // Linear flow: init SDK → subscribe → start AV link → receive frames → shutdown
 // Uses only libiotp2pav.so — no Java, no JNI, no libiotvideo.so.
@@ -17,6 +17,10 @@
 #include <cstring>
 #include <dlfcn.h>
 #include <fcntl.h>
+#include <ifaddrs.h>
+#include <net/if.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 #include <thread>
 #include <unistd.h>
 
@@ -25,13 +29,13 @@ static std::atomic<bool> g_shutdown{false};
 
 // Declared in callbacks.cpp
 extern "C" {
-    int  bridge2_init_decoder(uint32_t, void*, void*);
-    void bridge2_decode_audio(uint32_t, void*, uint8_t*, uint32_t, uint64_t, void*);
-    int  bridge2_decode_video(uint32_t, void*, uint8_t*, uint32_t, uint64_t, void*);
-    void bridge2_destroy_decoder(uint32_t, void*);
-    void bridge2_recv_av_data(uint32_t, void*, void*);
-    void bridge2_recv_user_data(uint32_t, void*, void*);  // slot 5 at 0x70 — MUST be non-null
-    void bridge2_recv_avheader(uint32_t, void*, void*);
+    int  bridge_init_decoder(uint32_t, void*, void*);
+    void bridge_decode_audio(uint32_t, void*, uint8_t*, uint32_t, uint64_t, void*);
+    int  bridge_decode_video(uint32_t, void*, uint8_t*, uint32_t, uint64_t, void*);
+    void bridge_destroy_decoder(uint32_t, void*);
+    void bridge_recv_av_data(uint32_t, void*, void*);
+    void bridge_recv_user_data(uint32_t, void*, void*);  // slot 5 at 0x70 — MUST be non-null
+    void bridge_recv_avheader(uint32_t, void*, void*);
 }
 
 // --- Signal handling ---
@@ -71,6 +75,33 @@ static void crash_handler(int sig, siginfo_t* si, void* ucv) {
 static void sigint_handler(int) { g_shutdown.store(true); }
 
 // --- Helpers ---
+static void print_network_interfaces() {
+    std::fprintf(stderr, "\n=== Network Interfaces ===\n");
+    struct ifaddrs* ifap = nullptr;
+    if (getifaddrs(&ifap) != 0) {
+        std::fprintf(stderr, "  getifaddrs failed: %s\n", strerror(errno));
+        return;
+    }
+    for (auto* ifa = ifap; ifa; ifa = ifa->ifa_next) {
+        if (!ifa->ifa_addr) continue;
+        char buf[INET6_ADDRSTRLEN];
+        if (ifa->ifa_addr->sa_family == AF_INET) {
+            auto* sin = reinterpret_cast<struct sockaddr_in*>(ifa->ifa_addr);
+            inet_ntop(AF_INET, &sin->sin_addr, buf, sizeof(buf));
+            std::fprintf(stderr, "  %-8s IPv4 %-16s  flags=0x%x%s%s\n",
+                         ifa->ifa_name, buf, ifa->ifa_flags,
+                         (ifa->ifa_flags & IFF_LOOPBACK) ? " LO" : "",
+                         (ifa->ifa_flags & IFF_BROADCAST) ? " BCAST" : "");
+        } else if (ifa->ifa_addr->sa_family == AF_INET6) {
+            auto* sin6 = reinterpret_cast<struct sockaddr_in6*>(ifa->ifa_addr);
+            inet_ntop(AF_INET6, &sin6->sin6_addr, buf, sizeof(buf));
+            std::fprintf(stderr, "  %-8s IPv6 %s\n", ifa->ifa_name, buf);
+        }
+    }
+    freeifaddrs(ifap);
+    std::fprintf(stderr, "\n");
+}
+
 static bool wait_for(std::atomic<bool>& flag, int timeout_sec, const char* label) {
     auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(timeout_sec);
     while (!flag.load() && !g_shutdown.load()) {
@@ -102,7 +133,7 @@ int main(int argc, char** argv) {
         else if (a == "--verbose" || a == "-v") cb::g_sdk_log_level = 5;
         else if (a == "--quiet"   || a == "-q") cb::g_sdk_log_level = 7;
         else if (a == "--help" || a == "-h") {
-            printf("Usage: bridge2 [--device MAC] [--output PATH] [--duration SECS] [-v|-q]\n");
+            printf("Usage: bridge [--device MAC] [--output PATH] [--duration SECS] [-v|-q]\n");
             return 0;
         }
         else { fprintf(stderr, "unknown arg: %s\n", a.c_str()); return 2; }
@@ -116,6 +147,9 @@ int main(int argc, char** argv) {
     sigaction(SIGBUS, &sa, nullptr);
     signal(SIGINT, sigint_handler);
     signal(SIGTERM, sigint_handler);
+
+    // Print network topology for LAN/P2P debugging
+    print_network_interfaces();
 
     // ================================================================
     // Phase 0: Fresh auth from env vars
@@ -264,13 +298,13 @@ int main(int argc, char** argv) {
     put_u32(sdk::av_off::user_data, 2);
 
     // Decoder callbacks
-    put_u64(sdk::av_off::init_decoder,    reinterpret_cast<uint64_t>(&bridge2_init_decoder));
-    put_u64(sdk::av_off::decode_audio,    reinterpret_cast<uint64_t>(&bridge2_decode_audio));
-    put_u64(sdk::av_off::decode_video,    reinterpret_cast<uint64_t>(&bridge2_decode_video));
-    put_u64(sdk::av_off::destroy_decoder, reinterpret_cast<uint64_t>(&bridge2_destroy_decoder));
-    put_u64(sdk::av_off::recv_av_data,    reinterpret_cast<uint64_t>(&bridge2_recv_av_data));
-    put_u64(sdk::av_off::cb_slot_5,       reinterpret_cast<uint64_t>(&bridge2_recv_user_data));
-    put_u64(sdk::av_off::recv_avheader,   reinterpret_cast<uint64_t>(&bridge2_recv_avheader));
+    put_u64(sdk::av_off::init_decoder,    reinterpret_cast<uint64_t>(&bridge_init_decoder));
+    put_u64(sdk::av_off::decode_audio,    reinterpret_cast<uint64_t>(&bridge_decode_audio));
+    put_u64(sdk::av_off::decode_video,    reinterpret_cast<uint64_t>(&bridge_decode_video));
+    put_u64(sdk::av_off::destroy_decoder, reinterpret_cast<uint64_t>(&bridge_destroy_decoder));
+    put_u64(sdk::av_off::recv_av_data,    reinterpret_cast<uint64_t>(&bridge_recv_av_data));
+    put_u64(sdk::av_off::cb_slot_5,       reinterpret_cast<uint64_t>(&bridge_recv_user_data));
+    put_u64(sdk::av_off::recv_avheader,   reinterpret_cast<uint64_t>(&bridge_recv_avheader));
 
     // ★ CRITICAL: context pointer — must be non-NULL valid memory
     put_u64(sdk::av_off::context_ptr, reinterpret_cast<uint64_t>(s_fake_ctx));
