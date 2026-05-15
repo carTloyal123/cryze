@@ -237,6 +237,25 @@ int bridge_decode_video(uint32_t chn, void* ctx, uint8_t* h264_data,
     int n = ++g_video_frames;
     g_video_bytes += h264_len;
 
+    // Log first frame NAL types (SPS/PPS/IDR) to confirm go2rtc can parse the stream
+    if (n == 1 && h264_len >= 5) {
+        std::fprintf(stderr, "[av] first frame: len=%u NALs:", h264_len);
+        for (uint32_t i = 0; i + 4 < h264_len; ++i) {
+            if (h264_data[i] == 0 && h264_data[i+1] == 0 &&
+                ((h264_data[i+2] == 0 && h264_data[i+3] == 1) || h264_data[i+2] == 1)) {
+                uint32_t off = (h264_data[i+2] == 1) ? i + 3 : i + 4;
+                if (off < h264_len) {
+                    uint8_t nal_type = h264_data[off] & 0x1F;
+                    const char* name = nal_type == 7 ? "SPS" : nal_type == 8 ? "PPS" :
+                                       nal_type == 5 ? "IDR" : nal_type == 6 ? "SEI" :
+                                       nal_type == 1 ? "SLICE" : "?";
+                    std::fprintf(stderr, " %s(%u)", name, nal_type);
+                }
+            }
+        }
+        std::fprintf(stderr, "\n");
+    }
+
     if (n <= 5 || n % 100 == 0)
         std::fprintf(stderr, "[av] frame #%d chn=%u len=%u pts=%" PRIu64 "\n",
                      n, chn, h264_len, pts);

@@ -1,0 +1,24 @@
+# go2rtc.yaml — on-demand Wyze doorbell stream
+#
+# The bridge binary is launched by go2rtc when a viewer connects and
+# killed (SIGINT) when the last viewer disconnects.  Raw H.264 Annex B
+# flows through stdout → go2rtc pipe transport → RTSP/WebRTC/HLS.
+
+streams:
+  doorbell: exec:/work/build/bridge --stdout#killsignal=2#killtimeout=5
+
+# RTSP server on default port
+rtsp:
+  listen: ":8554"
+
+# WebRTC for low-latency browser preview
+webrtc:
+  listen: ":8555"
+
+# Web UI + API
+api:
+  listen: ":1984"
+
+# Logging
+log:
+  level: info

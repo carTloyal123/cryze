@@ -1,7 +1,12 @@
-// main.cpp — bridge: Wyze Doorbell Pro H.264 frame capture
+// main.cpp — bridge: Wyze Doorbell H.264 stream bridge
 //
 // Linear flow: init SDK → subscribe → start AV link → receive frames → shutdown
 // Uses only libiotp2pav.so — no Java, no JNI, no libiotvideo.so.
+//
+// Modes:
+//   --stdout     Write raw H.264 Annex B to stdout (for go2rtc pipe transport)
+//   --output F   Write to file F (default: logs/frames.h264)
+//   --duration N Run for N seconds (0 = indefinite, until SIGINT)
 
 #include "sdk_types.hpp"
 #include "sdk_loader.hpp"
@@ -120,6 +125,7 @@ int main(int argc, char** argv) {
     std::string output_path = "logs/frames.h264";
     std::string device_mac;
     int duration = 60;
+    bool use_stdout = false;
 
     for (int i = 1; i < argc; ++i) {
         std::string a = argv[i];
@@ -129,17 +135,39 @@ int main(int argc, char** argv) {
         };
         if      (a == "--device")   device_mac = next();
         else if (a == "--output")   output_path = next();
+        else if (a == "--stdout")   use_stdout = true;
         else if (a == "--duration") duration = std::atoi(next());
         else if (a == "--verbose" || a == "-v") cb::g_sdk_log_level = 5;
         else if (a == "--quiet"   || a == "-q") cb::g_sdk_log_level = 7;
         else if (a == "--help" || a == "-h") {
-            printf("Usage: bridge [--device MAC] [--output PATH] [--duration SECS] [-v|-q]\n");
+            printf("Usage: bridge [--stdout] [--device MAC] [--output PATH] [--duration SECS] [-v|-q]\n");
             return 0;
         }
         else { fprintf(stderr, "unknown arg: %s\n", a.c_str()); return 2; }
     }
 
+    // --stdout mode: pipe H.264 to stdout for go2rtc, default to quiet + indefinite
+    if (use_stdout) {
+        if (cb::g_sdk_log_level == 5)  // only override if user didn't set -v
+            cb::g_sdk_log_level = 7;   // quiet by default in pipe mode
+        duration = 0;                  // indefinite until SIGINT
+
+        // The SDK internally uses printf/write(1,...) for some log messages.
+        // To keep the stdout pipe clean for H.264 data only:
+        //   1. dup stdout fd to a new fd (for H.264 output)
+        //   2. redirect fd 1 to stderr (so SDK printf goes to stderr)
+        int h264_fd = ::dup(STDOUT_FILENO);
+        if (h264_fd < 0) {
+            std::fprintf(stderr, "  dup(stdout) failed: %s\n", strerror(errno));
+            return 1;
+        }
+        ::dup2(STDERR_FILENO, STDOUT_FILENO);  // fd 1 now points to stderr
+        cb::g_output_fd = h264_fd;              // H.264 goes to the original stdout
+        std::fprintf(stderr, "  stdout redirected: H.264→fd%d, printf→stderr\n", h264_fd);
+    }
+
     // Signal handlers
+    signal(SIGPIPE, SIG_IGN);  // Ignore SIGPIPE — go2rtc may close stdout pipe
     struct sigaction sa{};
     sa.sa_sigaction = crash_handler;
     sa.sa_flags = SA_SIGINFO;
@@ -257,13 +285,18 @@ int main(int argc, char** argv) {
     // ================================================================
     std::fprintf(stderr, "\n=== Phase 3: AV Link ===\n");
 
-    // Open output file
-    cb::g_output_fd = ::open(output_path.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0644);
-    if (cb::g_output_fd < 0) {
-        std::fprintf(stderr, "  cannot open %s: %s\n", output_path.c_str(), strerror(errno));
-        return 1;
+    // Open output — stdout pipe (already set up above) or file
+    if (use_stdout) {
+        // g_output_fd already set during --stdout setup (dup'd fd)
+        std::fprintf(stderr, "  output: stdout pipe (fd=%d)\n", cb::g_output_fd);
+    } else {
+        cb::g_output_fd = ::open(output_path.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0644);
+        if (cb::g_output_fd < 0) {
+            std::fprintf(stderr, "  cannot open %s: %s\n", output_path.c_str(), strerror(errno));
+            return 1;
+        }
+        std::fprintf(stderr, "  output: %s (fd=%d)\n", output_path.c_str(), cb::g_output_fd);
     }
-    std::fprintf(stderr, "  output: %s (fd=%d)\n", output_path.c_str(), cb::g_output_fd);
 
     // Device ID with third-party prefix
     static std::string s_devid = "_@." + creds.device_mac;
@@ -339,16 +372,19 @@ int main(int argc, char** argv) {
     // ================================================================
     // Phase 4: Wait for frames
     // ================================================================
-    std::fprintf(stderr, "\n=== Phase 4: Receiving frames (%ds) ===\n", duration);
+    if (duration > 0)
+        std::fprintf(stderr, "\n=== Phase 4: Receiving frames (%ds) ===\n", duration);
+    else
+        std::fprintf(stderr, "\n=== Phase 4: Streaming (until SIGINT) ===\n");
 
     auto start = std::chrono::steady_clock::now();
     while (!g_shutdown.load()) {
         auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(
             std::chrono::steady_clock::now() - start).count();
-        if (elapsed >= duration) break;
+        if (duration > 0 && elapsed >= duration) break;
 
-        // Progress report every 5s
-        if (elapsed > 0 && elapsed % 5 == 0) {
+        // Progress report every 30s (less noisy for long/indefinite runs)
+        if (elapsed > 0 && elapsed % 30 == 0) {
             static int64_t last_report = -1;
             if (elapsed != last_report) {
                 last_report = elapsed;
@@ -368,11 +404,11 @@ int main(int argc, char** argv) {
     std::fprintf(stderr, "  total frames: %d\n", cb::g_video_frames.load());
     std::fprintf(stderr, "  total bytes:  %zu\n", cb::g_video_bytes.load());
 
-    // Close output before stopping SDK
-    if (cb::g_output_fd >= 0) {
+    // Close output fd (don't close STDOUT/STDERR — let go2rtc detect EOF)
+    if (cb::g_output_fd >= 0 && cb::g_output_fd != STDOUT_FILENO && cb::g_output_fd != STDERR_FILENO) {
         ::close(cb::g_output_fd);
-        cb::g_output_fd = -1;
     }
+    cb::g_output_fd = -1;
 
     if (sdk.stop_av_link && chn_id >= 0) {
         std::fprintf(stderr, "  stopping AV link (chn=%d)...\n", chn_id);
@@ -384,7 +420,8 @@ int main(int argc, char** argv) {
     // let the OS reclaim resources via _exit.
     std::fprintf(stderr, "  skipping SDK destroy (known crash), using _exit\n");
     if (cb::g_video_frames.load() > 0) {
-        std::fprintf(stderr, "  H.264 frames written to %s\n", output_path.c_str());
+        std::fprintf(stderr, "  H.264 frames written to %s\n",
+                     use_stdout ? "stdout" : output_path.c_str());
     } else {
         std::fprintf(stderr, "  No frames received. Possible issues:\n");
         std::fprintf(stderr, "    - Device may be asleep (battery doorbell needs wake-up)\n");
