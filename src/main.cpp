@@ -240,7 +240,7 @@ int main(int argc, char** argv) {
     param.i16(sdk::init_off::lang_code)     = 1;
     param.i16(sdk::init_off::dev_type)      = 3;
     param.i32(sdk::init_off::version)       = 0x0d000000;
-    param.i32(sdk::init_off::p2p_port_type) = 1;  // 0=IPv6 multicast only, 1=IPv4 broadcast (8901/51855), 2=IPv4 (8904+)
+    param.i32(sdk::init_off::p2p_port_type) = 0;  // 0=IPv6+IPv4 broadcast (works for LAN), 1=IPv4 only (8901/51855), 2=IPv4 (8904+)
     {
         const char* pt = std::getenv("P2P_PORT_TYPE");
         if (pt) param.i32(sdk::init_off::p2p_port_type) = std::atoi(pt);
@@ -307,15 +307,14 @@ int main(int argc, char** argv) {
     // ================================================================
     std::fprintf(stderr, "\n=== Phase 3: AV Link ===\n");
 
-    // Optional LAN discovery wait: LAN_WAIT env var (seconds, default 0).
-    // The doorbell takes ~15s to respond to broadcast after cloud wakeup.
-    // KNOWN ISSUE: iv_lan_device_connectable() never returns 1 for Wyze doorbells
-    // because the broadcast response doesn't include the device ID string (tid2 empty).
-    // However, iv_start_av_link() matches by numeric dst_id in the broadcast list,
-    // so if we wait for the doorbell to respond, LAN direct may still work.
+    // LAN discovery wait: give the doorbell time to respond to broadcast.
+    // The doorbell takes ~10-15s to appear on broadcast after cloud wakeup.
+    // iv_lan_device_connectable() never returns 1 (tid2 always empty) but
+    // iv_start_av_link() matches by numeric dst_id in the broadcast list.
+    // Default: 15s (confirmed working on both macOS/Colima and Linux).
     {
         const char* lw = std::getenv("LAN_WAIT");
-        int lan_delay_s = lw ? std::atoi(lw) : 0;
+        int lan_delay_s = lw ? std::atoi(lw) : 15;
         if (lan_delay_s > 0) {
             std::fprintf(stderr, "  [LAN] waiting %ds for broadcast discovery (LAN_WAIT)...\n", lan_delay_s);
             for (int i = 0; i < lan_delay_s; i++) {
