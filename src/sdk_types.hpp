@@ -139,6 +139,7 @@ using fn_get_sdk_version      = int  (*)(void);
 using fn_iv_get_connect_mode  = int  (*)(uint32_t chn_id, uint32_t* mode, uint32_t* sub_mode);
 using fn_iv_lan_connectable   = int  (*)(const char* dev_id);
 using fn_iv_find_dstid        = int64_t (*)(void* termunit, const char* dev_id);
+using fn_getTickCount64       = uint32_t (*)(void);
 
 // SDK symbol bundle
 struct SdkSymbols {
@@ -152,6 +153,7 @@ struct SdkSymbols {
     fn_iv_get_connect_mode  get_connect_mode;   // iv_get_connect_mode_link_chn
     fn_iv_lan_connectable   lan_connectable;    // iv_lan_device_connectable
     fn_iv_find_dstid        find_dstid;         // iv_find_dstid_from_tid_key_map
+    fn_getTickCount64       get_tick;            // getTickCount64
     void*                   lib_handle;
     void*                   lib_base;
 };
