@@ -398,7 +398,7 @@ class GutesRelay:
             sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             try:
                 sock.bind(('0.0.0.0', port))
-                sock.setblocking(False)
+                sock.settimeout(1.0)  # Blocking with timeout for run_in_executor
                 self.relay_socks[port] = sock
                 self.log(f"  Listening on UDP :{port}")
             except OSError as e:
@@ -409,7 +409,7 @@ class GutesRelay:
         self.list_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         try:
             self.list_sock.bind(('0.0.0.0', self.list_port))
-            self.list_sock.setblocking(False)
+            self.list_sock.settimeout(1.0)
             self.log(f"  Listening on UDP :{self.list_port} (list)")
         except OSError as e:
             self.log(f"  WARN: Cannot bind list port :{self.list_port} ({e})")
@@ -440,9 +440,12 @@ class GutesRelay:
         loop = asyncio.get_event_loop()
         while True:
             try:
-                data, addr = await loop.sock_recvfrom(sock, 4096)
-            except (BlockingIOError, OSError):
-                await asyncio.sleep(0.001)
+                data, addr = await loop.run_in_executor(None, sock.recvfrom, 4096)
+            except socket.timeout:
+                await asyncio.sleep(0)
+                continue
+            except OSError as e:
+                await asyncio.sleep(0.01)
                 continue
 
             # Process the packet
@@ -451,7 +454,7 @@ class GutesRelay:
             if resp is not None:
                 # Local response
                 try:
-                    await loop.sock_sendto(sock, resp, addr)
+                    sock.sendto(resp, addr)
                 except OSError as e:
                     self.log(f"  ERROR sending to {addr}: {e}")
             else:
@@ -481,8 +484,7 @@ class GutesRelay:
             dest = (self.upstream_host, self.upstream_port)
         
         try:
-            loop = asyncio.get_event_loop()
-            await loop.sock_sendto(upstream_sock, data, dest)
+            upstream_sock.sendto(data, dest)
             ftype = data[1] if len(data) > 1 else 0
             type_name = FRAME_TYPES.get(ftype, f"0x{ftype:02X}")
             self.log(f"  → FWD {type_name} to upstream {dest[0]}:{dest[1]}")
@@ -497,7 +499,7 @@ class GutesRelay:
             for term_id, sock in list(self.upstream_socks.items()):
                 try:
                     data, upstream_addr = await asyncio.wait_for(
-                        loop.sock_recvfrom(sock, 4096), timeout=0.01)
+                        loop.run_in_executor(None, sock.recvfrom, 4096), timeout=0.05)
                 except (asyncio.TimeoutError, BlockingIOError, OSError):
                     continue
                 
@@ -514,7 +516,7 @@ class GutesRelay:
                 if fd in self.upstream_to_client:
                     client_addr, client_port, client_sock, _ = self.upstream_to_client[fd]
                     try:
-                        await loop.sock_sendto(client_sock, data, client_addr)
+                        client_sock.sendto(data, client_addr)
                         self.log(f"  → RELAY to {client_addr[0]}:{client_addr[1]}")
                     except OSError as e:
                         self.log(f"  ERROR relaying to client: {e}")
@@ -524,7 +526,7 @@ class GutesRelay:
                     if client.our_port in self.relay_socks:
                         client_sock = self.relay_socks[client.our_port]
                         try:
-                            await loop.sock_sendto(client_sock, data, client.addr)
+                            client_sock.sendto(data, client.addr)
                             self.log(f"  → RELAY to {client.addr[0]}:{client.addr[1]} (by term_id)")
                         except OSError as e:
                             self.log(f"  ERROR relaying: {e}")
@@ -539,16 +541,12 @@ class GutesRelay:
         type_name = FRAME_TYPES.get(ftype, f"0x{ftype:02X}")
         
         # Find ALL other connected clients to forward to
-        # For CALLING_REQ, we need to forward to the target device
-        # For other frames, forward to all peers (the relay acts as a hub)
-        loop = asyncio.get_event_loop()
         routed = False
         for tid, client in self.state.clients.items():
             if tid != term_id and client.addr != sender_addr:
                 if client.our_port in self.relay_socks:
                     try:
-                        await loop.sock_sendto(
-                            self.relay_socks[client.our_port], data, client.addr)
+                        self.relay_socks[client.our_port].sendto(data, client.addr)
                         self.log(f"  → ROUTE {type_name} to {client.addr[0]}:{client.addr[1]} "
                                 f"(term_id={tid})")
                         client.frames_out += 1
