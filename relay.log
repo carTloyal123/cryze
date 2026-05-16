@@ -1,0 +1,118 @@
+[   0.001] GUTES Relay v2 starting
+[   0.001]   Mode: PROXY
+[   0.001]   Local IP: 192.168.1.245
+[   0.001]   Relay ports: [28800, 8443, 8000]
+[   0.001]   List port: 51701
+[   0.001]   Upstream: 3.13.212.24:28800
+[   0.001] 
+[   0.002]   Listening on UDP :28800
+[   0.002]   Listening on UDP :8443
+[   0.003]   Listening on UDP :8000
+[   0.004]   Listening on UDP :51701 (list)
+[   0.009] 
+[   0.009] Ready — waiting for connections...
+[   0.009] ============================================================
+[   8.505] NEW CLIENT: term_id=4088518812267566565 from 127.0.0.1:46694
+[   8.511] ← LIST_REQ from 127.0.0.1:46694 term_id=4088518812267566565 (40B)
+[   8.514]   → FWD LIST_REQ to upstream 3.13.212.24:51701
+[   8.550]   ← UPS LIST_RESP from 3.13.212.24:51701 (176B) term_id=4803483873904347023
+[   8.550]   → RELAY to 127.0.0.1:46694
+[   8.551] NEW CLIENT: term_id=2705445129038471922 from 192.168.5.1:46694
+[   8.551] ← DETECT_REQ from 192.168.5.1:46694 term_id=2705445129038471922
+[   8.552] → DETECT_RESP to 192.168.5.1:46694 (instant)
+[   8.552] ← DETECT_REQ from 192.168.5.1:46694 term_id=2705445129038471922
+[   8.552] → DETECT_RESP to 192.168.5.1:46694 (instant)
+[   8.552] ← DETECT_REQ from 192.168.5.1:46694 term_id=2705445129038471922
+[   8.552] → DETECT_RESP to 192.168.5.1:46694 (instant)
+[   8.553] ← DETECT_REQ from 192.168.5.1:57382 term_id=2705445129038471922
+[   8.553] → DETECT_RESP to 192.168.5.1:57382 (instant)
+[   9.553] NEW CLIENT: term_id=-4833193695704099860 from 192.168.5.1:46694
+[   9.554] ← DETECT_REQ from 192.168.5.1:46694 term_id=-4833193695704099860
+[   9.555] → DETECT_RESP to 192.168.5.1:46694 (instant)
+[   9.556] ← DETECT_REQ from 192.168.5.1:46694 term_id=-4833193695704099860
+[   9.557] → DETECT_RESP to 192.168.5.1:46694 (instant)
+[   9.558] ← DETECT_REQ from 192.168.5.1:46694 term_id=-4833193695704099860
+[   9.558] → DETECT_RESP to 192.168.5.1:46694 (instant)
+[   9.559] ← DETECT_REQ from 192.168.5.1:57382 term_id=-4833193695704099860
+[   9.560] → DETECT_RESP to 192.168.5.1:57382 (instant)
+[  10.553] NEW CLIENT: term_id=-902862898093445404 from 192.168.5.1:46694
+[  10.555] ← DETECT_REQ from 192.168.5.1:46694 term_id=-902862898093445404
+[  10.555] → DETECT_RESP to 192.168.5.1:46694 (instant)
+[  10.556] ← DETECT_REQ from 192.168.5.1:46694 term_id=-902862898093445404
+[  10.556] → DETECT_RESP to 192.168.5.1:46694 (instant)
+[  10.556] ← DETECT_REQ from 192.168.5.1:46694 term_id=-902862898093445404
+[  10.557] → DETECT_RESP to 192.168.5.1:46694 (instant)
+[  10.557] ← DETECT_REQ from 192.168.5.1:57382 term_id=-902862898093445404
+[  10.557] → DETECT_RESP to 192.168.5.1:57382 (instant)
+[  12.553] NEW CLIENT: term_id=1149500945675156396 from 192.168.5.1:46694
+[  12.555] ← DETECT_REQ from 192.168.5.1:46694 term_id=1149500945675156396
+[  12.555] → DETECT_RESP to 192.168.5.1:46694 (instant)
+[  12.556] ← DETECT_REQ from 192.168.5.1:46694 term_id=1149500945675156396
+[  12.557] → DETECT_RESP to 192.168.5.1:46694 (instant)
+[  12.557] ← DETECT_REQ from 192.168.5.1:46694 term_id=1149500945675156396
+[  12.558] → DETECT_RESP to 192.168.5.1:46694 (instant)
+[  12.559] ← DETECT_REQ from 192.168.5.1:57382 term_id=1149500945675156396
+[  12.559] → DETECT_RESP to 192.168.5.1:57382 (instant)
+[  14.555] NEW CLIENT: term_id=6030685856993914172 from 192.168.5.1:46694
+[  14.556] ← DETECT_REQ from 192.168.5.1:46694 term_id=6030685856993914172
+[  14.556] → DETECT_RESP to 192.168.5.1:46694 (instant)
+[  14.557] ← DETECT_REQ from 192.168.5.1:46694 term_id=6030685856993914172
+[  14.557] → DETECT_RESP to 192.168.5.1:46694 (instant)
+[  14.558] ← DETECT_REQ from 192.168.5.1:46694 term_id=6030685856993914172
+[  14.558] → DETECT_RESP to 192.168.5.1:46694 (instant)
+[  14.558] ← DETECT_REQ from 192.168.5.1:57382 term_id=6030685856993914172
+[  14.558] → DETECT_RESP to 192.168.5.1:57382 (instant)
+[  19.555] NEW CLIENT: term_id=-2625692767575317492 from 192.168.5.1:46694
+[  19.557] ← DETECT_REQ from 192.168.5.1:46694 term_id=-2625692767575317492
+[  19.557] → DETECT_RESP to 192.168.5.1:46694 (instant)
+[  19.558] ← DETECT_REQ from 192.168.5.1:46694 term_id=-2625692767575317492
+[  19.559] → DETECT_RESP to 192.168.5.1:46694 (instant)
+[  19.560] ← DETECT_REQ from 192.168.5.1:46694 term_id=-2625692767575317492
+[  19.560] → DETECT_RESP to 192.168.5.1:46694 (instant)
+[  19.561] ← DETECT_REQ from 192.168.5.1:57382 term_id=-2625692767575317492
+[  19.562] → DETECT_RESP to 192.168.5.1:57382 (instant)
+[  24.556] NEW CLIENT: term_id=-1749626300851305712 from 192.168.5.1:46694
+[  24.557] ← DETECT_REQ from 192.168.5.1:46694 term_id=-1749626300851305712
+[  24.557] → DETECT_RESP to 192.168.5.1:46694 (instant)
+[  24.558] ← DETECT_REQ from 192.168.5.1:46694 term_id=-1749626300851305712
+[  24.559] → DETECT_RESP to 192.168.5.1:46694 (instant)
+[  24.559] ← DETECT_REQ from 192.168.5.1:46694 term_id=-1749626300851305712
+[  24.559] → DETECT_RESP to 192.168.5.1:46694 (instant)
+[  24.560] ← DETECT_REQ from 192.168.5.1:57382 term_id=-1749626300851305712
+[  24.560] → DETECT_RESP to 192.168.5.1:57382 (instant)
+[  30.012] --- STATUS: 8 clients ---
+[  30.012]   term_id=4088518812267566565 addr=127.0.0.1:46694 role=unknown cert=False in=1 out=0 last_seen=22s ago
+[  30.013]   term_id=2705445129038471922 addr=192.168.5.1:57382 role=unknown cert=False in=4 out=0 last_seen=21s ago
+[  30.013]   term_id=-4833193695704099860 addr=192.168.5.1:57382 role=unknown cert=False in=4 out=0 last_seen=20s ago
+[  30.014]   term_id=-902862898093445404 addr=192.168.5.1:57382 role=unknown cert=False in=4 out=0 last_seen=19s ago
+[  30.014]   term_id=1149500945675156396 addr=192.168.5.1:57382 role=unknown cert=False in=4 out=0 last_seen=17s ago
+[  30.014]   term_id=6030685856993914172 addr=192.168.5.1:57382 role=unknown cert=False in=4 out=0 last_seen=15s ago
+[  30.015]   term_id=-2625692767575317492 addr=192.168.5.1:57382 role=unknown cert=False in=4 out=0 last_seen=10s ago
+[  30.015]   term_id=-1749626300851305712 addr=192.168.5.1:57382 role=unknown cert=False in=4 out=0 last_seen=5s ago
+[  60.022] --- STATUS: 8 clients ---
+[  60.022]   term_id=4088518812267566565 addr=127.0.0.1:46694 role=unknown cert=False in=1 out=0 last_seen=52s ago
+[  60.023]   term_id=2705445129038471922 addr=192.168.5.1:57382 role=unknown cert=False in=4 out=0 last_seen=51s ago
+[  60.023]   term_id=-4833193695704099860 addr=192.168.5.1:57382 role=unknown cert=False in=4 out=0 last_seen=50s ago
+[  60.023]   term_id=-902862898093445404 addr=192.168.5.1:57382 role=unknown cert=False in=4 out=0 last_seen=49s ago
+[  60.023]   term_id=1149500945675156396 addr=192.168.5.1:57382 role=unknown cert=False in=4 out=0 last_seen=47s ago
+[  60.023]   term_id=6030685856993914172 addr=192.168.5.1:57382 role=unknown cert=False in=4 out=0 last_seen=45s ago
+[  60.024]   term_id=-2625692767575317492 addr=192.168.5.1:57382 role=unknown cert=False in=4 out=0 last_seen=40s ago
+[  60.024]   term_id=-1749626300851305712 addr=192.168.5.1:57382 role=unknown cert=False in=4 out=0 last_seen=35s ago
+[  90.025] --- STATUS: 8 clients ---
+[  90.027]   term_id=4088518812267566565 addr=127.0.0.1:46694 role=unknown cert=False in=1 out=0 last_seen=82s ago
+[  90.027]   term_id=2705445129038471922 addr=192.168.5.1:57382 role=unknown cert=False in=4 out=0 last_seen=81s ago
+[  90.028]   term_id=-4833193695704099860 addr=192.168.5.1:57382 role=unknown cert=False in=4 out=0 last_seen=80s ago
+[  90.028]   term_id=-902862898093445404 addr=192.168.5.1:57382 role=unknown cert=False in=4 out=0 last_seen=79s ago
+[  90.029]   term_id=1149500945675156396 addr=192.168.5.1:57382 role=unknown cert=False in=4 out=0 last_seen=77s ago
+[  90.029]   term_id=6030685856993914172 addr=192.168.5.1:57382 role=unknown cert=False in=4 out=0 last_seen=75s ago
+[  90.029]   term_id=-2625692767575317492 addr=192.168.5.1:57382 role=unknown cert=False in=4 out=0 last_seen=70s ago
+[  90.030]   term_id=-1749626300851305712 addr=192.168.5.1:57382 role=unknown cert=False in=4 out=0 last_seen=65s ago
+[ 120.037] --- STATUS: 8 clients ---
+[ 120.038]   term_id=4088518812267566565 addr=127.0.0.1:46694 role=unknown cert=False in=1 out=0 last_seen=112s ago
+[ 120.038]   term_id=2705445129038471922 addr=192.168.5.1:57382 role=unknown cert=False in=4 out=0 last_seen=111s ago
+[ 120.038]   term_id=-4833193695704099860 addr=192.168.5.1:57382 role=unknown cert=False in=4 out=0 last_seen=110s ago
+[ 120.038]   term_id=-902862898093445404 addr=192.168.5.1:57382 role=unknown cert=False in=4 out=0 last_seen=109s ago
+[ 120.039]   term_id=1149500945675156396 addr=192.168.5.1:57382 role=unknown cert=False in=4 out=0 last_seen=107s ago
+[ 120.039]   term_id=6030685856993914172 addr=192.168.5.1:57382 role=unknown cert=False in=4 out=0 last_seen=105s ago
+[ 120.039]   term_id=-2625692767575317492 addr=192.168.5.1:57382 role=unknown cert=False in=4 out=0 last_seen=100s ago
+[ 120.039]   term_id=-1749626300851305712 addr=192.168.5.1:57382 role=unknown cert=False in=4 out=0 last_seen=95s ago

@@ -169,30 +169,63 @@ class GutesRelay:
         return bool((opt_flags >> 21) & 1)
 
     def build_detect_resp(self, req_data: bytes) -> bytes:
-        """Build DETECT_RESP — instant response makes us win the race."""
-        resp = bytearray(0x38)  # 56 bytes like real responses
+        """Build DETECT_RESP matching the real Mars relay format.
+        
+        Real DETECT_RESP (56 bytes):
+          Header (0x1C):
+            [0]: 0x7F, [1]: 0x02, [2:4]: 0x0038 (56)
+            [4:12]: term_id (copied from req)
+            [0x0C:0x10]: sqnum (copied from req)
+            [0x10:0x14]: chkval (copied from req)
+            [0x14:0x18]: opt_flags = 0x0000a6d0 (specific to detect_resp)
+            [0x18:0x1A]: flags2 = 0x0001
+            [0x1A:0x1C]: ack_result = 0
+          Payload (28 bytes):
+            +0x00: NTP time (4B LE)
+            +0x04: 0x00000000
+            +0x08: MTU info (0x5a, 0x00, 0x58, 0x00) — 90 and 88
+            +0x0c: NTP time (repeat)
+            +0x10: 0x00000000
+            +0x14: server uptime/random (4B)
+            +0x18: server load/flags (4B, e.g., 0x84010000 = 388)
+        """
+        resp = bytearray(0x38)  # 56 bytes
         resp[0] = 0x7F
         resp[1] = TYPE_DETECT_RESP
         struct.pack_into('<H', resp, 2, 0x38)
         
-        # Copy term_id (encrypted), sqnum, chkval from request
+        # Copy term_id, sqnum, chkval from request
         resp[4:12] = req_data[4:12]
         resp[0x0C:0x10] = req_data[0x0C:0x10]
         resp[0x10:0x14] = req_data[0x10:0x14]
         
-        # Set opt_flags with is_response bit
-        req_flags = struct.unpack_from('<I', req_data, 0x14)[0]
-        resp_flags = req_flags | (1 << 21)  # is_response
-        struct.pack_into('<I', resp, 0x14, resp_flags)
+        # opt_flags: match real Mars relay response exactly
+        struct.pack_into('<I', resp, 0x14, 0x0000a6d0)
         
-        # Copy flags2
-        resp[0x18:0x1A] = req_data[0x18:0x1A]
-        # ack_result = 0 (success)
-        struct.pack_into('<H', resp, 0x1A, 0)
+        # flags2 = 0x0001
+        struct.pack_into('<H', resp, 0x18, 0x0001)
+        # ack_result = 0
+        struct.pack_into('<H', resp, 0x1A, 0x0000)
         
-        # Payload: server time (NTP-like) at offset 0x1C
+        # Payload (28 bytes)
         now = int(time.time())
+        # NTP time at +0x00
         struct.pack_into('<I', resp, 0x1C, now)
+        # +0x04: zero
+        struct.pack_into('<I', resp, 0x20, 0)
+        # +0x08: MTU values (90, 88 from real capture)
+        resp[0x24] = 0x5A  # 90
+        resp[0x25] = 0x00
+        resp[0x26] = 0x58  # 88  
+        resp[0x27] = 0x00
+        # +0x0C: NTP time repeat
+        struct.pack_into('<I', resp, 0x28, now)
+        # +0x10: zero
+        struct.pack_into('<I', resp, 0x2C, 0)
+        # +0x14: uptime/random
+        struct.pack_into('<I', resp, 0x30, int(time.time()) & 0x7FFFFFFF)
+        # +0x18: server load (low = better)
+        struct.pack_into('<I', resp, 0x34, 1)  # minimal load
         
         return bytes(resp)
 
@@ -267,7 +300,7 @@ class GutesRelay:
         """Get or create a dedicated upstream socket for a client."""
         if term_id not in self.upstream_socks:
             sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-            sock.setblocking(False)
+            sock.settimeout(0.05)  # Blocking with short timeout for run_in_executor
             self.upstream_socks[term_id] = sock
         return self.upstream_socks[term_id]
 
@@ -301,15 +334,20 @@ class GutesRelay:
             self.log(f"→ DETECT_RESP to {addr[0]}:{addr[1]} (instant)")
             return resp
 
-        # --- LIST_REQ: always respond locally with our own address ---
-        # This ensures ALL subsequent traffic (DETECT, CERTIFY, session) goes through us
+        # --- LIST_REQ: forward to real Mars and relay the response ---
+        # The LIST_RESP format is complex (per-frame encrypted server entries).
+        # In proxy mode: forward to Mars, relay response back, SDK then sends DETECT to those IPs.
+        # Our iptables DNAT (or DNS override) ensures DETECT comes back to us anyway.
+        # In relay mode: respond locally with our address.
         elif ftype == TYPE_LIST_REQ:
             self.log(f"← LIST_REQ from {addr[0]}:{addr[1]} term_id={term_id} ({frm_len}B)")
-            # Use the IP the client used to reach us (127.0.0.1 for local, LAN IP for remote)
-            reply_ip = "127.0.0.1" if addr[0].startswith("127.") else self.local_ip
-            resp = self.build_list_resp(data, reply_ip)
-            self.log(f"→ LIST_RESP to {addr[0]}:{addr[1]} (servers: {reply_ip}, {len(resp)}B)")
-            return resp
+            if self.mode == "proxy":
+                return None  # Forward to upstream — response routed back via _upstream_recv_loop
+            else:
+                reply_ip = "127.0.0.1" if addr[0].startswith("127.") else self.local_ip
+                resp = self.build_list_resp(data, reply_ip)
+                self.log(f"→ LIST_RESP to {addr[0]}:{addr[1]} (servers: {reply_ip}, {len(resp)}B)")
+                return resp
 
         # --- CERTIFY ---
         elif ftype == TYPE_CERTIFY_REQ:
@@ -491,6 +529,63 @@ class GutesRelay:
         except OSError as e:
             self.log(f"  ERROR forwarding to upstream: {e}")
 
+    def _rewrite_list_resp(self, data: bytes) -> bytes:
+        """Rewrite LIST_RESP to replace all server IPs with our local IP.
+        
+        The payload is per-frame encrypted. We decrypt, replace IPs, re-encrypt.
+        Server entry format (from RE): IP(4B NBO) + port(2B LE) + srv_id(2B LE) + ...
+        """
+        if len(data) < HEADER_SIZE + 8:
+            return data
+        
+        try:
+            # Decrypt payload
+            pfk = derive_per_frame_key(data[:0x18])
+            rc5 = RC5(block_bytes=8, rounds=6).setkey(pfk)
+            payload = bytearray(data[HEADER_SIZE:])
+            dec_len = (len(payload) // 8) * 8
+            if dec_len == 0:
+                return data
+            decrypted = bytearray(rc5.decrypt(bytes(payload[:dec_len])))
+            
+            # The real LIST_RESP has server entries starting at some offset
+            # From our pcap analysis, the format seems to be:
+            # offset 0: header/count bytes
+            # Then entries with IPv4 at various offsets
+            # Let's find all IPv4 addresses (non-private, non-zero) and replace them
+            local_ip_bytes = socket.inet_aton(self.local_ip)
+            replaced = 0
+            
+            # Scan for valid public IPv4 addresses (4-byte aligned)
+            for offset in range(0, dec_len - 3, 2):
+                ip_candidate = decrypted[offset:offset+4]
+                # Check if it looks like a public IP (not 0.0.0.0, not 192.168.x.x, not 10.x.x.x)
+                if (ip_candidate[0] not in (0, 10, 127, 192, 172, 255) and
+                    ip_candidate != b'\x00\x00\x00\x00'):
+                    # Check if next 2 bytes could be a reasonable port (1-65535)
+                    if offset + 5 < dec_len:
+                        port_val = struct.unpack_from('<H', decrypted, offset + 4)[0]
+                        if port_val in (28800, 8443, 8000, 443, 51701):
+                            old_ip = socket.inet_ntoa(bytes(ip_candidate))
+                            decrypted[offset:offset+4] = local_ip_bytes
+                            # Also replace port with our relay port
+                            struct.pack_into('<H', decrypted, offset + 4, self.listen_ports[0])
+                            replaced += 1
+                            self.log(f"  [REWRITE] {old_ip}:{port_val} → {self.local_ip}:{self.listen_ports[0]}")
+            
+            if replaced > 0:
+                # Re-encrypt and rebuild frame
+                encrypted = rc5.encrypt(bytes(decrypted[:dec_len]))
+                new_data = bytearray(data)
+                new_data[HEADER_SIZE:HEADER_SIZE + dec_len] = encrypted
+                self.log(f"  [REWRITE] Replaced {replaced} server IPs in LIST_RESP")
+                return bytes(new_data)
+            
+        except Exception as e:
+            self.log(f"  [REWRITE] Failed to rewrite LIST_RESP: {e}")
+        
+        return data
+
     async def _upstream_recv_loop(self):
         """Receive responses from upstream and route back to clients."""
         loop = asyncio.get_event_loop()
@@ -498,9 +593,8 @@ class GutesRelay:
             # Poll all upstream sockets
             for term_id, sock in list(self.upstream_socks.items()):
                 try:
-                    data, upstream_addr = await asyncio.wait_for(
-                        loop.run_in_executor(None, sock.recvfrom, 4096), timeout=0.05)
-                except (asyncio.TimeoutError, BlockingIOError, OSError):
+                    data, upstream_addr = await loop.run_in_executor(None, sock.recvfrom, 4096)
+                except (socket.timeout, BlockingIOError, OSError):
                     continue
                 
                 # Decode response
@@ -510,6 +604,10 @@ class GutesRelay:
                 
                 self.log(f"  ← UPS {type_name} from {upstream_addr[0]}:{upstream_addr[1]} "
                         f"({len(data)}B) term_id={resp_term_id}")
+                
+                # Rewrite LIST_RESP to replace server IPs with our local IP
+                if ftype == TYPE_LIST_RESP:
+                    data = self._rewrite_list_resp(data)
                 
                 # Route back to the client that sent the request
                 fd = sock.fileno()
