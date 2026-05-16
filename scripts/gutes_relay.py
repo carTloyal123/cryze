@@ -86,6 +86,19 @@ class ClientSession:
     certified: bool = False
     # Track which port the client uses to talk to us
     our_port: int = 0
+    # TCP connection (if connected via TCP)
+    tcp_writer: Optional[object] = None  # asyncio.StreamWriter
+    # Known device IDs associated with this client (from INIT_INFO_MSG)
+    device_ids: list = field(default_factory=list)
+
+
+@dataclass
+class PendingWakeup:
+    """A CALLING that's waiting for the doorbell to connect."""
+    calling_data: bytes = b''
+    bridge_term_id: int = 0
+    timestamp: float = 0.0
+    timeout: float = 30.0  # Max wait time (seconds)
 
 
 @dataclass
@@ -94,6 +107,18 @@ class RelayState:
     clients: dict[int, ClientSession] = field(default_factory=dict)  # term_id -> session
     addr_to_term: dict[tuple, int] = field(default_factory=dict)  # (ip, port) -> term_id
     next_session_id: int = 7640526817926134784  # Match real Mars session IDs
+    
+    # Wakeup infrastructure
+    pending_callings: list = field(default_factory=list)  # PendingWakeup queue
+    
+    # Known device mapping (from captured GDM/INIT_INFO)
+    # These are the 64-bit device IDs from the Wyze ecosystem
+    known_devices: dict[int, str] = field(default_factory=dict)  # numeric_did -> role
+    
+    # Chime → doorbell association
+    chime_term_id: int = 0  # Term ID of the connected chime
+    doorbell_term_id: int = 0  # Term ID of the doorbell (when connected)
+    bridge_term_id: int = 0  # Term ID of our bridge
 
 
 class GutesRelay:
@@ -363,6 +388,7 @@ class GutesRelay:
             self.log(f"← CERTIFY_RESP for term_id={term_id} ({frm_len}B)")
             if term_id in self.state.clients:
                 self.state.clients[term_id].certified = True
+                self._on_client_certified(term_id)
             return None  # proxy: forward to client
 
         # --- INIT_INFO ---
@@ -370,11 +396,13 @@ class GutesRelay:
             self.log(f"← INIT_INFO{'_ACK' if ack else ''} from {addr[0]}:{addr[1]} term_id={term_id}")
             if not ack and term_id in self.state.clients:
                 self.state.clients[term_id].certified = True
+                self._on_client_certified(term_id)
             return None  # proxy: forward
 
-        # --- CALLING: log and forward/route ---
+        # --- CALLING: log and handle wakeup routing ---
         elif ftype == TYPE_CALLING_REQ:
             self.log(f"← CALLING_REQ from {addr[0]}:{addr[1]} term_id={term_id} ({frm_len}B)")
+            self._handle_calling(data, addr, term_id)
             return None
 
         # --- SUBSCRIBE ---
@@ -416,6 +444,163 @@ class GutesRelay:
         # For now, just send the ACK — the full certify needs more RE work
         self.log(f"  [RELAY] CERTIFY handling incomplete — need device secret for proper response")
         return bytes(ack)
+
+    # ===== WAKEUP ROUTING INFRASTRUCTURE =====
+
+    def _handle_calling(self, data: bytes, addr: tuple, sender_term_id: int):
+        """Handle CALLING_REQ with wakeup routing logic.
+        
+        In the real Mars relay, CALLING is routed by destination term_id
+        (encrypted in the frame payload). Since the payload is session-encrypted
+        (opt_encrypt=2), we can't decode the destination in proxy mode.
+        
+        For wakeup routing, the flow is:
+        1. Bridge sends CALLING → relay forwards to Mars (proxy mode)
+        2. Mars routes to doorbell; if doorbell is offline, Mars notifies via GDM
+        3. In standalone mode: we queue the CALLING and trigger local wakeup
+        
+        When the doorbell connects to our relay, we deliver pending CALLINGs.
+        """
+        if self.mode == "relay":
+            # In relay mode: check if doorbell is connected, if not, trigger wakeup
+            if self.state.doorbell_term_id:
+                doorbell = self.state.clients.get(self.state.doorbell_term_id)
+                if doorbell and (time.time() - doorbell.last_seen) < 30:
+                    self.log(f"  [WAKEUP] Doorbell is connected, routing CALLING directly")
+                    return
+            
+            # Doorbell not connected — queue CALLING and send wakeup to chime
+            self.log(f"  [WAKEUP] Doorbell offline — queuing CALLING, triggering wakeup")
+            self.state.pending_callings.append(PendingWakeup(
+                calling_data=data,
+                bridge_term_id=sender_term_id,
+                timestamp=time.time(),
+                timeout=30.0
+            ))
+            self._trigger_chime_wakeup()
+        # In proxy mode: Mars handles routing, but log for awareness
+        else:
+            self.log(f"  [PROXY] CALLING forwarded to Mars for routing")
+
+    def _trigger_chime_wakeup(self):
+        """Send a wakeup command to the chime via GUTES.
+        
+        The chime is always connected (it's plugged in). We need to send it
+        a GDM PASSTHROUGH frame that instructs it to wake the doorbell via BT.
+        
+        From the RE: the wakeup is triggered by a PASSTHROUGH frame (type 0xBD)
+        containing a GDM action_key='wakeup' with action_params={'wakeup-live-view': 1}.
+        
+        The exact frame format will be determined once we capture the chime's
+        traffic through our relay. For now, this is a placeholder.
+        """
+        if not self.state.chime_term_id:
+            self.log(f"  [WAKEUP] No chime connected — cannot trigger local wakeup")
+            self.log(f"  [WAKEUP] Falling back to cloud wakeup (DMS HTTP)")
+            return
+        
+        chime = self.state.clients.get(self.state.chime_term_id)
+        if not chime or (time.time() - chime.last_seen) > 60:
+            self.log(f"  [WAKEUP] Chime session stale — cannot trigger local wakeup")
+            return
+        
+        # TODO: Build and send the actual wakeup PASSTHROUGH frame to chime
+        # This will be filled in once we capture the chime's GDM traffic
+        # and understand what frame triggers the BT wakeup
+        self.log(f"  [WAKEUP] Would send wakeup to chime term_id={self.state.chime_term_id}")
+        self.log(f"  [WAKEUP] (pending: capture chime traffic to learn wakeup frame format)")
+
+    def _deliver_pending_callings(self, doorbell_term_id: int):
+        """Deliver queued CALLING frames to the newly-connected doorbell.
+        
+        Called when the doorbell connects and completes CERTIFY.
+        """
+        now = time.time()
+        delivered = 0
+        expired = 0
+        
+        remaining = []
+        for pending in self.state.pending_callings:
+            age = now - pending.timestamp
+            if age > pending.timeout:
+                expired += 1
+                continue
+            
+            # Deliver this CALLING to the doorbell
+            doorbell = self.state.clients.get(doorbell_term_id)
+            if doorbell:
+                self.log(f"  [WAKEUP] Delivering queued CALLING to doorbell "
+                        f"(queued {age:.1f}s ago)")
+                # In relay mode: send directly to doorbell's address
+                if doorbell.tcp_writer:
+                    # TCP delivery
+                    try:
+                        doorbell.tcp_writer.write(pending.calling_data)
+                        delivered += 1
+                    except:
+                        remaining.append(pending)
+                elif doorbell.our_port in self.relay_socks:
+                    # UDP delivery
+                    try:
+                        self.relay_socks[doorbell.our_port].sendto(
+                            pending.calling_data, doorbell.addr)
+                        delivered += 1
+                    except:
+                        remaining.append(pending)
+            else:
+                remaining.append(pending)
+        
+        self.state.pending_callings = remaining
+        if delivered or expired:
+            self.log(f"  [WAKEUP] Delivered {delivered} CALLINGs, expired {expired}")
+
+    def identify_device_role(self, term_id: int, addr: tuple) -> str:
+        """Attempt to identify device role based on IP and behavior.
+        
+        Known IPs from our network:
+        - 192.168.1.12  = Chime (always on, plugged in)
+        - 192.168.1.81  = Doorbell (connects when woken)
+        - 192.168.1.245 = Bridge on macOS/Colima
+        - 192.168.1.236 = Bridge on ccc.local
+        """
+        ip = addr[0]
+        
+        # Direct IP matching (works for known devices)
+        if ip == "192.168.1.12":
+            return "chime"
+        elif ip == "192.168.1.81":
+            return "doorbell"
+        elif ip in ("192.168.1.245", "192.168.1.236", "127.0.0.1", "192.168.5.1"):
+            return "bridge"
+        
+        # Heuristic: the first certified client from a non-bridge IP
+        # that sends INIT_INFO with 2 devices is likely the bridge
+        return "unknown"
+
+    def _on_client_certified(self, term_id: int):
+        """Called when a client completes CERTIFY. Identify role and handle wakeups."""
+        client = self.state.clients.get(term_id)
+        if not client:
+            return
+        
+        # Identify role
+        role = self.identify_device_role(term_id, client.addr)
+        client.role = role
+        
+        if role == "chime":
+            self.state.chime_term_id = term_id
+            self.log(f"  [ROLE] Identified CHIME: term_id={term_id} addr={client.addr[0]}:{client.addr[1]}")
+        elif role == "doorbell":
+            self.state.doorbell_term_id = term_id
+            self.log(f"  [ROLE] Identified DOORBELL: term_id={term_id} addr={client.addr[0]}:{client.addr[1]}")
+            # Deliver any pending CALLINGs
+            if self.state.pending_callings:
+                self._deliver_pending_callings(term_id)
+        elif role == "bridge":
+            self.state.bridge_term_id = term_id
+            self.log(f"  [ROLE] Identified BRIDGE: term_id={term_id} addr={client.addr[0]}:{client.addr[1]}")
+        else:
+            self.log(f"  [ROLE] Unknown device: term_id={term_id} addr={client.addr[0]}:{client.addr[1]}")
 
     async def run(self):
         """Main entry point."""
@@ -707,6 +892,15 @@ class GutesRelay:
                                 self.log(f"  TCP NEW CLIENT: term_id={term_id} from {client_addr[0]}:{client_addr[1]}")
                             self.state.clients[term_id].last_seen = time.time()
                             self.state.clients[term_id].frames_in += 1
+                            self.state.clients[term_id].tcp_writer = client_writer
+                            # Identify role and handle CERTIFY/INIT_INFO
+                            if ftype == TYPE_CERTIFY_REQ and not self.is_ack(struct.unpack_from('<I', data, 0x14)[0]):
+                                pass  # Wait for CERTIFY_RESP from server
+                            elif ftype == TYPE_INIT_INFO_MSG:
+                                self.state.clients[term_id].certified = True
+                                self._on_client_certified(term_id)
+                            elif ftype == TYPE_CALLING_REQ:
+                                self._handle_calling(data, client_addr, term_id)
                     upstream_writer.write(data)
                     await upstream_writer.drain()
             except (ConnectionError, asyncio.IncompleteReadError):
@@ -720,11 +914,17 @@ class GutesRelay:
                     data = await upstream_reader.read(8192)
                     if not data:
                         break
-                    # Log frame type
+                    # Log frame type and handle CERTIFY_RESP
                     if len(data) >= 2 and data[0] == 0x7F:
                         ftype = data[1]
                         type_name = FRAME_TYPES.get(ftype, f"0x{ftype:02X}")
-                        self.log(f"  TCP S→C {type_name} ({len(data)}B)")
+                        term_id = self.decode_term_id(data) if len(data) >= HEADER_SIZE else 0
+                        self.log(f"  TCP S→C {type_name} ({len(data)}B) term_id={term_id}")
+                        # When we see CERTIFY_RESP, the client is now certified
+                        if ftype == TYPE_CERTIFY_RESP and term_id != 0:
+                            if term_id in self.state.clients:
+                                self.state.clients[term_id].certified = True
+                                self._on_client_certified(term_id)
                     client_writer.write(data)
                     await client_writer.drain()
             except (ConnectionError, asyncio.IncompleteReadError):
