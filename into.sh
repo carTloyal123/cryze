@@ -75,7 +75,7 @@ _run_bridge() {
     if [[ -f "$HERE/.env" ]]; then
         grep -v '^\s*#' "$HERE/.env" | grep -v '^\s*$' >> "$envfile"
     fi
-    for v in P2P_PORT_TYPE LAN_WAKEUP_DELAY LAN_WAIT DOORBELL_IP DOORBELL_PORT; do
+    for v in P2P_PORT_TYPE LAN_WAKEUP_DELAY LAN_WAIT DOORBELL_IP DOORBELL_PORT P2P_URL CACHE_FILE; do
         [[ -n "${!v:-}" ]] && echo "$v=${!v}" >> "$envfile"
     done
     local DURATION="${2:-60}"

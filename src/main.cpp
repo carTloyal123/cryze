@@ -231,7 +231,15 @@ int main(int argc, char** argv) {
     param.u64(sdk::init_off::access_id) = access_id_num;
     param.ptr(sdk::init_off::access_token_ptr) = const_cast<char*>(s_token.c_str());
     param.i32(sdk::init_off::access_token_len) = (int32_t)s_token.size();
-    std::strncpy(param.cstr(sdk::init_off::p2p_url_buf), "|wyze-mars-asrv.wyzecam.com", 420);
+    {
+        // p2p_url: the SDK resolves this to find relay servers.
+        // Format: "|hostname_or_ip" — the leading | separates entries.
+        // Override with P2P_URL env to point at a local relay.
+        const char* p2p_url = std::getenv("P2P_URL");
+        if (!p2p_url) p2p_url = "|wyze-mars-asrv.wyzecam.com";
+        std::strncpy(param.cstr(sdk::init_off::p2p_url_buf), p2p_url, 420);
+        std::fprintf(stderr, "  p2p_url: %s\n", p2p_url);
+    }
     param.i16(sdk::init_off::lang_code)     = 1;
     param.i16(sdk::init_off::dev_type)      = 3;
     param.i32(sdk::init_off::version)       = 0x0d000000;
