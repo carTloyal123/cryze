@@ -367,7 +367,7 @@ class GutesRelay:
         elif ftype == TYPE_LIST_REQ:
             self.log(f"← LIST_REQ from {addr[0]}:{addr[1]} term_id={term_id} ({frm_len}B)")
             if self.mode == "proxy":
-                return None  # Forward to upstream — response routed back via _upstream_recv_loop
+                return None  # Forward to upstream — response routed via _upstream_recv_loop
             else:
                 reply_ip = "127.0.0.1" if addr[0].startswith("127.") else self.local_ip
                 resp = self.build_list_resp(data, reply_ip)
