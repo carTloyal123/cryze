@@ -468,6 +468,11 @@ class GutesRelay:
         if self.mode == "proxy":
             tasks.append(asyncio.create_task(self._upstream_recv_loop()))
         
+        # TCP proxy listeners (same ports as UDP)
+        if self.mode == "proxy":
+            for port in self.listen_ports:
+                tasks.append(asyncio.create_task(self._tcp_listen(port)))
+        
         # Periodic status log
         tasks.append(asyncio.create_task(self._status_loop()))
 
@@ -655,6 +660,80 @@ class GutesRelay:
         if not routed and ftype not in (TYPE_KEEPALIVE,):
             self.log(f"  ! NO PEER to route {type_name} (term_id={term_id}, "
                     f"clients={list(self.state.clients.keys())})")
+
+    async def _tcp_listen(self, port: int):
+        """Listen for TCP connections and proxy them to upstream Mars relay."""
+        server = await asyncio.start_server(
+            lambda r, w: self._tcp_handle_client(r, w, port),
+            '0.0.0.0', port, reuse_address=True)
+        self.log(f"  Listening on TCP :{port}")
+        async with server:
+            await server.serve_forever()
+
+    async def _tcp_handle_client(self, client_reader: asyncio.StreamReader,
+                                  client_writer: asyncio.StreamWriter, local_port: int):
+        """Handle a single TCP client by proxying to upstream Mars relay."""
+        client_addr = client_writer.get_extra_info('peername')
+        self.log(f"← TCP connection from {client_addr[0]}:{client_addr[1]} on port {local_port}")
+        
+        # Connect to upstream
+        try:
+            upstream_reader, upstream_writer = await asyncio.open_connection(
+                self.upstream_host, self.upstream_port)
+            self.log(f"  → TCP connected to upstream {self.upstream_host}:{self.upstream_port}")
+        except Exception as e:
+            self.log(f"  ERROR: Cannot connect to upstream: {e}")
+            client_writer.close()
+            return
+        
+        # Bidirectional proxy with frame logging
+        async def client_to_upstream():
+            try:
+                while True:
+                    data = await client_reader.read(8192)
+                    if not data:
+                        break
+                    # Log frame type
+                    if len(data) >= 2 and data[0] == 0x7F:
+                        ftype = data[1]
+                        type_name = FRAME_TYPES.get(ftype, f"0x{ftype:02X}")
+                        term_id = self.decode_term_id(data) if len(data) >= HEADER_SIZE else 0
+                        self.log(f"  TCP C→S {type_name} ({len(data)}B) term_id={term_id}")
+                        # Track client
+                        if term_id != 0:
+                            if term_id not in self.state.clients:
+                                self.state.clients[term_id] = ClientSession(
+                                    term_id=term_id, addr=client_addr, our_port=local_port)
+                                self.log(f"  TCP NEW CLIENT: term_id={term_id} from {client_addr[0]}:{client_addr[1]}")
+                            self.state.clients[term_id].last_seen = time.time()
+                            self.state.clients[term_id].frames_in += 1
+                    upstream_writer.write(data)
+                    await upstream_writer.drain()
+            except (ConnectionError, asyncio.IncompleteReadError):
+                pass
+            finally:
+                upstream_writer.close()
+        
+        async def upstream_to_client():
+            try:
+                while True:
+                    data = await upstream_reader.read(8192)
+                    if not data:
+                        break
+                    # Log frame type
+                    if len(data) >= 2 and data[0] == 0x7F:
+                        ftype = data[1]
+                        type_name = FRAME_TYPES.get(ftype, f"0x{ftype:02X}")
+                        self.log(f"  TCP S→C {type_name} ({len(data)}B)")
+                    client_writer.write(data)
+                    await client_writer.drain()
+            except (ConnectionError, asyncio.IncompleteReadError):
+                pass
+            finally:
+                client_writer.close()
+        
+        await asyncio.gather(client_to_upstream(), upstream_to_client())
+        self.log(f"  TCP connection from {client_addr[0]}:{client_addr[1]} closed")
 
     async def _status_loop(self):
         """Periodically log relay status."""

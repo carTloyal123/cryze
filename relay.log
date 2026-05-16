@@ -116,3 +116,57 @@
 [ 120.039]   term_id=6030685856993914172 addr=192.168.5.1:57382 role=unknown cert=False in=4 out=0 last_seen=105s ago
 [ 120.039]   term_id=-2625692767575317492 addr=192.168.5.1:57382 role=unknown cert=False in=4 out=0 last_seen=100s ago
 [ 120.039]   term_id=-1749626300851305712 addr=192.168.5.1:57382 role=unknown cert=False in=4 out=0 last_seen=95s ago
+[ 150.041] --- STATUS: 8 clients ---
+[ 150.042]   term_id=4088518812267566565 addr=127.0.0.1:46694 role=unknown cert=False in=1 out=0 last_seen=142s ago
+[ 150.042]   term_id=2705445129038471922 addr=192.168.5.1:57382 role=unknown cert=False in=4 out=0 last_seen=141s ago
+[ 150.042]   term_id=-4833193695704099860 addr=192.168.5.1:57382 role=unknown cert=False in=4 out=0 last_seen=140s ago
+[ 150.042]   term_id=-902862898093445404 addr=192.168.5.1:57382 role=unknown cert=False in=4 out=0 last_seen=139s ago
+[ 150.043]   term_id=1149500945675156396 addr=192.168.5.1:57382 role=unknown cert=False in=4 out=0 last_seen=137s ago
+[ 150.043]   term_id=6030685856993914172 addr=192.168.5.1:57382 role=unknown cert=False in=4 out=0 last_seen=135s ago
+[ 150.043]   term_id=-2625692767575317492 addr=192.168.5.1:57382 role=unknown cert=False in=4 out=0 last_seen=130s ago
+[ 150.043]   term_id=-1749626300851305712 addr=192.168.5.1:57382 role=unknown cert=False in=4 out=0 last_seen=125s ago
+[ 180.048] --- STATUS: 8 clients ---
+[ 180.049]   term_id=4088518812267566565 addr=127.0.0.1:46694 role=unknown cert=False in=1 out=0 last_seen=172s ago
+[ 180.049]   term_id=2705445129038471922 addr=192.168.5.1:57382 role=unknown cert=False in=4 out=0 last_seen=171s ago
+[ 180.050]   term_id=-4833193695704099860 addr=192.168.5.1:57382 role=unknown cert=False in=4 out=0 last_seen=170s ago
+[ 180.050]   term_id=-902862898093445404 addr=192.168.5.1:57382 role=unknown cert=False in=4 out=0 last_seen=169s ago
+[ 180.051]   term_id=1149500945675156396 addr=192.168.5.1:57382 role=unknown cert=False in=4 out=0 last_seen=167s ago
+[ 180.051]   term_id=6030685856993914172 addr=192.168.5.1:57382 role=unknown cert=False in=4 out=0 last_seen=165s ago
+[ 180.052]   term_id=-2625692767575317492 addr=192.168.5.1:57382 role=unknown cert=False in=4 out=0 last_seen=160s ago
+[ 180.052]   term_id=-1749626300851305712 addr=192.168.5.1:57382 role=unknown cert=False in=4 out=0 last_seen=155s ago
+[ 210.059] --- STATUS: 8 clients ---
+[ 210.060]   term_id=4088518812267566565 addr=127.0.0.1:46694 role=unknown cert=False in=1 out=0 last_seen=202s ago
+[ 210.060]   term_id=2705445129038471922 addr=192.168.5.1:57382 role=unknown cert=False in=4 out=0 last_seen=202s ago
+[ 210.061]   term_id=-4833193695704099860 addr=192.168.5.1:57382 role=unknown cert=False in=4 out=0 last_seen=201s ago
+[ 210.061]   term_id=-902862898093445404 addr=192.168.5.1:57382 role=unknown cert=False in=4 out=0 last_seen=200s ago
+[ 210.062]   term_id=1149500945675156396 addr=192.168.5.1:57382 role=unknown cert=False in=4 out=0 last_seen=198s ago
+[ 210.063]   term_id=6030685856993914172 addr=192.168.5.1:57382 role=unknown cert=False in=4 out=0 last_seen=196s ago
+[ 210.063]   term_id=-2625692767575317492 addr=192.168.5.1:57382 role=unknown cert=False in=4 out=0 last_seen=191s ago
+[ 210.063]   term_id=-1749626300851305712 addr=192.168.5.1:57382 role=unknown cert=False in=4 out=0 last_seen=186s ago
+[ 240.067] --- STATUS: 8 clients ---
+[ 240.068]   term_id=4088518812267566565 addr=127.0.0.1:46694 role=unknown cert=False in=1 out=0 last_seen=232s ago
+[ 240.068]   term_id=2705445129038471922 addr=192.168.5.1:57382 role=unknown cert=False in=4 out=0 last_seen=232s ago
+[ 240.068]   term_id=-4833193695704099860 addr=192.168.5.1:57382 role=unknown cert=False in=4 out=0 last_seen=231s ago
+[ 240.069]   term_id=-902862898093445404 addr=192.168.5.1:57382 role=unknown cert=False in=4 out=0 last_seen=230s ago
+[ 240.069]   term_id=1149500945675156396 addr=192.168.5.1:57382 role=unknown cert=False in=4 out=0 last_seen=228s ago
+[ 240.069]   term_id=6030685856993914172 addr=192.168.5.1:57382 role=unknown cert=False in=4 out=0 last_seen=226s ago
+[ 240.069]   term_id=-2625692767575317492 addr=192.168.5.1:57382 role=unknown cert=False in=4 out=0 last_seen=221s ago
+[ 240.069]   term_id=-1749626300851305712 addr=192.168.5.1:57382 role=unknown cert=False in=4 out=0 last_seen=216s ago
+[ 270.074] --- STATUS: 8 clients ---
+[ 270.076]   term_id=4088518812267566565 addr=127.0.0.1:46694 role=unknown cert=False in=1 out=0 last_seen=262s ago
+[ 270.076]   term_id=2705445129038471922 addr=192.168.5.1:57382 role=unknown cert=False in=4 out=0 last_seen=262s ago
+[ 270.077]   term_id=-4833193695704099860 addr=192.168.5.1:57382 role=unknown cert=False in=4 out=0 last_seen=261s ago
+[ 270.077]   term_id=-902862898093445404 addr=192.168.5.1:57382 role=unknown cert=False in=4 out=0 last_seen=260s ago
+[ 270.078]   term_id=1149500945675156396 addr=192.168.5.1:57382 role=unknown cert=False in=4 out=0 last_seen=258s ago
+[ 270.079]   term_id=6030685856993914172 addr=192.168.5.1:57382 role=unknown cert=False in=4 out=0 last_seen=256s ago
+[ 270.079]   term_id=-2625692767575317492 addr=192.168.5.1:57382 role=unknown cert=False in=4 out=0 last_seen=251s ago
+[ 270.079]   term_id=-1749626300851305712 addr=192.168.5.1:57382 role=unknown cert=False in=4 out=0 last_seen=246s ago
+[ 300.087] --- STATUS: 8 clients ---
+[ 300.088]   term_id=4088518812267566565 addr=127.0.0.1:46694 role=unknown cert=False in=1 out=0 last_seen=292s ago
+[ 300.088]   term_id=2705445129038471922 addr=192.168.5.1:57382 role=unknown cert=False in=4 out=0 last_seen=292s ago
+[ 300.089]   term_id=-4833193695704099860 addr=192.168.5.1:57382 role=unknown cert=False in=4 out=0 last_seen=291s ago
+[ 300.089]   term_id=-902862898093445404 addr=192.168.5.1:57382 role=unknown cert=False in=4 out=0 last_seen=290s ago
+[ 300.089]   term_id=1149500945675156396 addr=192.168.5.1:57382 role=unknown cert=False in=4 out=0 last_seen=288s ago
+[ 300.089]   term_id=6030685856993914172 addr=192.168.5.1:57382 role=unknown cert=False in=4 out=0 last_seen=286s ago
+[ 300.090]   term_id=-2625692767575317492 addr=192.168.5.1:57382 role=unknown cert=False in=4 out=0 last_seen=281s ago
+[ 300.090]   term_id=-1749626300851305712 addr=192.168.5.1:57382 role=unknown cert=False in=4 out=0 last_seen=276s ago
