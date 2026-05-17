@@ -63,11 +63,51 @@ Mars IPs can be resolved from `wyze-mars-asrv.wyzecam.com` (typically 4-6 AWS IP
 
 Packet capture of 2,428 packets confirmed all traffic stays on localhost + LAN. No Mars, no relay servers, no HTTPS calls.
 
-## Tier 3: Fully Offline, Zero Config (future)
+## Tier 3: Fully Offline, Zero Config (Linux host)
 
-On a Linux host with `network_mode: host` and `NET_ADMIN`, the container will automatically add iptables DNAT rules to intercept the doorbell's Mars traffic. No router configuration needed — the only user config is `DOORBELL_IP` in `.env`.
+On a Linux host with `network_mode: host` and `NET_ADMIN`, the container **automatically** adds iptables DNAT rules to intercept the doorbell's Mars traffic. No router configuration needed.
 
-This requires the bridge host to be on the same Layer 2 network as the doorbell so iptables PREROUTING can intercept the traffic before it leaves the subnet.
+```env
+P2P_URL=|127.0.0.1
+RELAY_MODE=relay
+LAN_ONLY=1
+SKIP_WAKEUP=1
+DOORBELL_IP=192.168.1.81
+# RELAY_IP auto-detected from DOORBELL_IP subnet
+```
+
+### How it works
+
+On startup, `entrypoint.py` runs two iptables setups:
+
+1. **`setup_doorbell_dnat()`** — Creates a `WYZE_DOORBELL_DNAT` chain in `nat/PREROUTING` that redirects UDP traffic from `DOORBELL_IP` to any Mars IP (port 28800/51701) to the local relay. Mars IPs are resolved from DNS + hardcoded fallbacks.
+
+2. **`setup_lan_only_firewall()`** — Creates a `WYZE_BLOCK_RELAY` chain in `filter/OUTPUT` that blocks outbound TCP to non-LAN IPs, preventing the SDK from connecting to cloud relay servers.
+
+Both chains are automatically cleaned up on container shutdown (`cleanup_iptables()`).
+
+### Requirements
+
+- **Linux host** (not macOS/Colima — VM iptables don't affect physical LAN)
+- Bridge host on the **same Layer 2 network** as the doorbell
+- Container runs with `--network host --cap-add NET_ADMIN`
+- `DOORBELL_IP` set in `.env`
+
+### Docker Compose (production)
+
+```yaml
+services:
+  bridge:
+    image: wyze-bridge:latest
+    network_mode: host
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    volumes:
+      - .:/work
+      - ./apk:/apk:ro
+    restart: unless-stopped
+```
 
 ## Key Findings from Reverse Engineering
 

@@ -268,8 +268,185 @@ def shutdown(signum: int, _frame) -> None:
         except subprocess.TimeoutExpired:
             relay_proc.kill()
 
+    # Clean up iptables rules
+    cleanup_iptables()
+
     log("Shutdown complete.")
     sys.exit(0)
+
+
+# ── Doorbell DNAT (Linux host networking) ──────────────────────────
+
+def setup_doorbell_dnat() -> bool:
+    """Set up iptables DNAT to redirect doorbell's Mars traffic to local relay.
+
+    On a Linux host with host networking + NET_ADMIN, the container's
+    iptables rules affect the physical LAN. This intercepts the doorbell's
+    UDP traffic to Mars and redirects it to our local relay, eliminating
+    the need for any router configuration.
+
+    Requirements:
+      - DOORBELL_IP env var set (e.g., 192.168.1.81)
+      - Container runs with --network host --cap-add NET_ADMIN
+      - Linux host (not macOS/Colima — VM network is isolated)
+
+    Returns True if rules were applied successfully.
+    """
+    dotenv = load_env_file()
+    doorbell_ip = dotenv.get("DOORBELL_IP", os.environ.get("DOORBELL_IP", ""))
+    if not doorbell_ip:
+        log("DOORBELL_IP not set — skipping DNAT setup")
+        return False
+
+    # Skip if LAN_ONLY / full offline mode is not requested
+    lan_only = dotenv.get("LAN_ONLY", os.environ.get("LAN_ONLY", "0"))
+    if lan_only not in ("1", "true", "yes"):
+        log("LAN_ONLY not enabled — skipping DNAT setup")
+        return False
+
+    # Check if iptables is available
+    try:
+        result = subprocess.run(["iptables", "-V"], capture_output=True, timeout=5)
+        if result.returncode != 0:
+            log("iptables not available — skipping DNAT setup")
+            return False
+    except (FileNotFoundError, subprocess.TimeoutExpired):
+        log("iptables not found — skipping DNAT setup")
+        return False
+
+    # Determine local relay IP (the host's LAN IP)
+    relay_ip = dotenv.get("RELAY_IP", os.environ.get("RELAY_IP", ""))
+    if not relay_ip:
+        # Auto-detect: use the IP on the same subnet as the doorbell
+        import socket as _sock
+        try:
+            s = _sock.socket(_sock.AF_INET, _sock.SOCK_DGRAM)
+            s.connect((doorbell_ip, 1))  # Doesn't actually send
+            relay_ip = s.getsockname()[0]
+            s.close()
+            log(f"Auto-detected relay IP: {relay_ip}")
+        except Exception:
+            log("Cannot detect relay IP — skipping DNAT setup")
+            return False
+
+    # Resolve current Mars IPs
+    mars_ips = set()
+    import socket as _sock
+    try:
+        results = _sock.getaddrinfo("wyze-mars-asrv.wyzecam.com", None, _sock.AF_INET)
+        mars_ips = set(r[4][0] for r in results)
+    except Exception:
+        pass
+    # Add known Mars IPs as fallback
+    mars_ips.update({"3.19.80.22", "35.85.21.174", "34.215.36.59",
+                     "18.118.90.161", "52.201.137.206", "3.13.212.24"})
+
+    chain = "WYZE_DOORBELL_DNAT"
+    log(f"Setting up doorbell DNAT: {doorbell_ip} → {relay_ip}")
+    log(f"  Mars IPs: {', '.join(sorted(mars_ips))}")
+
+    # Clean up old rules
+    subprocess.run(["iptables", "-t", "nat", "-D", "PREROUTING", "-j", chain],
+                   capture_output=True)
+    subprocess.run(["iptables", "-t", "nat", "-F", chain], capture_output=True)
+    subprocess.run(["iptables", "-t", "nat", "-X", chain], capture_output=True)
+
+    # Create chain
+    subprocess.run(["iptables", "-t", "nat", "-N", chain], capture_output=True)
+
+    # Add DNAT rules for each Mars IP (UDP port 28800 + 51701)
+    applied = 0
+    for mars_ip in sorted(mars_ips):
+        for port in (28800, 51701):
+            result = subprocess.run([
+                "iptables", "-t", "nat", "-A", chain,
+                "-s", doorbell_ip, "-d", mars_ip,
+                "-p", "udp", "--dport", str(port),
+                "-j", "DNAT", "--to-destination", f"{relay_ip}:{port}"
+            ], capture_output=True)
+            if result.returncode == 0:
+                applied += 1
+
+    # Insert chain into PREROUTING
+    subprocess.run(["iptables", "-t", "nat", "-I", "PREROUTING", "1", "-j", chain],
+                   capture_output=True)
+
+    if applied > 0:
+        log(f"  Applied {applied} DNAT rules (doorbell Mars traffic → local relay)")
+        return True
+    else:
+        log("  WARNING: No DNAT rules applied (iptables may lack permissions)")
+        return False
+
+
+def setup_lan_only_firewall() -> bool:
+    """Block outbound TCP to cloud relay servers (force LAN-only video).
+
+    The SDK uses both LAN UDP and cloud TCP relays simultaneously;
+    blocking non-LAN TCP traffic eliminates the cloud relay path entirely.
+
+    Returns True if rules were applied successfully.
+    """
+    dotenv = load_env_file()
+    lan_only = dotenv.get("LAN_ONLY", os.environ.get("LAN_ONLY", "0"))
+    if lan_only not in ("1", "true", "yes"):
+        return False
+
+    try:
+        result = subprocess.run(["iptables", "-V"], capture_output=True, timeout=5)
+        if result.returncode != 0:
+            return False
+    except (FileNotFoundError, subprocess.TimeoutExpired):
+        return False
+
+    chain = "WYZE_BLOCK_RELAY"
+    log("Setting up LAN-only firewall (blocking cloud TCP relays)...")
+
+    # Clean up old rules
+    subprocess.run(["iptables", "-D", "OUTPUT", "-j", chain], capture_output=True)
+    subprocess.run(["iptables", "-F", chain], capture_output=True)
+    subprocess.run(["iptables", "-X", chain], capture_output=True)
+
+    # Create chain
+    subprocess.run(["iptables", "-N", chain], capture_output=True)
+
+    rules = [
+        # Allow LAN/localhost
+        ["-A", chain, "-d", "192.168.0.0/16", "-j", "RETURN"],
+        ["-A", chain, "-d", "10.0.0.0/8", "-j", "RETURN"],
+        ["-A", chain, "-d", "172.16.0.0/12", "-j", "RETURN"],
+        ["-A", chain, "-d", "127.0.0.0/8", "-j", "RETURN"],
+        # Allow UDP to Mars signaling ports
+        ["-A", chain, "-p", "udp", "--dport", "28800", "-j", "RETURN"],
+        ["-A", chain, "-p", "udp", "--dport", "51701", "-j", "RETURN"],
+        # Allow HTTPS (wakeup API) and DNS
+        ["-A", chain, "-p", "tcp", "--dport", "443", "-j", "RETURN"],
+        ["-A", chain, "-p", "udp", "--dport", "53", "-j", "RETURN"],
+        ["-A", chain, "-p", "tcp", "--dport", "53", "-j", "RETURN"],
+        # Block all other TCP to external IPs
+        ["-A", chain, "-p", "tcp", "-j", "REJECT"],
+    ]
+
+    for rule in rules:
+        subprocess.run(["iptables"] + rule, capture_output=True)
+
+    subprocess.run(["iptables", "-I", "OUTPUT", "1", "-j", chain], capture_output=True)
+    log("  Cloud TCP relays blocked — video will be LAN-only")
+    return True
+
+
+def cleanup_iptables() -> None:
+    """Remove all iptables rules added by the bridge."""
+    for chain in ("WYZE_DOORBELL_DNAT", "WYZE_BLOCK_RELAY"):
+        if chain == "WYZE_DOORBELL_DNAT":
+            subprocess.run(["iptables", "-t", "nat", "-D", "PREROUTING", "-j", chain],
+                           capture_output=True)
+            subprocess.run(["iptables", "-t", "nat", "-F", chain], capture_output=True)
+            subprocess.run(["iptables", "-t", "nat", "-X", chain], capture_output=True)
+        else:
+            subprocess.run(["iptables", "-D", "OUTPUT", "-j", chain], capture_output=True)
+            subprocess.run(["iptables", "-F", chain], capture_output=True)
+            subprocess.run(["iptables", "-X", chain], capture_output=True)
 
 
 # ── GUTES Relay ────────────────────────────────────────────────────
@@ -352,10 +529,14 @@ def main() -> None:
     setup_libs()
     build_bridge()
 
-    # Phase 2: Start GUTES relay (local proxy for Mars signaling)
+    # Phase 2: Network setup (iptables for LAN-only mode)
+    setup_doorbell_dnat()
+    setup_lan_only_firewall()
+
+    # Phase 3: Start GUTES relay (local proxy for Mars signaling)
     relay_proc = start_relay()
 
-    # Phase 3: Start go2rtc with .env and LD_PRELOAD/LD_LIBRARY_PATH
+    # Phase 4: Start go2rtc with .env and LD_PRELOAD/LD_LIBRARY_PATH
     dotenv = load_env_file()
     env = {
         **os.environ,
