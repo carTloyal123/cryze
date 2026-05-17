@@ -787,107 +787,136 @@ class GutesRelay:
         return bytes(resp)
 
     def _build_mtp_res_resp(self, calling_data: bytes, addr: tuple, sender_term_id: int) -> Optional[bytes]:
-        """Build MTP_RES_RESP (type 0xA3) directing the SDK to our local TCP relay.
+        """Build MTP_RES_RESP (type 0xA3) for LAN-only video path.
         
-        The MTP_RES_RESP tells the SDK where the TCP relay servers are.
-        The SDK will then TCP-connect to one of those addresses and begin
-        sending MTP_DATA (type 0xCA) frames.
+        Frame layout (from decompiled gat_on_rcvpkt_MTP_RES_RESPONSE):
+        The SDK reads from the frame context buffer (frame at offset 0x1B0).
+        Field offsets below are relative to frame start.
         
-        MTP_RES_RESP payload structure (from pcap analysis):
-          Offset 0x00: link_id (4B LE) — must match the CALLING request
-          Offset 0x04: result (4B LE) — 0 = success
-          Offset 0x08: relay_count (1B) — number of TCP relay entries (typically 4)
-          Offset 0x09: flags (1B)
-          Offset 0x0A: padding (2B)
-          Offset 0x0C: relay entries, each 8 bytes:
-                        IP (4B network order) + port (2B LE) + padding (2B)
-          After relays: doorbell UDP address for NAT punch:
-                        IP (4B network order) + port (2B LE) + padding (2B)
+        For the CALLING side (state==1, our bridge SDK):
+          frame[0x1C:0x20]  link_id (4B LE) — must match CALLING
+          frame[0x56]       called_ip_version_flags (bit0=v4, bit1=v6)
+          frame[0x58:0x5A]  called_outer_port (2B NBO)
+          frame[0x5A:0x5C]  called_lan_port (2B NBO)
+          frame[0x5C:0x5E]  called_ipv6_port (2B NBO)
+          frame[0x5E:0x60]  called_session_socket_udpport (2B NBO)
+          frame[0x60:0x64]  called_outer_ipv4 (4B) — set to FAKE IP
+          frame[0x64:0x68]  called_lan_ipv4 (4B) — doorbell's LAN IP
+          frame[0x68:0x78]  called_ipv6 (16B) — zeros
+          frame[0x78]       v4_cnt (1B) — 0 = no relay servers!
+          frame[0x79]       v6_cnt (1B) — 0
         
-        We populate all relay entries with our local IP:mtp_port.
+        LAN channel creation condition (line 27374):
+          if (lan_ipv4 != 0 && lan_ipv4 != outer_ipv4):
+              add_lan_or_nat(type=2, lan_sockaddr)
+        
+        LAN mode (type=2) has HIGHEST priority in iv_get_connect_mode_link_chn.
+        Setting v4_cnt=0 means NO relay servers — forces LAN or NAT only.
         """
         import random as _rand
         
-        # Extract the CALLING request's sqnum for response matching
-        calling_sqnum = self._extract_req_sqnum(calling_data)
+        # Extract link_id from CALLING_REQ (at frame offset 0x1C)
+        # CALLING payload is session-encrypted — link_id is in the encrypted payload
+        # After decryption, link_id is at payload[4] = frame[0x1C]
+        # But we can also extract it from _extract_calling_link_id
+        link_id = self._extract_calling_link_id(calling_data, addr)
+        if link_id is None:
+            self.log(f"  [MTP] Cannot extract link_id from CALLING, using counter")
+            link_id = self.state.mtp_link_counter
+            self.state.mtp_link_counter += 1
         
-        # Allocate a link_id for this MTP session
-        link_id = self.state.mtp_link_counter
-        self.state.mtp_link_counter += 1
+        doorbell_ip = os.environ.get('DOORBELL_IP', '192.168.1.81')
+        doorbell_port = int(os.environ.get('DOORBELL_PORT', '8899'))
         
-        # Build payload
-        num_relays = 4  # SDK expects up to 4 relay server entries
-        local_ip_bytes = socket.inet_aton(self.local_ip)
-        
-        # Payload: link_id(4) + result(4) + relay_count(1) + flags(1) + pad(2)
-        #        + relays(num_relays * 8) + doorbell_udp(8)
-        payload_size = 12 + (num_relays * 8) + 8  # = 52 bytes
-        payload = bytearray(payload_size)
-        
-        struct.pack_into('<I', payload, 0, link_id)  # link_id
-        struct.pack_into('<I', payload, 4, 0)  # result = 0 (success)
-        payload[8] = num_relays  # relay_count
-        payload[9] = 0  # flags
-        # padding at [10:12] stays 0
-        
-        # Fill relay entries (each: IP 4B NBO + port 2B LE + 2B pad)
-        for i in range(num_relays):
-            off = 12 + (i * 8)
-            payload[off:off+4] = local_ip_bytes
-            struct.pack_into('<H', payload, off + 4, self.mtp_port)
-            # 2 bytes padding stays 0
-        
-        # Doorbell UDP address (for NAT punch — use doorbell's known addr if available)
-        doorbell_off = 12 + (num_relays * 8)
-        if self.state.doorbell_addr != ('', 0):
-            db_ip = socket.inet_aton(self.state.doorbell_addr[0])
-            db_port = self.state.doorbell_addr[1]
-        else:
-            # Fallback: use local IP (doorbell should connect to us anyway)
-            db_ip = local_ip_bytes
-            db_port = self.mtp_port
-        payload[doorbell_off:doorbell_off+4] = db_ip
-        struct.pack_into('<H', payload, doorbell_off + 4, db_port)
-        
-        # Build the frame (opt_encrypt=0, opt_resp=1, bit25=1)
+        # Build the frame — needs to be at least 0x7A bytes (122)
         CRYPTO_HDR = 0x18
-        frame_size = CRYPTO_HDR + payload_size
+        frame_size = 0x7A  # 122 bytes: header + payload up to relay counts
         resp = bytearray(frame_size)
+        
+        # --- Header ---
         resp[0] = 0x7E  # Session protocol
-        resp[1] = TYPE_MTP_RES_RESP_A3  # 0xA3
+        resp[1] = 0xA3  # MTP_RES_RESP
         struct.pack_into('<H', resp, 2, frame_size)
         
-        # term_id = session_id from CERTIFY (so SDK routing check passes)
+        # term_id = session_id from CERTIFY
         session_id_bytes = self.state.addr_session_id.get(addr)
         if session_id_bytes:
             resp[4:12] = session_id_bytes
         else:
             struct.pack_into('<q', resp, 4, self.server_term_id)
         
-        # sqnum (ours) and chkval = CALLING request sqnum (for response matching)
+        # sqnum and chkval
         sqnum = self._next_sqnum()
         struct.pack_into('<I', resp, 0x0C, sqnum)
-        struct.pack_into('<I', resp, 0x10, calling_sqnum & 0xFFFFFFFF)
+        struct.pack_into('<I', resp, 0x10, 0)  # chkval — set after computation
         
-        # opt_flags: opt_encrypt=0, opt_resp=1 (bit 21), relay_flag=1 (bit 25)
-        opt_flags = (1 << 21) | (1 << 25)
+        # opt_flags: opt_encrypt=0, opt_resp=0, relay_flag=1 (bit25)
+        opt_flags = (1 << 25)
         struct.pack_into('<I', resp, 0x14, opt_flags)
         
-        # Write payload
-        resp[CRYPTO_HDR:] = payload
+        # --- Payload (starts at 0x18) ---
+        # flags2 at 0x18: bit0=1 (has_netaddr), bit1=1 (has_ipv6)
+        struct.pack_into('<H', resp, 0x18, 0x0003)
+        # ack_result at 0x1A
+        struct.pack_into('<H', resp, 0x1A, 0)
+        
+        # link_id at 0x1C (matches CALLING)
+        struct.pack_into('<I', resp, 0x1C, link_id)
+        
+        # --- Calling peer block (frame[0x32]-[0x44]) --- 
+        # This is OUR info (the bridge's address) for the doorbell to send to
+        # ip_version_flags at 0x32: bit0=1 (has ipv4)
+        resp[0x32] = 0x01
+        # calling_outer_port at 0x34 (NBO) — bridge's port
+        struct.pack_into('>H', resp, 0x34, 0)  # SDK fills this
+        # calling_lan_port at 0x36 (NBO)
+        struct.pack_into('>H', resp, 0x36, 0)
+        # calling_session_socket_udpport at 0x3A (NBO)
+        struct.pack_into('>H', resp, 0x3A, 0)
+        # calling_outer_ipv4 at 0x3C — set to bridge's LAN IP
+        bridge_ip_bytes = socket.inet_aton(self.local_ip)
+        resp[0x3C:0x40] = bridge_ip_bytes
+        # calling_lan_ipv4 at 0x40
+        resp[0x40:0x44] = bridge_ip_bytes
+        
+        # --- Called peer block (frame[0x56]-[0x78]) ---
+        # This is the DOORBELL's info for the bridge to connect to
+        # ip_version_flags at 0x56: bit0=1 (has ipv4)
+        resp[0x56] = 0x01
+        
+        doorbell_ip_bytes = socket.inet_aton(doorbell_ip)
+        # Set outer_ipv4 to a FAKE external IP (ensures lan != outer check passes)
+        fake_outer = socket.inet_aton('1.2.3.4')
+        
+        # called_outer_port at 0x58 (NBO)
+        struct.pack_into('>H', resp, 0x58, doorbell_port)
+        # called_lan_port at 0x5A (NBO) — doorbell's LAN port
+        struct.pack_into('>H', resp, 0x5A, doorbell_port)
+        # called_ipv6_port at 0x5C (NBO)
+        struct.pack_into('>H', resp, 0x5C, 0)
+        # called_session_socket_udpport at 0x5E (NBO) — for hole punch
+        struct.pack_into('>H', resp, 0x5E, doorbell_port)
+        
+        # called_outer_ipv4 at 0x60 — FAKE IP (forces LAN path creation)
+        resp[0x60:0x64] = fake_outer
+        # called_lan_ipv4 at 0x64 — doorbell's REAL LAN IP  
+        resp[0x64:0x68] = doorbell_ip_bytes
+        # called_ipv6 at 0x68 (16 bytes zeros)
+        
+        # --- Relay list ---
+        # v4_cnt at 0x78 = 0 (NO relay servers!)
+        resp[0x78] = 0
+        # v6_cnt at 0x79 = 0
+        resp[0x79] = 0
+        
+        # --- Compute chkval ---
+        chkval = self._compute_chkval(resp)
+        struct.pack_into('<I', resp, 0x10, chkval)
         
         self.log(f"  [MTP] Built MTP_RES_RESP: link_id={link_id} "
-                f"relay={self.local_ip}:{self.mtp_port} "
-                f"doorbell_udp={socket.inet_ntoa(db_ip)}:{db_port} "
-                f"chkval={calling_sqnum} ({frame_size}B)")
-        
-        # Store the link_id so we can match incoming TCP connections
-        # Create an MTP pair waiting for connections
-        self.state.mtp_pairs[link_id] = MtpRelayPair(
-            link_id=link_id,
-            created=time.time(),
-            active=False,
-        )
+                f"doorbell_lan={doorbell_ip}:{doorbell_port} "
+                f"v4_cnt=0 v6_cnt=0 (LAN-only, no relay servers) "
+                f"({frame_size}B)")
         
         return bytes(resp)
 
@@ -910,6 +939,52 @@ class GutesRelay:
         for i in range(6, len(d)):
             chk ^= d[i]
         return chk & 0xFFFFFFFF
+
+    def _extract_calling_link_id(self, data: bytes, addr: tuple) -> Optional[int]:
+        """Extract link_id from CALLING_REQ frame.
+        
+        The CALLING_REQ has link_id at frame[0x1C] (payload[0x04]).
+        For session-encrypted frames, we decrypt the payload first.
+        """
+        opt_flags = struct.unpack_from('<I', data, 0x14)[0]
+        encrypt_mode = (opt_flags >> 16) & 3
+        
+        if len(data) < 0x20:
+            return None
+        
+        if encrypt_mode == 2:
+            # Session-encrypted: decrypt payload to get link_id
+            session_key = self.state.addr_session_keys.get(addr)
+            if not session_key:
+                # Try IP-based lookup
+                for a, sk in self.state.addr_session_keys.items():
+                    if a[0] == addr[0]:
+                        session_key = sk
+                        break
+            if session_key:
+                rc5 = RC5(block_bytes=8, rounds=6).setkey(session_key)
+                # Decrypt from 0x18 (first 8 bytes of payload contain link_id at offset 4)
+                enc = bytes(data[0x18:0x20])
+                dec = rc5.decrypt_block(enc)
+                link_id = struct.unpack_from('<I', dec, 4)[0]
+                self.log(f"  [MTP] Extracted link_id={link_id} from CALLING (session-dec)")
+                return link_id
+        elif encrypt_mode == 1:
+            # Per-frame encrypted
+            pfk = derive_per_frame_key(data[:0x18])
+            rc5 = RC5(block_bytes=8, rounds=6).setkey(pfk)
+            enc = bytes(data[0x18:0x20])
+            dec = rc5.decrypt_block(enc)
+            link_id = struct.unpack_from('<I', dec, 4)[0]
+            self.log(f"  [MTP] Extracted link_id={link_id} from CALLING (pfk-dec)")
+            return link_id
+        else:
+            # Plaintext
+            link_id = struct.unpack_from('<I', data, 0x1C)[0]
+            self.log(f"  [MTP] Extracted link_id={link_id} from CALLING (plaintext)")
+            return link_id
+        
+        return None
 
     def build_list_resp(self, list_req_data: bytes, reply_ip: str = None) -> bytes:
         """Build LIST_RESP with our relay as the only server.
