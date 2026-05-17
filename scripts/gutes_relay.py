@@ -56,6 +56,7 @@ TYPE_MTP_RES_RESP_A3 = 0xA3  # MTP resource response (relay server list)
 TYPE_SESSION_CTL = 0xB0
 TYPE_SESSION_CTL_RESP = 0xB1
 TYPE_ONLINE_MSG = 0xB4
+TYPE_WAKEUP = 0xBB  # WakeUp frame — sent by Mars to wake sleeping devices
 TYPE_PASSTHROUGH = 0xBD
 TYPE_MTP_DATA = 0xCA  # MTP media data over TCP relay
 
@@ -67,6 +68,7 @@ FRAME_TYPES = {
     0xA0: "SUBSCRIBE", 0xA1: "SUBSCRIBE_RESP",
     0xA2: "MTP_RES_RESP", 0xA3: "MTP_RES_RESP_A3",
     0xA4: "CALLING_REQ",
+    0xBB: "WAKEUP",
     0xA6: "INIT_INFO", 0xA7: "GDM_PUSH",
     0xAA: "CALLING_ERR/GDM", 0xB0: "SESSION_CTL",
     0xB1: "SESSION_CTL_RESP", 0xB4: "ONLINE_MSG",
