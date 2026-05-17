@@ -1194,14 +1194,18 @@ class GutesRelay:
                 self._on_client_certified(term_id)
             # Send INIT_INFO_RESP (response, not just ACK)
             if not ack and not is_resp:
-                # For session-encrypted (opt_encrypt=2) frames, we can't decrypt the sqnum.
-                # Instead, predict it: INIT_INFO sqnum = last_certify_sqnum + 1
-                predicted_sqnum = self.state.addr_last_sqnum.get(addr, 0) + 1
-                self.log(f"  [DEBUG] Using predicted sqnum={predicted_sqnum} for INIT_INFO_RESP")
-                resp = self._build_init_info_resp(data, addr, predicted_sqnum)
+                # Try to extract the real sqnum from session-encrypted frame
+                req_sqnum = self._extract_req_sqnum(data, addr)
+                if req_sqnum is not None:
+                    self.log(f"  [DEBUG] Extracted real sqnum={req_sqnum} from INIT_INFO")
+                else:
+                    # Fallback: predict sqnum
+                    req_sqnum = self.state.addr_last_sqnum.get(addr, 0) + 1
+                    self.log(f"  [DEBUG] Using predicted sqnum={req_sqnum} for INIT_INFO_RESP")
+                resp = self._build_init_info_resp(data, addr, req_sqnum)
                 self.log(f"  → INIT_INFO_RESP to {addr[0]}:{addr[1]} ({len(resp)}B)")
-                # Increment for next predicted frame
-                self.state.addr_last_sqnum[addr] = predicted_sqnum
+                # Track for next prediction
+                self.state.addr_last_sqnum[addr] = req_sqnum
                 return resp
             return None
 
