@@ -418,10 +418,15 @@ class GutesRelay:
                         session_key = sk
                         break
             if session_key:
+                self.log(f"  [DEBUG] _extract_req_sqnum: using session_key={session_key[:8].hex()}... for addr={addr}")
                 rc5 = RC5(block_bytes=8, rounds=6)
                 rc5.setkey(session_key)  # Full 32-byte session key
                 decrypted_block = rc5.decrypt_block(bytes(req_data[0x0C:0x14]))
-                return struct.unpack_from('<I', decrypted_block, 0)[0]
+                sqnum = struct.unpack_from('<I', decrypted_block, 0)[0]
+                self.log(f"  [DEBUG] _extract_req_sqnum: decrypted sqnum={sqnum} from enc_bytes={req_data[0x0C:0x14].hex()}")
+                return sqnum
+            else:
+                self.log(f"  [DEBUG] _extract_req_sqnum: NO session key for addr={addr}, keys={list(self.state.addr_session_keys.keys())}")
         
         # Fallback: per-frame key (for opt_encrypt=1, or if no session key)
         pfk = derive_per_frame_key(req_data)
@@ -633,106 +638,61 @@ class GutesRelay:
         return bytes(resp)
 
     def _build_calling_ack(self, calling_data: bytes, addr: tuple, sender_term_id: int) -> Optional[bytes]:
-        """Build session-encrypted CALLING response containing doorbell's network address.
+        """Build CALLING ACK frame containing doorbell's network address.
         
-        The response must be fully session-encrypted (opt_encrypt=2) for the SDK
-        to accept it on the session channel.
+        The ACK path for mode=1 reliable frames goes through iv_gutes_on_rcvfrm_ack:
+        - Matching: stored_request_sqnum == ACK_frame[0x0C] (raw bytes, NO decryption)
+        - Callback: iv_on_ackfrm_Calling(ctx, pending_entry, ack_frame, status=0)
         
-        The SDK's iv_on_ackfrm_Calling expects (after decryption):
-          - payload[0:2] (frame+0x18): flags uint16, bit 0 = opt_with_netaddr
-          - payload[8:12] (frame+0x20): doorbell IPv4 (in_addr_t, network byte order)
-          - payload[12:14] (frame+0x24): doorbell port (uint16, network byte order)
+        ACK frame expects (from iv_on_ackfrm_Calling):
+          - frame[0x18] uint16: flags, bit 0 = opt_with_netaddr
+          - frame[0x20] 4 bytes: doorbell IPv4 (in_addr_t, network byte order)
+          - frame[0x24] uint16: doorbell port (network byte order)
+        
+        CRITICAL: opt_ack=1 (bit 20), NOT opt_resp=1. opt_encrypt=0 (no encryption).
+        The ACK matching reads frame[0x0C] raw — must be the plaintext request sqnum.
         """
-        # Get session key for this client
-        session_key = self.state.addr_session_keys.get(addr)
-        if not session_key:
-            for a, sk in self.state.addr_session_keys.items():
-                if a[0] == addr[0]:
-                    session_key = sk
-                    break
-        if not session_key:
-            self.log(f"  [MTP] No session key for CALLING_ACK, cannot session-encrypt")
-            return None
-        
         doorbell_ip_str = os.environ.get('DOORBELL_IP', '192.168.1.81')
         doorbell_port = 8899
         
-        # Frame layout:
-        # [0]: proto=0x7E  [1]: type=0xA4  [2-3]: frm_len
-        # [4-11]: term_id  [0x0C-0x0F]: sqnum  [0x10-0x13]: chkval
-        # [0x14-0x17]: opt_flags  [0x18+]: payload
-        frame_size = 38  # 24 header + 14 payload
+        # Extract request's plaintext sqnum
+        req_sqnum = self._extract_req_sqnum(calling_data, addr)
+        self.log(f"  [MTP] CALLING req_sqnum={req_sqnum} (for ACK matching)")
+        
+        # Build ACK frame: 38 bytes (24 header + 14 payload)
+        frame_size = 38
         resp = bytearray(frame_size)
-        resp[0] = 0x7E
-        resp[1] = 0xA4  # Same type as request
+        resp[0] = 0x7E  # session proto
+        resp[1] = 0xA4  # Same type as request (ACK doesn't need type+1)
         struct.pack_into('<H', resp, 2, frame_size)
         
-        # term_id: use server session_id (from CERTIFY)
-        session_id_bytes = self.state.addr_session_id.get(addr)
-        if not session_id_bytes:
-            for a, sid in self.state.addr_session_id.items():
-                if a[0] == addr[0]:
-                    session_id_bytes = sid
-                    break
-        if session_id_bytes and len(session_id_bytes) >= 8:
-            resp[4:12] = session_id_bytes[:8]
-        else:
-            struct.pack_into('<q', resp, 4, self.server_term_id)
+        # term_id: not critical for ACK (bit25 bypasses routing)
+        struct.pack_into('<q', resp, 4, self.server_term_id)
         
-        # Extract request's plaintext sqnum for response matching
-        req_sqnum = self._extract_req_sqnum(calling_data, addr)
-        self.log(f"  [MTP] CALLING req_sqnum={req_sqnum} (from session-decrypt)")
+        # sqnum = request's plaintext sqnum (ACK matching: stored_sqnum == ack[0x0C])
+        struct.pack_into('<I', resp, 0x0C, req_sqnum)
+        struct.pack_into('<I', resp, 0x10, 0)  # chkval (unused for ACK)
         
-        # Plaintext sqnum and chkval (will be encrypted later)
-        sqnum = self._next_sqnum()
-        struct.pack_into('<I', resp, 0x0C, sqnum)
-        struct.pack_into('<I', resp, 0x10, req_sqnum)  # chkval = req sqnum for matching
-        
-        # opt_flags: encrypt=2 (session), resp=1 (bit 21), nonce
+        # opt_flags: encrypt=0, opt_ack=1 (bit 20), relay_flag=1 (bit 25)
         import random as _rand
         nonce = _rand.randint(0, 0x7FFF)
-        opt_flags = (nonce << 1) | (2 << 16) | (1 << 21)  # encrypt=2, opt_resp=1
+        opt_flags = (nonce << 1) | (0 << 16) | (1 << 20) | (1 << 25)
         struct.pack_into('<I', resp, 0x14, opt_flags)
         
-        # Payload at 0x18 (plaintext, will be encrypted):
+        # Payload at 0x18:
+        # [0x18-0x19]: flags uint16, bit 0 = opt_with_netaddr
+        # [0x1A-0x1B]: ack_result = 0 (success)
         struct.pack_into('<H', resp, 0x18, 1)  # opt_with_netaddr = 1
-        # IPv4 at payload+8 = frame 0x20
+        struct.pack_into('<H', resp, 0x1A, 0)  # ack_result = 0
+        # [0x1C-0x1F]: padding/link_id (4B)
+        # [0x20-0x23]: doorbell IPv4
         ip_bytes = socket.inet_aton(doorbell_ip_str)
         resp[0x20:0x24] = ip_bytes
-        # Port at payload+12 = frame 0x24
+        # [0x24-0x25]: doorbell port (network byte order)
         struct.pack_into('>H', resp, 0x24, doorbell_port)
         
-        # --- Session encrypt ---
-        rc5 = RC5(block_bytes=8, rounds=6)
-        rc5.setkey(session_key)
-        
-        # 1. Encrypt payload (0x18 to end) — must be multiple of 8 bytes
-        payload_len = frame_size - 0x18  # 14 bytes → pad to 16
-        padded_payload = bytes(resp[0x18:0x18 + ((payload_len + 7) // 8) * 8].ljust(16, b'\x00'))
-        enc_payload = rc5.encrypt(padded_payload)
-        resp[0x18:0x18 + len(enc_payload)] = enc_payload
-        # Update frame_size if needed
-        new_size = 0x18 + len(enc_payload)
-        if new_size != frame_size:
-            resp = resp[:new_size] if new_size < len(resp) else resp + bytearray(new_size - len(resp))
-            struct.pack_into('<H', resp, 2, new_size)
-        
-        # 2. Encrypt sqnum+chkval (0x0C-0x13) with session key
-        enc_sqchk = rc5.encrypt_block(bytes(resp[0x0C:0x14]))
-        resp[0x0C:0x14] = enc_sqchk
-        
-        # 3. Encrypt term_id (0x04-0x0B):
-        #    RC5_encrypt(id_bytes) then XOR with encrypted sqnum+chkval
-        enc_id = rc5.encrypt_block(bytes(resp[4:12]))
-        # XOR first 4 bytes with encrypted sqnum, last 4 with encrypted chkval
-        enc_id_arr = bytearray(enc_id)
-        for i in range(4):
-            enc_id_arr[i] ^= resp[0x0C + i]
-            enc_id_arr[4 + i] ^= resp[0x10 + i]
-        resp[4:12] = enc_id_arr
-        
-        self.log(f"  [MTP] Built session-encrypted CALLING_RESP: doorbell={doorbell_ip_str}:{doorbell_port} "
-                 f"req_sqnum={req_sqnum} frame_size={len(resp)}")
+        self.log(f"  [MTP] Built CALLING_ACK: doorbell={doorbell_ip_str}:{doorbell_port} "
+                 f"req_sqnum={req_sqnum} frame_size={frame_size}")
         return bytes(resp)
 
     def _build_mtp_res_resp(self, calling_data: bytes, addr: tuple, sender_term_id: int) -> Optional[bytes]:
@@ -1733,6 +1693,11 @@ class GutesRelay:
         if self.state.keepalive_enabled:
             tasks.append(asyncio.create_task(self._keepalive_loop()))
 
+        # TCP signaling listener on port 28800 (relay mode - SDK falls back to TCP)
+        if self.mode == "relay":
+            for port in self.listen_ports:
+                tasks.append(asyncio.create_task(self._tcp_signaling_listen(port)))
+
         # MTP TCP relay listener (relay mode)
         if self.mode == "relay":
             tasks.append(asyncio.create_task(self._mtp_tcp_listen()))
@@ -1937,6 +1902,77 @@ class GutesRelay:
         if not routed and ftype not in (TYPE_KEEPALIVE,):
             self.log(f"  ! NO PEER to route {type_name} (term_id={term_id}, "
                     f"clients={list(self.state.clients.keys())})")
+
+    async def _tcp_signaling_listen(self, port: int):
+        """TCP signaling server for relay mode.
+        
+        The SDK falls back to TCP when UDP CALLING times out.
+        We handle GUTES frames over TCP the same way as UDP.
+        """
+        server = await asyncio.start_server(
+            lambda r, w: self._tcp_signaling_handle(r, w, port),
+            '0.0.0.0', port, reuse_address=True)
+        self.log(f"  Listening on TCP :{port} (signaling)")
+        async with server:
+            await server.serve_forever()
+
+    async def _tcp_signaling_handle(self, reader: asyncio.StreamReader,
+                                     writer: asyncio.StreamWriter, local_port: int):
+        """Handle TCP signaling connection — same protocol as UDP but framed over TCP.
+        
+        GUTES over TCP: each frame is len-prefixed by the frm_len field at bytes [2:4].
+        """
+        peer = writer.get_extra_info('peername')
+        peer_ip = peer[0] if peer else '127.0.0.1'
+        peer_port = peer[1] if peer else 0
+        tcp_addr = (peer_ip, peer_port)
+        self.log(f"← TCP signaling connection from {peer_ip}:{peer_port} on port {local_port}")
+        
+        try:
+            while True:
+                # Read frame header (first 4 bytes: proto, type, len_lo, len_hi)
+                hdr = await reader.readexactly(4)
+                proto = hdr[0]
+                ftype = hdr[1]
+                frm_len = struct.unpack_from('<H', hdr, 2)[0]
+                
+                if frm_len < 4 or frm_len > 4096:
+                    self.log(f"  TCP-SIG: Invalid frame len={frm_len}, closing")
+                    break
+                
+                # Read the rest of the frame
+                rest = await reader.readexactly(frm_len - 4)
+                frame_data = hdr + rest
+                
+                type_name = FRAME_TYPES.get(ftype, f"0x{ftype:02X}")
+                self.log(f"  TCP-SIG ← {type_name} ({frm_len}B) from {peer_ip}:{peer_port}")
+                
+                # Process through same handler as UDP
+                resp = self.handle_packet(frame_data, tcp_addr, local_port)
+                
+                if resp:
+                    writer.write(resp)
+                    await writer.drain()
+                    resp_type = resp[1] if len(resp) >= 2 else 0
+                    resp_name = FRAME_TYPES.get(resp_type, f"0x{resp_type:02X}")
+                    self.log(f"  TCP-SIG → {resp_name} ({len(resp)}B)")
+                
+                # Send any extra responses queued by handle_packet
+                if hasattr(self, '_extra_responses') and self._extra_responses:
+                    for extra_resp, _ in self._extra_responses:
+                        writer.write(extra_resp)
+                        await writer.drain()
+                        if len(extra_resp) >= 2:
+                            er_type = extra_resp[1]
+                            er_name = FRAME_TYPES.get(er_type, f"0x{er_type:02X}")
+                            self.log(f"  TCP-SIG → {er_name} ({len(extra_resp)}B) [extra]")
+                    self._extra_responses.clear()
+                    
+        except (asyncio.IncompleteReadError, ConnectionError, OSError) as e:
+            self.log(f"  TCP-SIG connection from {peer_ip}:{peer_port} closed: {e}")
+        finally:
+            writer.close()
+            await writer.wait_closed()
 
     async def _tcp_listen(self, port: int):
         """Listen for TCP connections and proxy them to upstream Mars relay."""
