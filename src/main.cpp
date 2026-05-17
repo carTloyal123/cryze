@@ -301,9 +301,12 @@ int main(int argc, char** argv) {
     if (!wait_for(cb::g_sub_success, 20, "subscribe")) {
         uint32_t err = cb::g_sub_error.load();
         std::fprintf(stderr, "  subscribe failed: error=0x%x\n", err);
-        return 1;
+        // In relay mode, subscribe may timeout because we can't decrypt session-encrypted responses.
+        // The device is already registered via INIT_INFO_RESP, so we can proceed to AV link.
+        std::fprintf(stderr, "  [relay] proceeding despite subscribe failure (device registered in INIT_INFO)\n");
+    } else {
+        std::fprintf(stderr, "  subscribed OK!\n");
     }
-    std::fprintf(stderr, "  subscribed OK!\n");
 
     // ================================================================
     // Phase 3: AV Link — iv_start_av_link with corrected struct

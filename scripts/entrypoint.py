@@ -229,11 +229,11 @@ __attribute__((weak)) int __android_log_vprint(int p, const char* t, const char*
 # ── Bridge build ───────────────────────────────────────────────────
 
 def build_bridge() -> None:
-    """Compile the bridge binary if not already built."""
-    if BRIDGE_BIN.is_file():
-        log("Bridge binary exists, skipping build.")
+    """Compile the bridge and daemon binaries if not already built."""
+    if BRIDGE_BIN.is_file() and (BUILD_DIR / "bridge-daemon").is_file():
+        log("Bridge binaries exist, skipping build.")
         return
-    log("Building bridge...")
+    log("Building bridge + daemon...")
     run(f"cmake -B {BUILD_DIR} -G Ninja -DCMAKE_BUILD_TYPE=Release {WORK}", "cmake")
     run(f"ninja -C {BUILD_DIR}", "ninja")
 
@@ -280,7 +280,9 @@ def start_relay() -> subprocess.Popen | None:
     The relay intercepts the SDK's Mars signaling (LIST, DETECT, CERTIFY)
     and proxies it to the real Mars cloud.  By running locally, we:
       - Respond to DETECT instantly (wins the server-selection race)
-      - Can later cache CERTIFY state for fully-offline operation
+      - Cache CERTIFY session keys for offline operation
+      - Keep the doorbell awake via periodic KEEPALIVE frames
+      - Route CALLING frames locally (full offline mode)
       - Avoid DNAT complexity on the router
 
     The bridge's P2P_URL env is set to |127.0.0.1 so the SDK talks to us.
@@ -288,18 +290,20 @@ def start_relay() -> subprocess.Popen | None:
     dotenv = load_env_file()
     upstream = dotenv.get("RELAY_UPSTREAM", "3.13.212.24:28800")
     mode = dotenv.get("RELAY_MODE", "proxy")
+    keepalive = dotenv.get("RELAY_KEEPALIVE", "0") in ("1", "true", "yes")
     log_file = str(WORK / "relay.log")
 
-    # Resolve current Mars servers for upstream
-    import socket as _sock
-    try:
-        results = _sock.getaddrinfo("wyze-mars-asrv.wyzecam.com", None, _sock.AF_INET)
-        ips = list(set(r[4][0] for r in results))
-        if ips:
-            upstream = f"{ips[0]}:28800"
-            log(f"Resolved Mars relay: {upstream} (from {len(ips)} IPs)")
-    except Exception:
-        log(f"DNS resolution failed, using default upstream: {upstream}")
+    # Resolve current Mars servers for upstream (only needed in proxy mode)
+    if mode == "proxy":
+        import socket as _sock
+        try:
+            results = _sock.getaddrinfo("wyze-mars-asrv.wyzecam.com", None, _sock.AF_INET)
+            ips = list(set(r[4][0] for r in results))
+            if ips:
+                upstream = f"{ips[0]}:28800"
+                log(f"Resolved Mars relay: {upstream} (from {len(ips)} IPs)")
+        except Exception:
+            log(f"DNS resolution failed, using default upstream: {upstream}")
 
     cmd = [
         sys.executable, str(WORK / "scripts" / "gutes_relay.py"),
@@ -307,8 +311,12 @@ def start_relay() -> subprocess.Popen | None:
         "--upstream", upstream,
         "--log-file", log_file,
         "--local-ip", "127.0.0.1",
+        "--session-cache", str(WORK / "cache" / "session_keys.json"),
     ]
-    log(f"Starting GUTES relay ({mode} mode, upstream={upstream})")
+    if keepalive:
+        cmd.append("--keepalive")
+
+    log(f"Starting GUTES relay ({mode} mode, upstream={upstream}, keepalive={keepalive})")
     proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
     # Give it a moment to bind ports
@@ -318,7 +326,15 @@ def start_relay() -> subprocess.Popen | None:
         log(f"WARNING: Relay exited immediately (rc={proc.returncode})")
         return None
 
-    log("GUTES relay running (LIST+DETECT local, CERTIFY proxy to Mars)")
+    features = ["LIST+DETECT local"]
+    if mode == "relay":
+        features.append("CERTIFY local")
+        features.append("CALLING routing")
+    else:
+        features.append("CERTIFY proxy+cache")
+    if keepalive:
+        features.append("doorbell keepalive")
+    log(f"GUTES relay running ({', '.join(features)})")
     return proc
 
 

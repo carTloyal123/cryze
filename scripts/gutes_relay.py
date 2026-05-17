@@ -108,6 +108,16 @@ class RelayState:
     addr_to_term: dict[tuple, int] = field(default_factory=dict)  # (ip, port) -> term_id
     next_session_id: int = 7640526817926134784  # Match real Mars session IDs
     
+    # Session key cache: term_id -> 32-byte session key (client_key XOR server_key)
+    session_keys: dict[int, bytes] = field(default_factory=dict)
+    # Also index session keys by source address for session-encrypted frame lookup
+    addr_session_keys: dict[tuple, bytes] = field(default_factory=dict)
+    # Session ID returned in CERTIFY_RESP (addr → 8-byte session_id)
+    # INIT_INFO_RESP must use this as its term_id field for routing validation
+    addr_session_id: dict[tuple, bytes] = field(default_factory=dict)
+    # Track per-client sqnum for prediction (CERTIFY sqnum → INIT_INFO sqnum = +1)
+    addr_last_sqnum: dict[tuple, int] = field(default_factory=dict)
+    
     # Wakeup infrastructure
     pending_callings: list = field(default_factory=list)  # PendingWakeup queue
     
@@ -119,6 +129,12 @@ class RelayState:
     chime_term_id: int = 0  # Term ID of the connected chime
     doorbell_term_id: int = 0  # Term ID of the doorbell (when connected)
     bridge_term_id: int = 0  # Term ID of our bridge
+    
+    # Keepalive state
+    doorbell_addr: tuple = ('', 0)  # Last known (ip, port) of doorbell
+    doorbell_last_ack: float = 0.0  # Timestamp of last received keepalive ACK
+    keepalive_misses: int = 0  # Consecutive unacknowledged keepalives
+    keepalive_enabled: bool = False  # Whether the keepalive loop is active
 
 
 class GutesRelay:
@@ -126,16 +142,19 @@ class GutesRelay:
 
     def __init__(self, listen_ports: list[int] = None, list_port: int = 51701,
                  mode: str = "proxy", upstream: str = "3.13.212.24:28800",
-                 log_file: Optional[str] = None, local_ip: str = ""):
+                 log_file: Optional[str] = None, local_ip: str = "",
+                 keepalive: bool = False,
+                 session_cache: str = "cache/session_keys.json"):
         self.listen_ports = listen_ports or [28800, 8443, 8000]
         self.list_port = list_port
         self.mode = mode
         self.upstream_host = upstream.split(':')[0]
         self.upstream_port = int(upstream.split(':')[1])
-        self.state = RelayState()
+        self.state = RelayState(keepalive_enabled=keepalive)
         self.t0 = time.time()
         self.log_fp = open(log_file, 'a') if log_file else None
         self.local_ip = local_ip or self._detect_local_ip()
+        self.session_cache_path = Path(session_cache)
         
         # Server identity — the relay needs its own stable term_id.
         # Real Mars servers use unique 64-bit IDs; DETECT_RESP carries the
@@ -221,50 +240,40 @@ class GutesRelay:
         )
 
     def build_detect_resp(self, req_data: bytes) -> bytes:
-        """Build DETECT_RESP matching the real Mars relay format.
+        """Build DETECT_RESP that the SDK will accept.
 
-        Critical finding from pcap analysis of real Mars servers:
-        The DETECT_RESP carries the SERVER's own term_id, sqnum, and chkval —
-        NOT an echo of the client's values.  Each server identifies itself.
-        The SDK uses this to distinguish between different relay servers.
-
-        Real DETECT_RESP (56 bytes, frm_len=0x38):
-          Header (0x1C):
-            [0]: 0x7F  [1]: 0x02  [2:4]: 0x0038 (56)
-            [4:12]: SERVER's term_id (RC5-encrypted with sqnum/chkval XOR)
-            [0x0C:0x10]: SERVER's sqnum (incrementing counter)
-            [0x10:0x14]: SERVER's chkval
-            [0x14:0x18]: opt_flags (random nonce in bits 1-15, rest zero)
-            [0x18:0x1A]: flags2 = 0x0001
-            [0x1A:0x1C]: ack_result = 0x0000
-          Payload (28 bytes):
-            +0x00: tick count / uptime in ms (4B LE)
-            +0x04: 0x00000000
-            +0x08: MTU info — 0x58,0x00,0x56,0x00 (88 and 86)
-            +0x0C: tick count repeat
-            +0x10: 0x00000000
-            +0x14: Unix timestamp (4B LE) — the real time field
-            +0x18: server load (4B LE, lower = better)
+        Key insight: The SDK dispatches responses via iv_gutes_on_rcvfrm_resp
+        which matches pending requests by: pending_req.sqnum == response.chkval_field.
+        
+        So we need:
+          - opt_resp=1 (bit 21 of opt_flags) to route through response matching
+          - chkval field = the original DETECT_REQ's sqnum (extracted by decrypting)
+        
+        With opt_resp=1, the SDK skips chkval verification entirely and just
+        uses the chkval field for request-response matching.
         """
         import random as _rand
+
+        # Extract the request's sqnum by decrypting bytes 0x0C-0x13
+        # The DETECT_REQ has opt_encrypt=1, so sqnum is encrypted with per-frame key
+        req_sqnum = self._extract_req_sqnum(req_data)
 
         resp = bytearray(0x38)  # 56 bytes
         resp[0] = 0x7F
         resp[1] = TYPE_DETECT_RESP
         struct.pack_into('<H', resp, 2, 0x38)
 
-        # Server's own identity — NOT the client's
+        # Server's term_id (plaintext — no encryption since opt_encrypt=0)
         sqnum = self._next_sqnum()
-        chkval = self._make_server_chkval(sqnum)
-        encrypted_id = self._encrypt_server_id(sqnum, chkval)
-        resp[4:12] = encrypted_id
+        term_id_bytes = struct.pack('<q', self.server_term_id)
+        resp[4:12] = term_id_bytes
         struct.pack_into('<I', resp, 0x0C, sqnum)
-        struct.pack_into('<I', resp, 0x10, chkval)
+        # chkval = the REQUEST's sqnum (for response matching)
+        struct.pack_into('<I', resp, 0x10, req_sqnum)
 
-        # opt_flags: random nonce in bits 1-15, everything else zero
-        # (encrypt=0, qos=0, ack=0, response=0 — matches real Mars servers)
+        # opt_flags: opt_resp=1 (bit 21), no encryption, random nonce
         nonce = _rand.randint(0, 0x7FFF)
-        opt_flags = nonce << 1
+        opt_flags = (nonce << 1) | (1 << 21)  # opt_resp=1
         struct.pack_into('<I', resp, 0x14, opt_flags)
 
         # flags2 = 0x0001, ack_result = 0x0000
@@ -274,90 +283,363 @@ class GutesRelay:
         # Payload (28 bytes) — match real Mars layout from pcap
         now = int(time.time())
         uptime_ms = int((time.time() - self.t0) * 1000) & 0xFFFFFFFF
-        # +0x00: server uptime/tick in milliseconds
         struct.pack_into('<I', resp, 0x1C, uptime_ms)
-        # +0x04: zero
         struct.pack_into('<I', resp, 0x20, 0)
-        # +0x08: MTU values (88, 86 from real pcap capture)
-        resp[0x24] = 0x58  # 88
+        resp[0x24] = 0x58  # MTU: 88
         resp[0x25] = 0x00
-        resp[0x26] = 0x56  # 86
+        resp[0x26] = 0x56  # MTU: 86
         resp[0x27] = 0x00
-        # +0x0C: uptime repeat
         struct.pack_into('<I', resp, 0x28, uptime_ms)
-        # +0x10: zero
         struct.pack_into('<I', resp, 0x2C, 0)
-        # +0x14: Unix timestamp (this is where real Mars puts the actual time)
         struct.pack_into('<I', resp, 0x30, now)
-        # +0x18: server load (lower = SDK prefers this server)
-        struct.pack_into('<I', resp, 0x34, 1)  # minimal load
+        struct.pack_into('<I', resp, 0x34, 1)  # server load
 
         return bytes(resp)
 
-    def build_list_resp(self, req_data: bytes, reply_ip: str = None) -> bytes:
+    def _extract_req_sqnum(self, req_data: bytes) -> int:
+        """Extract the plaintext sqnum from an encrypted request frame.
+        
+        For opt_encrypt=1, bytes 0x0C-0x13 are encrypted with the per-frame key.
+        The per-frame key is derived from raw frame bytes [0],[1],[2],[3],[0x14],[0x15],[0x16].
+        We decrypt the 8 bytes at 0x0C to get plaintext sqnum (first 4 bytes).
+        """
+        if len(req_data) < HEADER_SIZE:
+            return 0
+        
+        opt_flags = struct.unpack_from('<I', req_data, 0x14)[0]
+        opt_encrypt = (opt_flags >> 16) & 3
+        
+        if opt_encrypt == 0:
+            # Not encrypted — read sqnum directly
+            return struct.unpack_from('<I', req_data, 0x0C)[0]
+        
+        # Derive per-frame key from header bytes
+        pfk = derive_per_frame_key(req_data)
+        rc5 = RC5(block_bytes=8, rounds=6)
+        rc5.setkey(pfk)
+        
+        # Decrypt the 8 bytes at offset 0x0C (sqnum + chkval)
+        decrypted_block = rc5.decrypt_block(bytes(req_data[0x0C:0x14]))
+        
+        return struct.unpack_from('<I', decrypted_block, 0)[0]
+
+    def _build_ack(self, req_data: bytes, frame_type: int, addr: tuple = None) -> bytes:
+        """Build a generic ACK frame for a reliable request.
+        
+        Detects whether the request uses session encryption (proto=0x7E, opt_encrypt=2)
+        and builds the ACK accordingly.
+        
+        ACK format: header-only (0x1C bytes), same frame type.
+        For session-encrypted: proto=0x7E, opt_encrypt=2, session-encrypted sqnum/chkval
+        For unencrypted: proto=0x7F, opt_encrypt=0
+        """
+        import random as _rand
+        
+        req_sqnum = self._extract_req_sqnum(req_data)
+        req_proto = req_data[0] if len(req_data) > 0 else 0x7F
+        req_opt = struct.unpack_from('<I', req_data, 0x14)[0] if len(req_data) >= 0x18 else 0
+        req_encrypt = (req_opt >> 16) & 3
+        
+        # ACK frame: header (0x1C) + 4-byte payload (acked sqnum)
+        ack_len = HEADER_SIZE + 4
+        ack = bytearray(ack_len)
+        ack[0] = req_proto  # Match the request's protocol byte
+        ack[1] = frame_type
+        struct.pack_into('<H', ack, 2, ack_len)
+        
+        # Server term_id
+        term_id_bytes = struct.pack('<q', self.server_term_id)
+        ack[4:12] = term_id_bytes
+        
+        sqnum = self._next_sqnum()
+        struct.pack_into('<I', ack, 0x0C, sqnum)
+        struct.pack_into('<I', ack, 0x10, req_sqnum)  # chkval = request sqnum (for matching)
+        
+        # opt_flags: match encryption mode, set ack=1 (bit 20), resp=1 (bit 21)
+        nonce = _rand.randint(0, 0x7FFF)
+        opt_flags = (nonce << 1) | (req_encrypt << 16) | (1 << 20) | (1 << 21)
+        struct.pack_into('<I', ack, 0x14, opt_flags)
+        
+        # flags2 + ack_result (ack_result = confirmed sqnum for reliable delivery)
+        struct.pack_into('<H', ack, 0x18, 0x0000)
+        struct.pack_into('<H', ack, 0x1A, req_sqnum & 0xFFFF)  # Lower 16 bits of acked sqnum
+        
+        # Payload: full 32-bit acked sqnum
+        struct.pack_into('<I', ack, HEADER_SIZE, req_sqnum)
+        
+        # If session encrypted, encrypt sqnum+chkval and ID with session key
+        if req_encrypt == 2:
+            # Look up session key by address (most reliable for session-encrypted frames)
+            session_key = self.state.addr_session_keys.get(addr) if addr else None
+            if not session_key:
+                # Fallback: try decoded term_id
+                req_term_id = self.decode_term_id(req_data)
+                session_key = self.get_session_key(req_term_id)
+            if session_key:
+                # Per-frame key derivation is the same for all encrypt modes
+                pfk = derive_per_frame_key(bytes(ack[:0x18]))
+                rc5 = RC5(block_bytes=8, rounds=6).setkey(pfk)
+                
+                # Encrypt sqnum + chkval with per-frame key
+                enc_sqn = rc5.encrypt_block(bytes(ack[0x0C:0x14]))
+                ack[0x0C:0x14] = enc_sqn
+                
+                # For opt_encrypt=2, ID is encrypted with SESSION KEY (not GWELL_KEY!)
+                rc5_id = RC5(block_bytes=8, rounds=6).setkey(session_key[:8])
+                enc_id = bytearray(rc5_id.encrypt_block(bytes(term_id_bytes)))
+                # XOR with encrypted sqnum/chkval
+                for i in range(4):
+                    enc_id[i] ^= ack[0x0C + i]
+                    enc_id[4+i] ^= ack[0x10 + i]
+                ack[4:12] = enc_id
+                
+                # Encrypt payload with session key (opt_encrypt=2)
+                if len(ack) > HEADER_SIZE:
+                    # Pad payload to 8 bytes if needed for RC5 block
+                    payload_start = HEADER_SIZE
+                    payload_len = len(ack) - HEADER_SIZE
+                    if payload_len >= 8:
+                        rc5_sess = RC5(block_bytes=8, rounds=6).setkey(session_key[:8])
+                        enc_payload = rc5_sess.encrypt_block(bytes(ack[payload_start:payload_start+8]))
+                        ack[payload_start:payload_start+8] = enc_payload
+                    elif payload_len == 4:
+                        # Pad to 8 bytes, encrypt, truncate back
+                        padded = bytes(ack[payload_start:payload_start+4]) + b'\x00\x00\x00\x00'
+                        rc5_sess = RC5(block_bytes=8, rounds=6).setkey(session_key[:8])
+                        enc_payload = rc5_sess.encrypt_block(padded)
+                        # Actually, just expand the frame to 8 bytes payload
+                        ack = ack[:payload_start] + bytearray(enc_payload)
+                        struct.pack_into('<H', ack, 2, len(ack))  # Update frm_len
+        
+        return bytes(ack)
+
+    def _build_init_info_resp(self, req_data: bytes, addr: tuple, predicted_sqnum: int) -> bytes:
+        """Build INIT_INFO_RESP with NO encryption (opt_encrypt=0).
+        
+        The SDK's session receive path decrypts based on opt_encrypt flag.
+        With opt_encrypt=0, no decryption is performed — the SDK reads all fields
+        in plaintext. This avoids the need for the session key entirely.
+        
+        The SDK matches responses by: pending_req.sqnum == incoming_frame.chkval
+        For session-encrypted (opt_encrypt=2) frames, we can't decrypt the sqnum.
+        Instead we predict it: INIT_INFO sqnum = CERTIFY_REQ sqnum + 1 (sequential counter).
+        """
+        # Build payload with device list so SDK registers devices (prevents offline after subscribe timeout)
+        # Format: flags2(2B) + ack_result(2B) + online_cnt(2B) + offline_cnt(2B) + device_entries
+        # Each device entry (mode!=3): did(8B) + tid_hash(16B) + status(1B) + auth(1B) + srv_id(2B) = 28B
+        # flags2 bit 0 must be set to trigger device list parsing
+        
+        # Use the device_id from our config (numeric device ID for the doorbell)
+        device_id = getattr(self, 'device_numeric_id', 429728659090583)  # from WYZE_DID
+        
+        # Device entry: 28 bytes
+        dev_entry = bytearray(28)
+        struct.pack_into('<Q', dev_entry, 0, device_id)  # did (8B)
+        # tid_hash (16B) = zeros (SDK will use did as string key)
+        dev_entry[24] = 1  # status = 1 (online)
+        dev_entry[25] = 1  # auth = 1 (authorized)
+        struct.pack_into('<H', dev_entry, 26, 0)  # srv_id = 0
+        
+        flags2 = 0x0001  # bit 0 set = has device list
+        ack_result = 0
+        online_cnt = 1
+        offline_cnt = 0
+        
+        payload = struct.pack('<HHHH', flags2, ack_result, online_cnt, offline_cnt)
+        payload += bytes(dev_entry)
+        
+        CRYPTO_HDR = 0x18
+        frame_size = CRYPTO_HDR + len(payload)
+        resp = bytearray(frame_size)
+        resp[0] = 0x7E  # Session protocol
+        resp[1] = TYPE_INIT_INFO_MSG + 1  # Response type = request type + 1
+        struct.pack_into('<H', resp, 2, frame_size)
+        
+        # Server term_id — MUST match the session_id we returned in CERTIFY_RESP
+        # The SDK checks: incoming_frame.term_id == stored_session_id (from CERTIFY)
+        session_id_bytes = self.state.addr_session_id.get(addr)
+        if session_id_bytes:
+            resp[4:12] = session_id_bytes
+        else:
+            # Fallback: use server_term_id (may not match, but try anyway)
+            term_id_bytes = struct.pack('<q', self.server_term_id)
+            resp[4:12] = term_id_bytes
+        
+        # sqnum (our own) and chkval = predicted request sqnum (for response matching)
+        sqnum = self._next_sqnum()
+        struct.pack_into('<I', resp, 0x0C, sqnum)
+        struct.pack_into('<I', resp, 0x10, predicted_sqnum & 0xFFFFFFFF)
+        
+        # opt_flags: opt_encrypt=0, opt_resp=1 (bit 21), relay_flag=1 (bit 25)
+        # bit 25 bypasses the session_id routing check in iv_gutes_on_rcvpkt
+        opt_flags = (1 << 21) | (1 << 25)
+        struct.pack_into('<I', resp, 0x14, opt_flags)
+        
+        # Payload
+        resp[CRYPTO_HDR:] = payload
+        
+        return bytes(resp)
+
+    def _build_subscribe_resp(self, addr: tuple, predicted_sqnum: int) -> bytes:
+        """Build SUBSCRIBE_RESP (type=0xA1) with opt_encrypt=0, opt_resp=1, bit25=1.
+        
+        The SDK's gat_rcv_subscribe_dev_resp reads:
+        - ack_result (frame offset 0x1A): 0 = success
+        - error_code (frame offset 0x34): 0 = no error
+        """
+        # Payload: flags2(2B) + ack_result(2B) + padding to cover error_code at offset 0x34
+        # error_code is at frame offset 0x34 - 0x18 = 0x1C from payload start
+        # Payload: [0x18]=flags2=0, [0x1A]=ack_result=0, [0x1C..0x35]=zeros (including error at 0x34)
+        payload_size = 0x34 - 0x18 + 2  # up to and including error_code field = 30 bytes
+        payload = bytearray(payload_size)  # all zeros = success
+        
+        CRYPTO_HDR = 0x18
+        frame_size = CRYPTO_HDR + payload_size
+        resp = bytearray(frame_size)
+        resp[0] = 0x7E  # Session protocol
+        resp[1] = TYPE_SUBSCRIBE_RESP  # 0xA1
+        struct.pack_into('<H', resp, 2, frame_size)
+        
+        # term_id = session_id from CERTIFY
+        session_id_bytes = self.state.addr_session_id.get(addr)
+        if session_id_bytes:
+            resp[4:12] = session_id_bytes
+        else:
+            struct.pack_into('<q', resp, 4, self.server_term_id)
+        
+        # sqnum and chkval = predicted request sqnum
+        sqnum = self._next_sqnum()
+        struct.pack_into('<I', resp, 0x0C, sqnum)
+        struct.pack_into('<I', resp, 0x10, predicted_sqnum & 0xFFFFFFFF)
+        
+        # opt_flags: opt_encrypt=0, opt_resp=1 (bit 21), relay_flag=1 (bit 25)
+        opt_flags = (1 << 21) | (1 << 25)
+        struct.pack_into('<I', resp, 0x14, opt_flags)
+        
+        # Payload (all zeros = success)
+        resp[CRYPTO_HDR:] = payload
+        
+        self.log(f"  → SUBSCRIBE_RESP to {addr[0]}:{addr[1]} ({frame_size}B) chkval={predicted_sqnum}")
+        return bytes(resp)
+
+    def _compute_chkval(self, frame: bytearray) -> int:
+        """Compute the GUTES frame checksum matching iv_gute_frm_init_chkval.
+        
+        From decompiled code (libiotp2pav.c:17589):
+          chkval = (opt_flags & 0xffffff) ^ dword[0] ^ dword[1] ^ dword[2] ^ dword[3]
+          for each payload dword starting at offset 0x18:
+              chkval ^= dword
+          
+        Frame is treated as uint32 LE array:
+          [0]=bytes 0-3, [1]=4-7, [2]=8-11, [3]=12-15(sqnum),
+          [4]=16-19(chkval), [5]=20-23(opt_flags), [6+]=24+(payload)
+        """
+        d = [struct.unpack_from('<I', frame, i*4)[0] for i in range(len(frame)//4)]
+        # opt_flags & 0x00ffffff ^ first 4 dwords (header bytes 0x00-0x0F)
+        chk = (d[5] & 0x00FFFFFF) ^ d[0] ^ d[1] ^ d[2] ^ d[3]
+        # XOR all dwords from offset 0x18 onward (index 6+)
+        for i in range(6, len(d)):
+            chk ^= d[i]
+        return chk & 0xFFFFFFFF
+
+    def build_list_resp(self, list_req_data: bytes, reply_ip: str = None) -> bytes:
         """Build LIST_RESP with our relay as the only server.
 
-        Format (from captured 176-byte response, frm_len=0xB0):
-        - Header (0x1C bytes) — uses SERVER's term_id (like DETECT_RESP)
-        - Payload: server list entries (per-frame encrypted)
-
-        Each server entry (from RE of iv_get_srv_list_from_Rmtlist_Resp):
-        - 4 bytes: IPv4 address (network byte order)
-        - 2 bytes: port (LE)
-        - 2 bytes: server_id (LE)
-        - 2 bytes: flags
+        Payload format (from decompiled gat_on_rcvpkt_LIST_RESP):
+          Frame offset 0x1C+0: uint16 timer_interval (minutes, valid range: 60-180)
+          Frame offset 0x1C+2: uint8  server_count
+          Frame offset 0x1C+3: padding byte
+          Frame offset 0x1C+4: server entries, each 36 bytes (0x24)
+        
+        Each 36-byte server entry:
+          +0:  uint32  IPv4 address (network byte order from inet_aton)
+          +4:  uint8[16] IPv6 address (zeros for v4-only)
+          +20: uint8   flags
+          +21: uint8   padding
+          +22: uint16  unknown (0)
+          +24: uint16  port1 (LE)
+          +26: uint16  port2 (LE)
+          +28: uint16  port3 (LE)
+          +30: uint16  port4 (LE)
+          +32: 4 bytes padding
+        
+        We send opt_encrypt=0, opt_resp=0, and compute the correct chkval.
+        
+        The SDK's dispatch: for opt_resp=0, the frame goes through a type-based
+        callback dispatch (param_1[0x2b]) which routes to gat_on_rcvpkt_LIST_RESP.
+        For opt_resp=1, it goes to iv_gutes_on_rcvfrm_resp which uses request-matching
+        that never matches LIST (since LIST_REQ uses reliable=0).
+        
+        Chkval formula (from iv_gute_frm_init_chkval):
+          chk = (opt_flags & 0x00FFFFFF) ^ dword[0] ^ dword[1] ^ dword[2] ^ dword[3]
+          for each dword at offset 0x18+: chk ^= dword[i]
+        Where dword[n] = frame as uint32 LE array. dword[4] (chkval itself) is excluded.
         """
         import random as _rand
 
-        # Header
-        resp = bytearray(0xB0)  # 176 bytes like real response
+        num_servers = 1  # just one server entry pointing to us
+        payload_size = 4 + num_servers * 36  # timer(2) + count(1) + pad(1) + entries
+        frame_size = HEADER_SIZE + payload_size
+        
+        resp = bytearray(frame_size)
         resp[0] = 0x7F
         resp[1] = TYPE_LIST_RESP
-        struct.pack_into('<H', resp, 2, 0xB0)
+        struct.pack_into('<H', resp, 2, frame_size)
 
-        # Server's own identity (confirmed from pcap: LIST_RESP term_id ≠ request)
+        # Server term_id (plaintext — no encryption when opt_encrypt=0)
         sqnum = self._next_sqnum()
-        chkval = self._make_server_chkval(sqnum)
-        encrypted_id = self._encrypt_server_id(sqnum, chkval)
-        resp[4:12] = encrypted_id
+        term_id_bytes = struct.pack('<q', self.server_term_id)
+        resp[4:12] = term_id_bytes
         struct.pack_into('<I', resp, 0x0C, sqnum)
-        struct.pack_into('<I', resp, 0x10, chkval)
-
-        # opt_flags: encrypt=1 (per-frame), random nonce
+        # chkval will be set after computation
+        
+        # opt_flags: encrypt=0, resp=0, ack=0, reliable=0, random nonce
         nonce = _rand.randint(0, 0x7FFF)
-        opt_flags = (nonce << 1) | (1 << 16)  # encrypt=1
+        opt_flags = (nonce << 1)  # no encrypt, no resp, no ack
         struct.pack_into('<I', resp, 0x14, opt_flags)
         
-        # Build plaintext payload with our server entries
-        # Real Mars returns ~5 servers on different ports (28800, 8443, 8000, 443).
-        # The SDK sends DETECT to each one. We list our relay on all its ports.
-        # Each entry: ip(4B, NBO) + port(2B LE) + srv_id(2B LE) + flags(2B) = 10 bytes
-        payload = bytearray(0xB0 - HEADER_SIZE)
-
+        # flags2 and ack_result (frame bytes 0x18-0x1B)
+        struct.pack_into('<H', resp, 0x18, 0x0000)
+        struct.pack_into('<H', resp, 0x1A, 0x0000)
+        
+        # --- Payload (starts at HEADER_SIZE = 0x1C) ---
         ip_bytes = socket.inet_aton(reply_ip or self.local_ip)
-        num_servers = len(self.listen_ports)
-        struct.pack_into('<H', payload, 0, num_servers)
-
-        for i, port in enumerate(self.listen_ports):
-            off = 2 + i * 10
-            payload[off:off+4] = ip_bytes
-            struct.pack_into('<H', payload, off + 4, port)
-            struct.pack_into('<H', payload, off + 6, i + 1)  # srv_id
-            struct.pack_into('<H', payload, off + 8, 0)      # flags
+        main_port = self.listen_ports[0]  # 28800
         
-        # Encrypt payload with per-frame key
-        pfk = derive_per_frame_key(bytes(resp[:0x18]))
-        rc5 = RC5(block_bytes=8, rounds=6).setkey(pfk)
+        # Timer interval: uint16 LE at payload offset 0 (60 minutes = 0x3C)
+        struct.pack_into('<H', resp, HEADER_SIZE, 60)
+        # Server count: uint8 at payload offset 2
+        resp[HEADER_SIZE + 2] = num_servers
+        # Padding byte at offset 3 (already 0)
         
-        # Ensure payload is a multiple of 8 bytes for RC5
-        pad_len = (len(payload) + 7) & ~7
-        payload_padded = bytes(payload) + b'\x00' * (pad_len - len(payload))
-        encrypted = rc5.encrypt(payload_padded)
+        # Server entry at payload offset 4 (frame offset 0x20)
+        entry_off = HEADER_SIZE + 4
+        resp[entry_off:entry_off+4] = ip_bytes          # IPv4 (4 bytes)
+        # IPv6 stays zero (bytes 4-19)
+        # flags byte at +20 stays 0
+        # padding at +21 stays 0
+        # unknown uint16 at +22 stays 0
+        struct.pack_into('>H', resp, entry_off + 24, main_port)  # port1 (BE/network order)
+        struct.pack_into('>H', resp, entry_off + 26, main_port)  # port2 (BE/network order)
+        struct.pack_into('>H', resp, entry_off + 28, main_port)  # port3 (BE/network order)
+        struct.pack_into('>H', resp, entry_off + 30, main_port)  # port4 (BE/network order)
+        # 4 bytes padding at +32 stays 0
         
-        resp[HEADER_SIZE:HEADER_SIZE + len(encrypted)] = encrypted
+        # Compute chkval: XOR of opt_flags(lower 24 bits), dwords [0..3], payload dwords
+        # dword[4] (chkval itself at 0x10) is excluded
+        # dword[5] (opt_flags at 0x14) is used separately as & 0xffffff
+        chk = opt_flags & 0x00FFFFFF
+        chk ^= struct.unpack_from('<I', resp, 0)[0]   # dword[0]: proto+type+frm_len
+        chk ^= struct.unpack_from('<I', resp, 4)[0]   # dword[1]: term_id[0:4]
+        chk ^= struct.unpack_from('<I', resp, 8)[0]   # dword[2]: term_id[4:8]
+        chk ^= struct.unpack_from('<I', resp, 0xC)[0]  # dword[3]: sqnum
+        # XOR payload dwords starting at offset 0x18
+        for off in range(0x18, frame_size - 3, 4):
+            chk ^= struct.unpack_from('<I', resp, off)[0]
+        chk &= 0xFFFFFFFF
+        struct.pack_into('<I', resp, 0x10, chk)
         
         return bytes(resp)
-
     def get_upstream_sock(self, term_id: int) -> socket.socket:
         """Get or create a dedicated upstream socket for a client."""
         if term_id not in self.upstream_socks:
@@ -414,18 +696,10 @@ class GutesRelay:
                     f"server_tid={self.server_term_id} ({len(resp)}B)")
             return resp
 
-        # --- LIST_REQ: always respond locally with our address ---
-        # The LIST_RESP payload uses encryption we can't replicate (the per-frame
-        # key derivation produces garbage for LIST_RESP — likely an additional
-        # XOR or different key schedule).  Rather than trying to decrypt/rewrite
-        # real Mars LIST_RESP, we respond locally with our relay as the only
-        # server.  The SDK will then DETECT against us, we respond with our
-        # server term_id, and the SDK proceeds to CERTIFY (which we proxy to
-        # real Mars in proxy mode).
-        #
-        # In proxy mode we ALSO forward to Mars so the upstream socket gets
-        # created (needed for CERTIFY forwarding), but the client uses our
-        # local response because it arrives first.
+        # --- LIST_REQ: respond locally with our relay as the only server ---
+        # We ALWAYS respond locally because:
+        # 1. Container networking blocks outbound UDP to Mars:51701
+        # 2. We want the SDK to DETECT against our local relay
         elif ftype == TYPE_LIST_REQ:
             self.log(f"← LIST_REQ from {addr[0]}:{addr[1]} term_id={term_id} ({frm_len}B)")
             reply_ip = "127.0.0.1" if addr[0].startswith("127.") else self.local_ip
@@ -439,6 +713,11 @@ class GutesRelay:
                 self.log(f"← CERTIFY_ACK from {addr[0]}:{addr[1]} term_id={term_id}")
             else:
                 self.log(f"← CERTIFY_REQ from {addr[0]}:{addr[1]} term_id={term_id} ({frm_len}B)")
+                # CERTIFY uses opt_encrypt=1 (per-frame key) — extract plaintext sqnum
+                # so we can predict INIT_INFO sqnum = certify_sqnum + 1
+                certify_sqnum = self._extract_req_sqnum(data)
+                self.state.addr_last_sqnum[addr] = certify_sqnum
+                self.log(f"  [DEBUG] CERTIFY plaintext sqnum={certify_sqnum}")
             if self.mode == "relay":
                 return self._handle_certify_local(data, addr, term_id)
             return None  # proxy: forward
@@ -448,15 +727,29 @@ class GutesRelay:
             if term_id in self.state.clients:
                 self.state.clients[term_id].certified = True
                 self._on_client_certified(term_id)
+            # In proxy mode, capture session key material before forwarding
+            if self.mode == "proxy":
+                self._capture_session_key_from_resp(data, term_id)
             return None  # proxy: forward to client
 
         # --- INIT_INFO ---
         elif ftype == TYPE_INIT_INFO_MSG:
             self.log(f"← INIT_INFO{'_ACK' if ack else ''} from {addr[0]}:{addr[1]} term_id={term_id}")
-            if not ack and term_id in self.state.clients:
+            if term_id in self.state.clients:
                 self.state.clients[term_id].certified = True
                 self._on_client_certified(term_id)
-            return None  # proxy: forward
+            # Send INIT_INFO_RESP (response, not just ACK)
+            if not ack and not is_resp:
+                # For session-encrypted (opt_encrypt=2) frames, we can't decrypt the sqnum.
+                # Instead, predict it: INIT_INFO sqnum = last_certify_sqnum + 1
+                predicted_sqnum = self.state.addr_last_sqnum.get(addr, 0) + 1
+                self.log(f"  [DEBUG] Using predicted sqnum={predicted_sqnum} for INIT_INFO_RESP")
+                resp = self._build_init_info_resp(data, addr, predicted_sqnum)
+                self.log(f"  → INIT_INFO_RESP to {addr[0]}:{addr[1]} ({len(resp)}B)")
+                # Increment for next predicted frame
+                self.state.addr_last_sqnum[addr] = predicted_sqnum
+                return resp
+            return None
 
         # --- CALLING: log and handle wakeup routing ---
         elif ftype == TYPE_CALLING_REQ:
@@ -467,6 +760,29 @@ class GutesRelay:
         # --- SUBSCRIBE ---
         elif ftype == TYPE_SUBSCRIBE:
             self.log(f"← SUBSCRIBE from {addr[0]}:{addr[1]} term_id={term_id} ({frm_len}B)")
+            if not ack and not is_resp:
+                # Respond with SUBSCRIBE_RESP (opt_encrypt=0, opt_resp=1, bit25=1)
+                # The subscribe sqnum = CERTIFY_sqnum + 3 (CERTIFY=N, INIT_INFO=N+1, ???=N+2, SUB=N+3)
+                # We stored the INIT_INFO predicted sqnum (N+1), so subscribe = N+3 = stored + 2
+                base_sqnum = self.state.addr_last_sqnum.get(addr, 0)
+                predicted_sqnum = base_sqnum + 2  # INIT_INFO was +1, subscribe is +3 from CERTIFY
+                self.log(f"  [DEBUG] SUBSCRIBE predicted_sqnum={predicted_sqnum} (base={base_sqnum})")
+                resp = self._build_subscribe_resp(addr, predicted_sqnum)
+                self.state.addr_last_sqnum[addr] = predicted_sqnum
+                return resp
+            return None
+
+        # --- KEEPALIVE ACK from doorbell ---
+        elif ftype == TYPE_KEEPALIVE and ack:
+            if term_id != 0 and term_id in self.state.clients:
+                client = self.state.clients[term_id]
+                if client.role == "doorbell" or addr[0] == "192.168.1.81":
+                    self.state.doorbell_last_ack = time.time()
+                    self.state.keepalive_misses = 0
+                    self.log(f"← KEEPALIVE_ACK from doorbell {addr[0]}:{addr[1]} "
+                            f"term_id={term_id} — misses reset")
+                    return None
+            self.log(f"← KEEPALIVE_ACK from {addr[0]}:{addr[1]} term_id={term_id}")
             return None
 
         # --- All other frames ---
@@ -480,58 +796,134 @@ class GutesRelay:
     def _handle_certify_local(self, data: bytes, addr: tuple, term_id: int) -> Optional[bytes]:
         """Handle CERTIFY in standalone relay mode.
         
-        For v1: generate a fake certify response.
-        The SDK needs: ACK + CERTIFY_RESP with session_id.
+        Performs the session key exchange:
+        1. Parse client's 32-byte key contribution from CERTIFY_REQ payload
+        2. Generate server's 32-byte random key
+        3. Derive session key = client_key XOR server_key (Gwell SDK standard)
+        4. Build CERTIFY_RESP (type 0x0D) with server key in payload
+        5. Cache the derived session key
+        
+        CERTIFY_REQ payload (after per-frame decryption): session_id(8B) + client_key(32B)
+        CERTIFY_RESP format: header(0x1C) + session_id(8B) + server_key(32B) + padding = ~80B
         """
+        import random as _rand
+
         opt_flags = struct.unpack_from('<I', data, 0x14)[0]
         if self.is_ack(opt_flags):
             return None  # ACK from client, no response needed
         
-        # Build ACK first
-        ack = bytearray(0x30)  # 48 bytes like real ACK
-        ack[0] = 0x7F
-        ack[1] = TYPE_CERTIFY_REQ  # Same type, ACK bit set
-        struct.pack_into('<H', ack, 2, 0x30)
-        ack[4:12] = data[4:12]  # term_id
-        ack[0x0C:0x10] = data[0x0C:0x10]  # sqnum
-        ack[0x10:0x14] = data[0x10:0x14]  # chkval
-        ack_flags = opt_flags | (1 << 20) | (1 << 21)  # ACK + response bits
-        struct.pack_into('<I', ack, 0x14, ack_flags)
-        # NTP timestamp
-        now = int(time.time())
-        struct.pack_into('<I', ack, 0x1C, now)
+        # --- Extract client key from CERTIFY_REQ payload ---
+        encrypt_mode = (opt_flags >> 16) & 0xF
+        payload = data[HEADER_SIZE:]
         
-        # TODO: Build proper CERTIFY_RESP with session key exchange
-        # For now, just send the ACK — the full certify needs more RE work
-        self.log(f"  [RELAY] CERTIFY handling incomplete — need device secret for proper response")
-        return bytes(ack)
+        if encrypt_mode == 1:
+            # Per-frame key decryption (opt_encrypt=1)
+            pfk = derive_per_frame_key(data[:0x18])
+            rc5 = RC5(block_bytes=8, rounds=6).setkey(pfk)
+            dec_len = (len(payload) // 8) * 8
+            if dec_len > 0:
+                payload = rc5.decrypt(bytes(payload[:dec_len]))
+        
+        # Payload format: session_id(8B) + client_key(32B) + possible padding
+        if len(payload) < 40:
+            self.log(f"  [RELAY] CERTIFY_REQ payload too short ({len(payload)}B), cannot extract client key")
+            return None
+        
+        client_session_id = payload[0:8]
+        client_key = payload[8:40]
+        self.log(f"  [RELAY] CERTIFY client_key={client_key[:8].hex()}... session_id={client_session_id.hex()}")
+        
+        # --- Generate server key and derive session key ---
+        server_key = os.urandom(32)
+        session_key = bytes(a ^ b for a, b in zip(client_key, server_key))
+        
+        # Cache the session key (by term_id AND by address)
+        self.state.session_keys[term_id] = session_key
+        self.state.addr_session_keys[addr] = session_key
+        self._persist_session_key(term_id, session_key)
+        self.log(f"  [RELAY] Derived session_key={session_key[:8].hex()}... for term_id={term_id}")
+        
+        # Mark client as certified
+        if term_id in self.state.clients:
+            self.state.clients[term_id].certified = True
+            self._on_client_certified(term_id)
+        
+        # --- Build CERTIFY_RESP (type 0x0D) ---
+        # Use opt_encrypt=0, opt_resp=1 — simplest approach:
+        # SDK skips decryption and chkval verification, just does response matching
+        # on the plaintext chkval field = req_sqnum
+        resp_len = 0x50  # 80 bytes
+        resp = bytearray(resp_len)
+        resp[0] = 0x7F
+        resp[1] = TYPE_CERTIFY_RESP
+        struct.pack_into('<H', resp, 2, resp_len)
+        
+        # Server term_id (plaintext — no encryption since opt_encrypt=0)
+        sqnum = self._next_sqnum()
+        # CRITICAL: chkval must = the REQUEST's sqnum for response matching
+        req_sqnum = self._extract_req_sqnum(data)
+        term_id_bytes = struct.pack('<q', self.server_term_id)
+        resp[4:12] = term_id_bytes
+        struct.pack_into('<I', resp, 0x0C, sqnum)
+        struct.pack_into('<I', resp, 0x10, req_sqnum)
+        
+        # opt_flags: encrypt=0, response=1, random nonce
+        nonce = _rand.randint(0, 0x7FFF)
+        resp_opt_flags = (nonce << 1) | (1 << 21)  # opt_resp=1, no encrypt
+        struct.pack_into('<I', resp, 0x14, resp_opt_flags)
+        
+        # flags2 = 0x0001, ack_result = 0x0000
+        struct.pack_into('<H', resp, 0x18, 0x0001)
+        struct.pack_into('<H', resp, 0x1A, 0x0000)
+        
+        # Plaintext payload: session_id(8B) + server_key(32B) + padding(12B)
+        resp[HEADER_SIZE:HEADER_SIZE+8] = client_session_id
+        resp[HEADER_SIZE+8:HEADER_SIZE+40] = server_key
+        # Remaining bytes stay zero
+        
+        # Store the session_id so INIT_INFO_RESP can use it as term_id
+        self.state.addr_session_id[addr] = client_session_id
+        
+        self.log(f"  [RELAY] -> CERTIFY_RESP to {addr[0]}:{addr[1]} ({resp_len}B)")
+        return bytes(resp)
 
     # ===== WAKEUP ROUTING INFRASTRUCTURE =====
 
     def _handle_calling(self, data: bytes, addr: tuple, sender_term_id: int):
-        """Handle CALLING_REQ with wakeup routing logic.
+        """Handle CALLING_REQ with full routing logic.
         
         In the real Mars relay, CALLING is routed by destination term_id
-        (encrypted in the frame payload). Since the payload is session-encrypted
-        (opt_encrypt=2), we can't decode the destination in proxy mode.
+        (encrypted in the frame payload with opt_encrypt=2 session key).
         
-        For wakeup routing, the flow is:
-        1. Bridge sends CALLING → relay forwards to Mars (proxy mode)
-        2. Mars routes to doorbell; if doorbell is offline, Mars notifies via GDM
-        3. In standalone mode: we queue the CALLING and trigger local wakeup
+        Relay mode routing:
+        1. Try to decrypt payload to find destination term_id
+        2. If destination is online: forward CALLING directly
+        3. If destination is offline: queue and trigger wakeup
         
-        When the doorbell connects to our relay, we deliver pending CALLINGs.
+        Proxy mode: Mars handles routing, we just log and forward.
         """
         if self.mode == "relay":
-            # In relay mode: check if doorbell is connected, if not, trigger wakeup
-            if self.state.doorbell_term_id:
-                doorbell = self.state.clients.get(self.state.doorbell_term_id)
-                if doorbell and (time.time() - doorbell.last_seen) < 30:
-                    self.log(f"  [WAKEUP] Doorbell is connected, routing CALLING directly")
+            # Try to determine destination from payload
+            dest_term_id = self._extract_calling_dest(data, sender_term_id)
+            
+            # Determine target: explicit destination or heuristic
+            target_term_id = dest_term_id
+            if not target_term_id:
+                # Heuristic: if sender is bridge, target is doorbell (and vice versa)
+                if sender_term_id == self.state.bridge_term_id:
+                    target_term_id = self.state.doorbell_term_id
+                elif sender_term_id == self.state.doorbell_term_id:
+                    target_term_id = self.state.bridge_term_id
+            
+            if target_term_id:
+                target = self.state.clients.get(target_term_id)
+                if target and (time.time() - target.last_seen) < 30:
+                    # Target is online — route directly
+                    self._route_calling_to(data, target, sender_term_id)
                     return
             
-            # Doorbell not connected — queue CALLING and send wakeup to chime
-            self.log(f"  [WAKEUP] Doorbell offline — queuing CALLING, triggering wakeup")
+            # Target not connected — queue CALLING and trigger wakeup
+            self.log(f"  [CALLING] Target offline (dest={target_term_id}) — queuing + wakeup")
             self.state.pending_callings.append(PendingWakeup(
                 calling_data=data,
                 bridge_term_id=sender_term_id,
@@ -542,6 +934,60 @@ class GutesRelay:
         # In proxy mode: Mars handles routing, but log for awareness
         else:
             self.log(f"  [PROXY] CALLING forwarded to Mars for routing")
+
+    def _extract_calling_dest(self, data: bytes, sender_term_id: int) -> int:
+        """Try to extract destination term_id from CALLING payload.
+        
+        The CALLING_REQ payload is session-encrypted (opt_encrypt=2).
+        If we have the sender's session key, we can decrypt to find
+        the destination term_id (first 8 bytes of decrypted payload).
+        """
+        opt_flags = struct.unpack_from('<I', data, 0x14)[0]
+        encrypt_mode = (opt_flags >> 16) & 0xF
+        payload = data[HEADER_SIZE:]
+        
+        if encrypt_mode != 2 or len(payload) < 8:
+            return 0
+        
+        session_key = self.get_session_key(sender_term_id)
+        if not session_key:
+            self.log(f"  [CALLING] No session key for sender {sender_term_id}, cannot extract dest")
+            return 0
+        
+        try:
+            rc5 = RC5(block_bytes=8, rounds=6).setkey(session_key)
+            dec_len = (len(payload) // 8) * 8
+            if dec_len < 8:
+                return 0
+            decrypted = rc5.decrypt(bytes(payload[:dec_len]))
+            # First 8 bytes of CALLING payload = destination term_id (int64 LE)
+            dest_id = struct.unpack_from('<q', decrypted, 0)[0]
+            self.log(f"  [CALLING] Decrypted dest_term_id={dest_id}")
+            return dest_id
+        except Exception as e:
+            self.log(f"  [CALLING] Decrypt failed: {e}")
+            return 0
+
+    def _route_calling_to(self, data: bytes, target: 'ClientSession', sender_term_id: int):
+        """Route a CALLING frame directly to a connected target."""
+        if target.tcp_writer:
+            try:
+                target.tcp_writer.write(data)
+                self.log(f"  [CALLING] Routed to {target.addr[0]}:{target.addr[1]} (TCP) "
+                        f"term_id={target.term_id}")
+                target.frames_out += 1
+            except Exception as e:
+                self.log(f"  [CALLING] TCP route failed: {e}")
+        elif target.our_port in self.relay_socks:
+            try:
+                self.relay_socks[target.our_port].sendto(data, target.addr)
+                self.log(f"  [CALLING] Routed to {target.addr[0]}:{target.addr[1]}:{target.our_port} (UDP) "
+                        f"term_id={target.term_id}")
+                target.frames_out += 1
+            except OSError as e:
+                self.log(f"  [CALLING] UDP route failed: {e}")
+        else:
+            self.log(f"  [CALLING] No route to target term_id={target.term_id}")
 
     def _trigger_chime_wakeup(self):
         """Send a wakeup command to the chime via GUTES.
@@ -638,6 +1084,92 @@ class GutesRelay:
         # that sends INIT_INFO with 2 devices is likely the bridge
         return "unknown"
 
+    def _persist_session_key(self, term_id: int, session_key: bytes):
+        """Persist session key to JSON cache file."""
+        try:
+            self.session_cache_path.parent.mkdir(parents=True, exist_ok=True)
+            # Load existing cache
+            cache = {}
+            if self.session_cache_path.exists():
+                try:
+                    cache = json.loads(self.session_cache_path.read_text())
+                except (json.JSONDecodeError, OSError):
+                    pass
+            # Store key as hex string, keyed by term_id string
+            cache[str(term_id)] = session_key.hex()
+            self.session_cache_path.write_text(json.dumps(cache, indent=2))
+        except OSError as e:
+            self.log(f"  WARN: Failed to persist session key: {e}")
+
+    def _capture_session_key_from_resp(self, data: bytes, term_id: int):
+        """Extract and cache session key from a proxied CERTIFY_RESP.
+        
+        The CERTIFY_RESP payload (per-frame encrypted) contains:
+          session_id(8B) + server_key(32B) + padding
+        
+        We need both client_key (from the original CERTIFY_REQ) and server_key
+        to derive session_key = client_key XOR server_key.
+        
+        Since the payload is per-frame encrypted (opt_encrypt=1), we can decrypt
+        it with the per-frame key derived from the response header.
+        """
+        if len(data) < HEADER_SIZE + 40:
+            return
+        
+        opt_flags = struct.unpack_from('<I', data, 0x14)[0]
+        encrypt_mode = (opt_flags >> 16) & 0xF
+        payload = data[HEADER_SIZE:]
+        
+        if encrypt_mode == 1:
+            # Decrypt with per-frame key
+            pfk = derive_per_frame_key(data[:0x18])
+            rc5 = RC5(block_bytes=8, rounds=6).setkey(pfk)
+            dec_len = (len(payload) // 8) * 8
+            if dec_len >= 40:
+                payload = rc5.decrypt(bytes(payload[:dec_len]))
+            else:
+                return
+        
+        if len(payload) < 40:
+            return
+        
+        # Extract server key from payload bytes 8:40
+        server_key = payload[8:40]
+        
+        # We store the raw server_key; full session key derivation requires
+        # client_key which we may not have captured. Store what we can.
+        # If we have the full 32 bytes and they're not all zeros, cache it.
+        if server_key != b'\x00' * 32:
+            self.state.session_keys[term_id] = server_key
+            self._persist_session_key(term_id, server_key)
+            self.log(f"  [CACHE] Captured session key material from CERTIFY_RESP for term_id={term_id}")
+            self.log(f"  [CACHE] server_key={server_key[:8].hex()}...")
+
+    def get_session_key(self, term_id: int) -> Optional[bytes]:
+        """Look up session key for a term_id.
+        
+        Checks in-memory cache first, then falls back to persistent JSON file.
+        Returns the 32-byte session key or None if not found.
+        """
+        # Check in-memory cache
+        if term_id in self.state.session_keys:
+            return self.state.session_keys[term_id]
+        
+        # Fall back to persistent cache
+        try:
+            if self.session_cache_path.exists():
+                cache = json.loads(self.session_cache_path.read_text())
+                key_hex = cache.get(str(term_id))
+                if key_hex:
+                    key_bytes = bytes.fromhex(key_hex)
+                    # Populate in-memory cache
+                    self.state.session_keys[term_id] = key_bytes
+                    return key_bytes
+        except (json.JSONDecodeError, OSError, ValueError):
+            pass
+        
+        return None
+
     def _on_client_certified(self, term_id: int):
         """Called when a client completes CERTIFY. Identify role and handle wakeups."""
         client = self.state.clients.get(term_id)
@@ -653,7 +1185,11 @@ class GutesRelay:
             self.log(f"  [ROLE] Identified CHIME: term_id={term_id} addr={client.addr[0]}:{client.addr[1]}")
         elif role == "doorbell":
             self.state.doorbell_term_id = term_id
+            self.state.doorbell_addr = client.addr
+            self.state.keepalive_misses = 0
             self.log(f"  [ROLE] Identified DOORBELL: term_id={term_id} addr={client.addr[0]}:{client.addr[1]}")
+            if self.state.keepalive_enabled:
+                self.log(f"  [KEEPALIVE] Doorbell connected — keepalive will begin to {client.addr[0]}:{client.addr[1]}")
             # Deliver any pending CALLINGs
             if self.state.pending_callings:
                 self._deliver_pending_callings(term_id)
@@ -663,6 +1199,97 @@ class GutesRelay:
         else:
             self.log(f"  [ROLE] Unknown device: term_id={term_id} addr={client.addr[0]}:{client.addr[1]}")
 
+    def build_keepalive(self, target_addr: tuple) -> bytes:
+        """Construct a KEEPALIVE frame (type 0x17) to send to the doorbell.
+
+        Frame format (from pcap): header-only, no payload.
+          [0]:    0x7F (protocol)
+          [1]:    0x17 (TYPE_KEEPALIVE)
+          [2:4]:  0x001C (frm_len = 28, header only)
+          [4:12]: RC5-encrypted server term_id
+          [0x0C:0x10]: sqnum (LE)
+          [0x10:0x14]: chkval (LE)
+          [0x14:0x18]: opt_flags with qos=1 (need-ack), bits[17:16]=0 (no encrypt)
+          [0x18:0x1A]: flags2 = 0x0000
+          [0x1A:0x1C]: ack_result = 0x0000
+        """
+        import random as _rand
+
+        frame = bytearray(HEADER_SIZE)  # 0x1C = 28 bytes, header only
+        frame[0] = 0x7F
+        frame[1] = TYPE_KEEPALIVE
+        struct.pack_into('<H', frame, 2, HEADER_SIZE)  # frm_len = 0x1C
+
+        # Server identity
+        sqnum = self._next_sqnum()
+        chkval = self._make_server_chkval(sqnum)
+        encrypted_id = self._encrypt_server_id(sqnum, chkval)
+        frame[4:12] = encrypted_id
+        struct.pack_into('<I', frame, 0x0C, sqnum)
+        struct.pack_into('<I', frame, 0x10, chkval)
+
+        # opt_flags: qos=1 (need-ack) is bit 18, random nonce in bits 1-15
+        nonce = _rand.randint(0, 0x7FFF)
+        opt_flags = (nonce << 1) | (1 << 18)  # qos=1
+        struct.pack_into('<I', frame, 0x14, opt_flags)
+
+        # flags2 and ack_result = 0
+        struct.pack_into('<H', frame, 0x18, 0x0000)
+        struct.pack_into('<H', frame, 0x1A, 0x0000)
+
+        return bytes(frame)
+
+    async def _keepalive_loop(self):
+        """Periodically send KEEPALIVE frames to the doorbell to prevent sleep.
+
+        Runs every 25s (doorbell sleep timeout is ~30-45s). If 3 consecutive
+        keepalives go unacknowledged, mark the doorbell as dormant.
+        """
+        INTERVAL = 25  # seconds
+        MAX_MISSES = 3
+
+        self.log(f"[KEEPALIVE] Loop started (interval={INTERVAL}s, max_misses={MAX_MISSES})")
+
+        while True:
+            await asyncio.sleep(INTERVAL)
+
+            if not self.state.keepalive_enabled:
+                continue
+
+            # Need a known doorbell address to send to
+            if self.state.doorbell_addr == ('', 0):
+                continue
+
+            target_addr = self.state.doorbell_addr
+
+            # Build and send KEEPALIVE frame
+            frame = self.build_keepalive(target_addr)
+
+            # Find an appropriate socket to send from (prefer the port the doorbell uses)
+            doorbell_client = self.state.clients.get(self.state.doorbell_term_id)
+            send_port = doorbell_client.our_port if doorbell_client else self.listen_ports[0]
+            sock = self.relay_socks.get(send_port) or next(iter(self.relay_socks.values()), None)
+
+            if sock is None:
+                self.log(f"[KEEPALIVE] No socket available to send keepalive")
+                continue
+
+            try:
+                sock.sendto(frame, target_addr)
+                self.state.keepalive_misses += 1
+                self.log(f"→ KEEPALIVE to {target_addr[0]}:{target_addr[1]} "
+                        f"(miss_count={self.state.keepalive_misses})")
+            except OSError as e:
+                self.log(f"[KEEPALIVE] Send error: {e}")
+                self.state.keepalive_misses += 1
+
+            # Check for dormant doorbell
+            if self.state.keepalive_misses >= MAX_MISSES:
+                self.log(f"[KEEPALIVE] WARNING: {MAX_MISSES} consecutive keepalives "
+                        f"unacknowledged — doorbell is dormant")
+                # Reset to avoid spamming warnings every cycle
+                self.state.keepalive_misses = MAX_MISSES
+
     async def run(self):
         """Main entry point."""
         self.log(f"GUTES Relay v3 starting")
@@ -671,6 +1298,7 @@ class GutesRelay:
         self.log(f"  Server term_id: {self.server_term_id}")
         self.log(f"  Relay ports: {self.listen_ports}")
         self.log(f"  List port: {self.list_port}")
+        self.log(f"  Keepalive: {'ENABLED' if self.state.keepalive_enabled else 'disabled'}")
         if self.mode == "proxy":
             self.log(f"  Upstream: {self.upstream_host}:{self.upstream_port}")
         self.log("")
@@ -722,6 +1350,10 @@ class GutesRelay:
         
         # Periodic status log
         tasks.append(asyncio.create_task(self._status_loop()))
+
+        # Keepalive loop (when enabled)
+        if self.state.keepalive_enabled:
+            tasks.append(asyncio.create_task(self._keepalive_loop()))
 
         await asyncio.gather(*tasks)
 
@@ -861,7 +1493,9 @@ class GutesRelay:
                 
                 # Rewrite LIST_RESP to replace server IPs with our local IP
                 if ftype == TYPE_LIST_RESP:
-                    data = self._rewrite_list_resp(data)
+                    self.log(f"    [LIST_RESP] Passing through unmodified ({len(data)}B)")
+                    # TODO: rewrite IPs once format is confirmed working
+                    # data = self._rewrite_list_resp(data)
                 
                 # Route back to the client that sent the request
                 fd = sock.fileno()
@@ -1029,6 +1663,10 @@ def main():
                        help='Append log to file')
     parser.add_argument('--local-ip', default='',
                        help='Override local IP for LIST_RESP')
+    parser.add_argument('--keepalive', action='store_true', default=False,
+                       help='Enable periodic KEEPALIVE to doorbell to prevent sleep')
+    parser.add_argument('--session-cache', default='cache/session_keys.json',
+                       help='Path to persistent session key cache (default: cache/session_keys.json)')
     args = parser.parse_args()
 
     ports = [int(p.strip()) for p in args.ports.split(',')]
@@ -1040,6 +1678,8 @@ def main():
         upstream=args.upstream,
         log_file=args.log_file,
         local_ip=args.local_ip,
+        keepalive=args.keepalive,
+        session_cache=args.session_cache,
     )
 
     try:

@@ -66,7 +66,40 @@ dev_exec() {
     docker exec $tty_flag "$DEV" "$@"
 }
 
+_ensure_relay() {
+    # Start the relay if not already running in the dev container
+    if ! docker exec "$DEV" pgrep -f "gutes_relay.py" >/dev/null 2>&1; then
+        echo "Starting GUTES relay..."
+        local relay_mode="proxy"
+        local relay_keepalive=""
+        local relay_upstream="3.13.212.24:28800"
+        if [[ -f "$HERE/.env" ]]; then
+            relay_mode=$(grep -m1 '^RELAY_MODE=' "$HERE/.env" 2>/dev/null | cut -d= -f2 || echo "proxy")
+            [[ -z "$relay_mode" ]] && relay_mode="proxy"
+            local ka=$(grep -m1 '^RELAY_KEEPALIVE=' "$HERE/.env" 2>/dev/null | cut -d= -f2)
+            [[ "$ka" == "1" || "$ka" == "true" ]] && relay_keepalive="--keepalive"
+        fi
+        # Resolve Mars upstream
+        local mars_ip=$(docker exec "$DEV" python3 -c "
+import socket
+try:
+    r = socket.getaddrinfo('wyze-mars-asrv.wyzecam.com', None, socket.AF_INET)
+    print(r[0][4][0])
+except: print('3.13.212.24')
+" 2>/dev/null)
+        [[ -n "$mars_ip" ]] && relay_upstream="${mars_ip}:28800"
+        docker exec -d "$DEV" python3 /work/scripts/gutes_relay.py \
+            --mode "$relay_mode" --upstream "$relay_upstream" \
+            --log-file /work/relay.log --local-ip 127.0.0.1 \
+            --session-cache /work/cache/session_keys.json \
+            $relay_keepalive
+        sleep 0.5
+        echo "  Relay started (mode=$relay_mode, upstream=$relay_upstream)"
+    fi
+}
+
 _run_bridge() {
+    _ensure_relay
     local envfile
     envfile=$(mktemp)
     trap "rm -f '$envfile'" EXIT
@@ -126,6 +159,19 @@ case "${1:-up}" in
         dev_exec sh -c "cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug . 2>&1 | tail -3 && ninja -C build"
         ;;
 
+    daemon)
+        ensure_dev
+        _run_bridge "$@"
+        # Override: run the daemon binary instead of bridge
+        ;;
+
+    relay)
+        ensure_dev
+        load_env_vars
+        echo "=== Starting GUTES relay ==="
+        dev_exec env $ENV_VARS python3 scripts/gutes_relay.py ${@:2}
+        ;;
+
     test)
         ensure_dev
         load_env_vars
@@ -162,9 +208,10 @@ case "${1:-up}" in
         echo "  logs          Tail logs from running instance"
         echo "  restart       Stop and restart"
         echo "  shell         Interactive shell in dev container"
-        echo "  build         Compile bridge only"
+        echo "  build         Compile bridge + daemon"
         echo "  test          Quick 15s smoke test"
         echo "  run [SECS]    Run bridge for N seconds (default 60)"
+        echo "  relay [ARGS]  Start GUTES relay standalone"
         echo "  clean         Stop + remove build artifacts"
         echo "  rebuild       Full rebuild (image + libs + bridge)"
         exit 1

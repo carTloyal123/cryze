@@ -19,6 +19,12 @@ services:
       - NET_RAW
     restart: unless-stopped
     stop_grace_period: 15s
-    # entrypoint.py: setup libs, build bridge, start go2rtc, handle SIGINT
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:1984/api"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
+    # entrypoint.py: setup libs, build bridge, start relay + go2rtc
     # .env loaded at runtime by entrypoint.py (not docker compose) to
     # preserve literal $ in passwords. into.sh passes --env-file /dev/null.

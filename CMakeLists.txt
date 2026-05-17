@@ -20,15 +20,26 @@ add_executable(bridge
     src/wyze_auth.cpp
     src/callbacks.cpp)
 
+add_executable(bridge-daemon
+    src/daemon.cpp
+    src/sdk_loader.cpp
+    src/wyze_auth.cpp
+    src/callbacks.cpp)
+
 find_package(CURL REQUIRED)
 find_package(OpenSSL REQUIRED)
 find_package(nlohmann_json REQUIRED)
 
-target_link_libraries(bridge PRIVATE
+set(BRIDGE_LIBS
     -Wl,--whole-archive android_stubs -Wl,--no-whole-archive
     CURL::libcurl
     OpenSSL::Crypto
     nlohmann_json::nlohmann_json
     uuid
     dl pthread)
+
+target_link_libraries(bridge PRIVATE ${BRIDGE_LIBS})
 target_link_options(bridge PRIVATE -rdynamic)
+
+target_link_libraries(bridge-daemon PRIVATE ${BRIDGE_LIBS})
+target_link_options(bridge-daemon PRIVATE -rdynamic)
