@@ -315,6 +315,11 @@ StreamCreds bootstrap(const std::string& target_mac) {
                      cached->access_id.c_str());
 
         // Wakeup still needed — doorbell sleeps between sessions.
+        // Skip if SKIP_WAKEUP=1 (doorbell connected to local relay via keepalive).
+        const char* skip_wakeup = std::getenv("SKIP_WAKEUP");
+        if (skip_wakeup && (std::string(skip_wakeup) == "1" || std::string(skip_wakeup) == "true")) {
+            std::fprintf(stderr, "[auth] SKIP_WAKEUP=1 — skipping cloud wakeup (doorbell on local relay)\n");
+        } else {
         // Try with cached Wyze token; if it fails, wakeup is non-fatal.
         try {
             wakeup(cached->device_mac, cached->product_model);
@@ -353,6 +358,7 @@ StreamCreds bootstrap(const std::string& target_mac) {
                 std::fprintf(stderr, "[auth] fresh wakeup also failed (non-fatal): %s\n", e2.what());
             }
         }
+        }  // end else (wakeup not skipped)
 
         return *cached;
     }

@@ -1,402 +1,375 @@
-[   0.000] GUTES Relay v3 starting
+[   0.001] GUTES Relay v3 starting
 [   0.001]   Mode: RELAY
-[   0.001]   Local IP: 192.168.1.245
-[   0.001]   Server term_id: -3195816737827617183
-[   0.001]   Relay ports: [28800, 8443, 8000]
-[   0.001]   List port: 51701
-[   0.001]   MTP relay port: 23000
-[   0.001]   Keepalive: ENABLED
-[   0.001] 
-[   0.001]   Listening on UDP :28800
-[   0.002]   Listening on UDP :8443
-[   0.003]   Listening on UDP :8000
-[   0.003]   Listening on UDP :51701 (list)
+[   0.002]   Local IP: 192.168.1.245
+[   0.002]   Server term_id: -3195816737827617183
+[   0.002]   Relay ports: [28800, 8443, 8000]
+[   0.002]   List port: 51701
+[   0.002]   MTP relay port: 23000
+[   0.003]   Keepalive: ENABLED
 [   0.003] 
-[   0.003] Ready — waiting for connections...
-[   0.003] ============================================================
-[   0.006] [KEEPALIVE] Loop started (interval=25s, max_misses=3)
-[   0.009]   Listening on TCP :28800 (signaling)
-[   0.013]   Listening on TCP :8443 (signaling)
-[   0.014]   Listening on TCP :8000 (signaling)
-[   0.014]   [MTP] Listening on TCP :23000 (MTP relay)
-[   4.358] NEW CLIENT: term_id=-5783601125351474452 from 127.0.0.1:57853 port=51701
-[   4.359]   HDR: proto=0x7f type=0x15(LIST_REQ) len=40 opt=0x00010000 enc=1 ack=False resp=False
-[   4.360]   HEX: 7f 15 28 00 40 b2 1c ed c2 af 2c e4 40 7f 13 ba 2a 31 2b 5a 00 00 01 00 b4 03 bc b0 4c 02 f4 14 1b 54 3c 61 0e 1b ce 3b
-[   4.364] ← LIST_REQ from 127.0.0.1:57853 term_id=-5783601125351474452 (40B)
-[   4.367] → LIST_RESP to 127.0.0.1:57853 (local, servers: 127.0.0.1, 68B)
-[   4.370] NEW CLIENT: term_id=-913747067928313442 from 127.0.0.1:57853 port=28800
-[   4.370]   HDR: proto=0x7f type=0x01(DETECT_REQ) len=68 opt=0x00010000 enc=1 ack=False resp=False
-[   4.371]   HEX: 7f 01 44 00 f3 05 de 40 2b 9d 62 b4 f3 c8 d1 17 c3 03 65 0a 00 00 01 00 7c 05 f0 1f 80 69 94 71 fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee 00 00 00 00
-[   4.371] ← DETECT_REQ from 127.0.0.1:57853:28800 client_tid=-913747067928313442 (68B)
-[   4.372] → DETECT_RESP to 127.0.0.1:57853 server_tid=-3195816737827617183 (56B)
-[   4.406] NEW CLIENT: term_id=-4900602222110392933 from 127.0.0.1:57853 port=28800
-[   4.406]   HDR: proto=0x7f type=0x0c(CERTIFY) len=164 opt=0x014ddfe0 enc=13 ack=False resp=False
-[   4.406]   HEX: 7f 0c a4 00 c2 3d 48 8b c3 b4 c9 41 c2 f0 47 dc 2b 2a ce ff e0 df 4d 01 54 50 a6 e7 18 00 36 6e 72 65 81 88 94 32 d2 d0 24 41 d8 2d dd 41 72 98 d9 24 22 87 08 98 a9 b9 07 81 99 55 af c6 e7 10 08 04 00 00 3d ca 4b 0a 00 00 00 00 00 00 00 00 00 00 00 00 01 01 19 00 33 a0 de 6e 39 11 fa 59 28 e6 e9 d7 53 73 a5 1d 86 26 a9 62 99 43 20 9a 48 10 d7 61 d4 b8 99 07 cb cd 24 f9 30 1c 88 9b a8 39 d0 8d da 27 76 64 a9 2b 01 05 0b a4 8b 1a 16 58 24 56 18 b1 f7 10 80 8b 32 1e 30 91 ed bc dd 46 5e 14
-[   4.406] ← CERTIFY_REQ from 127.0.0.1:57853 term_id=-4900602222110392933 (164B)
-[   4.407]   [DEBUG] CERTIFY plaintext sqnum=200504014
-[   4.407]   [DEBUG] Raw payload (first 48B): 5450a6e71800366e726581889432d2d02441d82ddd417298d92422870898a9b907819955afc6e710080400003dca4b0a encrypt_mode=1
-[   4.407]   [DEBUG] Per-frame key: 7f0ca400e0df4d00
-[   4.407]   [DEBUG] Decrypted payload (first 48B): 010000006cf1cbe89a5fc7b7e590ff78763f2b9ea796ba97ed33ece194cb2196ec17b14efbe267b067a4ac098e7d5b88
-[   4.407]   [DEBUG] hash_checksum=0xe8cbf16c enc_key=9a5fc7b7e590ff78763f2b9ea796ba97ed33ece194cb2196ec17b14efbe267b0
-[   4.407]   [RELAY] Certify key: e7bcaca9a5fa7a8c83a9a5362b5458c0
-[   4.408]   [RELAY] Session key VERIFIED! hash=0xe8cbf16c
-[   4.408]   [RELAY] CERTIFY session_key=2483b60e375f3a60... session_id=010000006cf1cbe8
-[   4.408]   [RELAY] Cached REAL session_key=2483b60e375f3a60... for term_id=-4900602222110392933
-[   4.408]   [ROLE] Identified BRIDGE: term_id=-4900602222110392933 addr=127.0.0.1:57853
-[   4.409]   [RELAY] -> CERTIFY_RESP to 127.0.0.1:57853 (80B)
-[   4.456] NEW CLIENT: term_id=-5876101252447242930 from 127.0.0.1:57853 port=28800
-[   4.456]   HDR: proto=0x7e type=0xa6(INIT_INFO) len=62 opt=0x000e9e08 enc=14 ack=False resp=False
-[   4.457]   HEX: 7e a6 3e 00 7e 67 91 b6 77 a4 04 42 32 75 5c a7 6f 33 9f 13 08 9e 0e 00 d6 fa 99 08 93 08 5e 0c 70 b4 45 0c ac c1 11 da 33 b0 c1 62 45 dc 9f 48 33 b0 c1 62 45 dc 9f 48 01 00 00 00 00 0d
-[   4.457] ← INIT_INFO from 127.0.0.1:57853 term_id=-5876101252447242930
-[   4.457]   [ROLE] Identified BRIDGE: term_id=-5876101252447242930 addr=127.0.0.1:57853
-[   4.457]   [DEBUG] Using predicted sqnum=200504015 for INIT_INFO_RESP
-[   4.457]   → INIT_INFO_RESP to 127.0.0.1:57853 (60B)
-[   4.506] NEW CLIENT: term_id=8835459259339120040 from 127.0.0.1:57853 port=28800
-[   4.507]   HDR: proto=0x7e type=0xa0(SUBSCRIBE) len=48 opt=0x000ab4f0 enc=10 ack=False resp=False
-[   4.507]   HEX: 7e a0 30 00 91 dc c8 26 76 ff 1f 6d dd ce 05 37 6e 68 84 3c f0 b4 0a 00 19 f4 09 84 6c 2b 6d be 8c 3e bc 7b 5d a8 4f 91 58 78 c7 6d c1 18 73 f2
-[   4.507] ← SUBSCRIBE from 127.0.0.1:57853 term_id=8835459259339120040 (48B)
-[   4.507]   [DEBUG] SUBSCRIBE predicted_sqnum=200504017 (base=200504015)
-[   4.507]   → SUBSCRIBE_RESP to 127.0.0.1:57853 (54B) chkval=200504017
-[   4.557] NEW CLIENT: term_id=5663851184402975553 from 127.0.0.1:57853 port=28800
-[   4.557]   HDR: proto=0x7e type=0xb0(SESSION_CTL) len=108 opt=0x000e40da enc=14 ack=False resp=False
-[   4.557]   HEX: 7e b0 6c 00 9c f2 54 3e 8b 3a 7f ca d0 e0 99 2f 93 ad e4 9b da 40 0e 00 16 66 9c 60 8e a1 6d 3f 9e 62 a9 cb b2 e0 26 09 25 68 48 92 f3 18 3d 14 bb c3 c4 54 27 cc b0 c5 65 3e 6f 92 1e bd eb e6 ba 5a 30 e4 07 9b 32 44 20 a3 d3 4b 7f 46 64 36 3d 92 bb 8c 83 d4 43 de 60 bd df 0c 40 40 96 74 20 46 ce 18 70 02 df 47 5c b6 69 28
-[   4.557] ← SESSION_CTL from 127.0.0.1:57853 term_id=5663851184402975553 (108B)
-[   4.557]   → SESSION_CTL_RESP to 127.0.0.1:57853 (54B)
-[   4.959] ← SESSION_CTL from 127.0.0.1:57853 term_id=5663851184402975553 (108B)
-[   4.960]   → SESSION_CTL_RESP to 127.0.0.1:57853 (54B)
-[   5.371] NEW CLIENT: term_id=3867097302486563338 from 127.0.0.1:57853 port=28800
-[   5.372]   HDR: proto=0x7f type=0x01(DETECT_REQ) len=68 opt=0x00010000 enc=1 ack=False resp=False
-[   5.372]   HEX: 7f 01 44 00 da a9 9f 29 b0 5a 6f 3b da 64 90 7e 58 c4 68 85 00 00 01 00 06 70 40 89 d0 f6 e6 06 fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee 00 00 00 00
-[   5.373] ← DETECT_REQ from 127.0.0.1:57853:28800 client_tid=3867097302486563338 (68B)
-[   5.374] → DETECT_RESP to 127.0.0.1:57853 server_tid=-3195816737827617183 (56B)
-[   5.559] ← SESSION_CTL from 127.0.0.1:57853 term_id=5663851184402975553 (108B)
-[   5.560]   → SESSION_CTL_RESP to 127.0.0.1:57853 (54B)
-[   6.158] ← SESSION_CTL from 127.0.0.1:57853 term_id=5663851184402975553 (108B)
-[   6.159]   → SESSION_CTL_RESP to 127.0.0.1:57853 (54B)
-[   6.358] ← SUBSCRIBE from 127.0.0.1:57853 term_id=8835459259339120040 (48B)
-[   6.359]   [DEBUG] SUBSCRIBE predicted_sqnum=200504027 (base=200504025)
-[   6.359]   → SUBSCRIBE_RESP to 127.0.0.1:57853 (54B) chkval=200504027
-[   6.371] NEW CLIENT: term_id=-7775470171188184859 from 127.0.0.1:57853 port=28800
-[   6.372]   HDR: proto=0x7f type=0x01(DETECT_REQ) len=68 opt=0x00010000 enc=1 ack=False resp=False
-[   6.372]   HEX: 7f 01 44 00 a8 6d b2 40 6d 06 0d a3 a8 a0 bd 17 85 98 0a 1d 00 00 01 00 a8 dd 82 91 a0 e4 b4 81 fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee 00 00 00 00
-[   6.373] ← DETECT_REQ from 127.0.0.1:57853:28800 client_tid=-7775470171188184859 (68B)
-[   6.373] → DETECT_RESP to 127.0.0.1:57853 server_tid=-3195816737827617183 (56B)
-[   6.758] ← SESSION_CTL from 127.0.0.1:57853 term_id=5663851184402975553 (108B)
-[   6.759]   → SESSION_CTL_RESP to 127.0.0.1:57853 (54B)
-[   7.356] ← SESSION_CTL from 127.0.0.1:57853 term_id=5663851184402975553 (108B)
-[   7.357]   → SESSION_CTL_RESP to 127.0.0.1:57853 (54B)
-[   7.372] NEW CLIENT: term_id=2411800713759164309 from 127.0.0.1:57853 port=28800
-[   7.373]   HDR: proto=0x7f type=0x01(DETECT_REQ) len=68 opt=0x00010000 enc=1 ack=False resp=False
-[   7.373]   HEX: 7f 01 44 00 d1 56 20 71 7f 8c e4 aa d1 9b 2f 26 97 12 e3 14 00 00 01 00 16 42 a5 cc 6a 45 ae 0a fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee 00 00 00 00
-[   7.374] ← DETECT_REQ from 127.0.0.1:57853:28800 client_tid=2411800713759164309 (68B)
-[   7.375] → DETECT_RESP to 127.0.0.1:57853 server_tid=-3195816737827617183 (56B)
-[   7.609] NEW CLIENT: term_id=2839181989471035398 from 127.0.0.1:57853 port=28800
-[   7.609]   HDR: proto=0x7e type=0xa4(CALLING_REQ) len=161 opt=0x00069736 enc=6 ack=False resp=False
-[   7.610]   HEX: 7e a4 a1 00 10 b8 20 62 19 81 07 18 5c aa ed 73 01 16 9c 49 36 97 06 00 a8 81 85 3b f1 f3 f6 c8 67 c5 e2 05 e8 95 b3 eb ff c2 3c 5c 8c f1 9d 45 86 76 eb 4e 2b f0 e1 35 33 b0 c1 62 45 dc 9f 48 0f e0 c0 19 5b 5e f5 7b 33 b0 c1 62 45 dc 9f 48 33 b0 c1 62 45 dc 9f 48 33 b0 c1 62 45 dc 9f 48 33 b0 c1 62 45 dc 9f 48 33 b0 c1 62 45 dc 9f 48 33 b0 c1 62 45 dc 9f 48 d1 09 04 ae 97 55 da c9 f4 2a 0c b6 f8 04 49 6b 6c a8 6a 0e 2d 3f 71 b7 57 d8 3b f5 4f f9 b0 c2 c7 bb 3d 0b 5e 11 54 0b 38
-[   7.610] ← CALLING_REQ from 127.0.0.1:57853 term_id=2839181989471035398 (161B)
-[   7.610]   HEX: 7e a4 a1 00 10 b8 20 62 19 81 07 18 5c aa ed 73 01 16 9c 49 36 97 06 00 a8 81 85 3b f1 f3 f6 c8 67 c5 e2 05 e8 95 b3 eb ff c2 3c 5c 8c f1 9d 45 86 76 eb 4e 2b f0 e1 35 33 b0 c1 62 45 dc 9f 48 0f e0 c0 19 5b 5e f5 7b 33 b0 c1 62 45 dc 9f 48 33 b0 c1 62 45 dc 9f 48 33 b0 c1 62 45 dc 9f 48 33 b0 c1 62 45 dc 9f 48 33 b0 c1 62 45 dc 9f 48 33 b0 c1 62 45 dc 9f 48 d1 09 04 ae 97 55 da c9 f4 2a 0c b6 f8 04 49 6b 6c a8 6a 0e 2d 3f 71 b7 57 d8 3b f5 4f f9 b0 c2 c7 bb 3d 0b 5e 11 54 0b 38
-[   7.612]   [CALLING] Decrypted dest_term_id=52956577392495617
-[   7.613]   [DEBUG] _extract_req_sqnum: using session_key=2483b60e375f3a60... for addr=('127.0.0.1', 57853)
-[   7.613]   [DEBUG] _extract_req_sqnum: decrypted sqnum=200504022 from enc_bytes=5caaed7301169c49
-[   7.613]   [MTP] CALLING req_sqnum=200504022 (for ACK matching)
-[   7.614]   [MTP] Built CALLING_ACK (session-enc): doorbell=192.168.1.81:8899 req_sqnum=200504022 frame_size=40
-[   7.614]   [MTP] Extracted link_id=12329914 from CALLING (session-dec)
-[   7.614]   [MTP] Built MTP_RES_RESP: link_id=12329914 doorbell_lan=192.168.1.81:8899 v4_cnt=0 v6_cnt=0 (LAN-only, no relay servers) (122B)
-[   7.614]   [MTP] Sending CALLING_ACK + MTP_RES_RESP to bridge 127.0.0.1:57853
-[   7.956] ← SESSION_CTL from 127.0.0.1:57853 term_id=5663851184402975553 (108B)
-[   7.956]   → SESSION_CTL_RESP to 127.0.0.1:57853 (54B)
-[   8.360] ← SUBSCRIBE from 127.0.0.1:57853 term_id=8835459259339120040 (48B)
-[   8.361]   [DEBUG] SUBSCRIBE predicted_sqnum=200504035 (base=200504033)
-[   8.361]   → SUBSCRIBE_RESP to 127.0.0.1:57853 (54B) chkval=200504035
-[   8.557] ← SESSION_CTL from 127.0.0.1:57853 term_id=5663851184402975553 (108B)
-[   8.557]   → SESSION_CTL_RESP to 127.0.0.1:57853 (54B)
-[   9.157] ← SESSION_CTL from 127.0.0.1:57853 term_id=5663851184402975553 (108B)
-[   9.159]   → SESSION_CTL_RESP to 127.0.0.1:57853 (54B)
-[   9.375] NEW CLIENT: term_id=-3465154451536345583 from 127.0.0.1:57853 port=28800
-[   9.376]   HDR: proto=0x7f type=0x01(DETECT_REQ) len=68 opt=0x00010000 enc=1 ack=False resp=False
-[   9.376]   HEX: 7f 01 44 00 ef 47 f8 73 88 e4 e4 67 ef 8a f7 24 60 7a e3 d9 00 00 01 00 81 6a 13 6e e6 3d d3 30 fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee 00 00 00 00
-[   9.377] ← DETECT_REQ from 127.0.0.1:57853:28800 client_tid=-3465154451536345583 (68B)
-[   9.378] → DETECT_RESP to 127.0.0.1:57853 server_tid=-3195816737827617183 (56B)
-[   9.759] ← SESSION_CTL from 127.0.0.1:57853 term_id=5663851184402975553 (108B)
-[   9.759]   → SESSION_CTL_RESP to 127.0.0.1:57853 (54B)
-[  10.359] ← SUBSCRIBE from 127.0.0.1:57853 term_id=8835459259339120040 (48B)
-[  10.360]   [DEBUG] SUBSCRIBE predicted_sqnum=200504043 (base=200504041)
-[  10.360]   → SUBSCRIBE_RESP to 127.0.0.1:57853 (54B) chkval=200504043
-[  10.361] ← SESSION_CTL from 127.0.0.1:57853 term_id=5663851184402975553 (108B)
-[  10.361]   → SESSION_CTL_RESP to 127.0.0.1:57853 (54B)
-[  10.959] ← SESSION_CTL from 127.0.0.1:57853 term_id=5663851184402975553 (108B)
-[  10.960]   → SESSION_CTL_RESP to 127.0.0.1:57853 (54B)
-[  11.375] NEW CLIENT: term_id=-6109954824659852801 from 127.0.0.1:57853 port=28800
-[  11.376]   HDR: proto=0x7f type=0x01(DETECT_REQ) len=68 opt=0x00010000 enc=1 ack=False resp=False
-[  11.377]   HEX: 7f 01 44 00 9a 1b d3 14 18 16 f7 7e 9a d6 dc 43 f0 88 f0 c0 00 00 01 00 41 07 0b df e9 64 57 b6 fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee 00 00 00 00
-[  11.377] ← DETECT_REQ from 127.0.0.1:57853:28800 client_tid=-6109954824659852801 (68B)
-[  11.378] → DETECT_RESP to 127.0.0.1:57853 server_tid=-3195816737827617183 (56B)
-[  11.558] ← SESSION_CTL from 127.0.0.1:57853 term_id=5663851184402975553 (108B)
-[  11.558]   → SESSION_CTL_RESP to 127.0.0.1:57853 (54B)
-[  12.158] ← SESSION_CTL from 127.0.0.1:57853 term_id=5663851184402975553 (108B)
-[  12.159]   → SESSION_CTL_RESP to 127.0.0.1:57853 (54B)
-[  12.358] ← SUBSCRIBE from 127.0.0.1:57853 term_id=8835459259339120040 (48B)
-[  12.359]   [DEBUG] SUBSCRIBE predicted_sqnum=200504053 (base=200504051)
-[  12.360]   → SUBSCRIBE_RESP to 127.0.0.1:57853 (54B) chkval=200504053
-[  12.757] ← SESSION_CTL from 127.0.0.1:46992 term_id=5663851184402975553 (108B)
-[  12.758]   → SESSION_CTL_RESP to 127.0.0.1:46992 (54B)
-[  13.359] ← SESSION_CTL from 127.0.0.1:46992 term_id=5663851184402975553 (108B)
-[  13.360]   → SESSION_CTL_RESP to 127.0.0.1:46992 (54B)
-[  13.959] ← SESSION_CTL from 127.0.0.1:46992 term_id=5663851184402975553 (108B)
-[  13.960]   → SESSION_CTL_RESP to 127.0.0.1:46992 (54B)
-[  14.357] ← SUBSCRIBE from 127.0.0.1:46992 term_id=8835459259339120040 (48B)
-[  14.360]   [DEBUG] SUBSCRIBE predicted_sqnum=8 (base=6)
-[  14.360]   → SUBSCRIBE_RESP to 127.0.0.1:46992 (54B) chkval=8
-[  14.557] ← SESSION_CTL from 127.0.0.1:46992 term_id=5663851184402975553 (108B)
-[  14.557]   → SESSION_CTL_RESP to 127.0.0.1:46992 (54B)
-[  15.158] ← SESSION_CTL from 127.0.0.1:46992 term_id=5663851184402975553 (108B)
-[  15.159]   → SESSION_CTL_RESP to 127.0.0.1:46992 (54B)
-[  15.759] ← SESSION_CTL from 127.0.0.1:46992 term_id=5663851184402975553 (108B)
-[  15.760]   → SESSION_CTL_RESP to 127.0.0.1:46992 (54B)
-[  16.357] ← SUBSCRIBE from 127.0.0.1:46992 term_id=8835459259339120040 (48B)
-[  16.358]   [DEBUG] SUBSCRIBE predicted_sqnum=16 (base=14)
-[  16.358]   → SUBSCRIBE_RESP to 127.0.0.1:46992 (54B) chkval=16
-[  16.360] ← SESSION_CTL from 127.0.0.1:46992 term_id=5663851184402975553 (108B)
-[  16.361]   → SESSION_CTL_RESP to 127.0.0.1:46992 (54B)
-[  16.377] NEW CLIENT: term_id=-5782835841794748635 from 127.0.0.1:46992 port=28800
-[  16.378]   HDR: proto=0x7f type=0x01(DETECT_REQ) len=68 opt=0x00010000 enc=1 ack=False resp=False
-[  16.378]   HEX: 7f 01 44 00 ed 97 71 03 60 61 b6 a2 ed 5a 7e 54 88 ff b1 1c 00 00 01 00 7f e2 f3 c4 9e ca 2a af fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee 00 00 00 00
-[  16.379] ← DETECT_REQ from 127.0.0.1:46992:28800 client_tid=-5782835841794748635 (68B)
-[  16.380] → DETECT_RESP to 127.0.0.1:46992 server_tid=-3195816737827617183 (56B)
-[  16.958] ← SESSION_CTL from 127.0.0.1:46992 term_id=5663851184402975553 (108B)
-[  16.959]   → SESSION_CTL_RESP to 127.0.0.1:46992 (54B)
-[  17.557] ← SESSION_CTL from 127.0.0.1:46992 term_id=5663851184402975553 (108B)
-[  17.558]   → SESSION_CTL_RESP to 127.0.0.1:46992 (54B)
-[  18.159] ← SESSION_CTL from 127.0.0.1:46992 term_id=5663851184402975553 (108B)
-[  18.160]   → SESSION_CTL_RESP to 127.0.0.1:46992 (54B)
-[  18.358] ← SUBSCRIBE from 127.0.0.1:46992 term_id=8835459259339120040 (48B)
-[  18.359]   [DEBUG] SUBSCRIBE predicted_sqnum=26 (base=24)
-[  18.359]   → SUBSCRIBE_RESP to 127.0.0.1:46992 (54B) chkval=26
-[  18.407] NEW CLIENT: term_id=333659438713554136 from 127.0.0.1:46992 port=28800
-[  18.408]   HDR: proto=0x7e type=0xa4(CALLING_REQ) len=161 opt=0x000690be enc=6 ack=False resp=False
-[  18.408]   HEX: 7e a4 a1 00 6d 95 a2 f8 6a 2f 86 a3 21 87 6f e9 72 b8 1d f2 be 90 06 00 2b ee 85 46 c8 1e 2d 42 67 c5 e2 05 e8 95 b3 eb ff c2 3c 5c 8c f1 9d 45 54 bd 17 40 76 34 a8 1e 33 b0 c1 62 45 dc 9f 48 0f e0 c0 19 5b 5e f5 7b 33 b0 c1 62 45 dc 9f 48 33 b0 c1 62 45 dc 9f 48 33 b0 c1 62 45 dc 9f 48 33 b0 c1 62 45 dc 9f 48 33 b0 c1 62 45 dc 9f 48 33 b0 c1 62 45 dc 9f 48 33 58 83 d4 ef 7c 05 b5 f4 2a 0c b6 f8 04 49 6b 6c a8 6a 0e 2d 3f 71 b7 57 d8 3b f5 4f f9 b0 c2 c7 bb 3d 0b 5e 11 54 0b 38
-[  18.408] ← CALLING_REQ from 127.0.0.1:46992 term_id=333659438713554136 (161B)
-[  18.408]   HEX: 7e a4 a1 00 6d 95 a2 f8 6a 2f 86 a3 21 87 6f e9 72 b8 1d f2 be 90 06 00 2b ee 85 46 c8 1e 2d 42 67 c5 e2 05 e8 95 b3 eb ff c2 3c 5c 8c f1 9d 45 54 bd 17 40 76 34 a8 1e 33 b0 c1 62 45 dc 9f 48 0f e0 c0 19 5b 5e f5 7b 33 b0 c1 62 45 dc 9f 48 33 b0 c1 62 45 dc 9f 48 33 b0 c1 62 45 dc 9f 48 33 b0 c1 62 45 dc 9f 48 33 b0 c1 62 45 dc 9f 48 33 b0 c1 62 45 dc 9f 48 33 58 83 d4 ef 7c 05 b5 f4 2a 0c b6 f8 04 49 6b 6c a8 6a 0e 2d 3f 71 b7 57 d8 3b f5 4f f9 b0 c2 c7 bb 3d 0b 5e 11 54 0b 38
-[  18.409]   [CALLING] Decrypted dest_term_id=26692860967390209
-[  18.409]   [DEBUG] _extract_req_sqnum: using session_key=2483b60e375f3a60... for addr=('127.0.0.1', 46992)
-[  18.410]   [DEBUG] _extract_req_sqnum: decrypted sqnum=200504027 from enc_bytes=21876fe972b81df2
-[  18.410]   [MTP] CALLING req_sqnum=200504027 (for ACK matching)
-[  18.410]   [MTP] Built CALLING_ACK (session-enc): doorbell=192.168.1.81:8899 req_sqnum=200504027 frame_size=40
-[  18.410]   [MTP] Extracted link_id=6214916 from CALLING (session-dec)
-[  18.410]   [MTP] Built MTP_RES_RESP: link_id=6214916 doorbell_lan=192.168.1.81:8899 v4_cnt=0 v6_cnt=0 (LAN-only, no relay servers) (122B)
-[  18.410]   [MTP] Sending CALLING_ACK + MTP_RES_RESP to bridge 127.0.0.1:46992
-[  18.757] ← SESSION_CTL from 127.0.0.1:46992 term_id=5663851184402975553 (108B)
-[  18.758]   → SESSION_CTL_RESP to 127.0.0.1:46992 (54B)
-[  19.358] ← SESSION_CTL from 127.0.0.1:46992 term_id=5663851184402975553 (108B)
-[  19.358]   → SESSION_CTL_RESP to 127.0.0.1:46992 (54B)
-[  19.957] ← SESSION_CTL from 127.0.0.1:46992 term_id=5663851184402975553 (108B)
-[  19.958]   → SESSION_CTL_RESP to 127.0.0.1:46992 (54B)
-[  20.358] ← SUBSCRIBE from 127.0.0.1:46992 term_id=8835459259339120040 (48B)
-[  20.359]   [DEBUG] SUBSCRIBE predicted_sqnum=34 (base=32)
-[  20.359]   → SUBSCRIBE_RESP to 127.0.0.1:46992 (54B) chkval=34
-[  21.379] NEW CLIENT: term_id=-7485186841332841727 from 127.0.0.1:46992 port=28800
-[  21.380]   HDR: proto=0x7f type=0x01(DETECT_REQ) len=68 opt=0x00010000 enc=1 ack=False resp=False
-[  21.380]   HEX: 7f 01 44 00 2f de 0f 36 59 87 26 5f 2f 13 00 61 b1 19 21 e1 00 00 01 00 59 1e 68 13 4d ac 64 77 fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee 00 00 00 00
-[  21.381] ← DETECT_REQ from 127.0.0.1:46992:28800 client_tid=-7485186841332841727 (68B)
-[  21.382] → DETECT_RESP to 127.0.0.1:46992 server_tid=-3195816737827617183 (56B)
-[  21.383] ← TCP signaling connection from 127.0.0.1:43852 on port 28800
-[  21.384]   TCP-SIG ← DETECT_REQ (36B) from 127.0.0.1:43852
-[  21.385] NEW CLIENT: term_id=5491082664421909932 from 127.0.0.1:43852 port=28800
-[  21.386]   HDR: proto=0x7f type=0x01(DETECT_REQ) len=36 opt=0x00010000 enc=1 ack=False resp=False
-[  21.387]   HEX: 7f 01 24 00 d5 22 d7 91 ee e4 b0 a3 d5 ef d8 c6 06 7a b7 1d 00 00 01 00 6f d9 2f b8 d6 c0 09 9b 00 00 00 00
-[  21.387] ← DETECT_REQ from 127.0.0.1:43852:28800 client_tid=5491082664421909932 (36B)
-[  21.388] → DETECT_RESP to 127.0.0.1:43852 server_tid=-3195816737827617183 (56B)
-[  21.388]   TCP-SIG → DETECT_RESP (56B)
-[  21.407] NEW CLIENT: term_id=8837948998884528419 from 127.0.0.1:46992 port=28800
-[  21.408]   HDR: proto=0x7f type=0x0c(CERTIFY) len=172 opt=0x014def9a enc=13 ack=False resp=False
-[  21.408]   HEX: 7f 0c ac 00 32 4f 54 2d a2 df 02 2b 32 82 5b 7a 4a 41 05 95 9a ef 4d 01 8b 37 ab 19 fc bc 42 1a 67 35 a4 03 d0 a9 7f 66 7b e0 6a 06 9c 2c 62 1a 9b 96 2d 0c 39 dd 02 c8 9e 9e c3 e3 4e 47 e6 88 5d e7 cc a1 80 9c bb bf 6c f1 cb e8 af 0c 4c 0a 00 00 00 00 00 00 00 00 00 00 00 00 01 01 08 65 66 05 d7 bf 65 76 fb ff a9 83 fe dd 07 d9 6f 73 b1 83 99 59 aa 97 d7 da ea 45 7d 53 86 f9 c6 09 ab bf 33 99 73 6b 42 d3 f6 08 dd 13 cf 4f c5 ad 45 ea 68 12 40 c1 63 17 ba bf 6e 2f 42 47 72 fd 1a f4 98 39 b7 cc 6a 52 0a 62 4f 64
-[  21.409] ← CERTIFY_REQ from 127.0.0.1:46992 term_id=8837948998884528419 (172B)
-[  21.409]   [DEBUG] CERTIFY plaintext sqnum=200504030
-[  21.409]   [DEBUG] Raw payload (first 48B): 8b37ab19fcbc421a6735a403d0a97f667be06a069c2c621a9b962d0c39dd02c89e9ec3e34e47e6885de7cca1809cbbbf encrypt_mode=1
-[  21.410]   [DEBUG] Per-frame key: 7f0cac009aef4d00
-[  21.410]   [DEBUG] Decrypted payload (first 48B): 050000006cf1cbe89a5fc7b7e590ff78763f2b9ea796ba97ed33ece194cb2196ec17b14efbe267b00804000001000000
-[  21.411]   [DEBUG] hash_checksum=0xe8cbf16c enc_key=9a5fc7b7e590ff78763f2b9ea796ba97ed33ece194cb2196ec17b14efbe267b0
-[  21.413]   [RELAY] Certify key: e7bcaca9a5fa7a8c83a9a5362b5458c0
-[  21.413]   [RELAY] Session key VERIFIED! hash=0xe8cbf16c
-[  21.413]   [RELAY] CERTIFY session_key=2483b60e375f3a60... session_id=050000006cf1cbe8
-[  21.418]   [RELAY] Cached REAL session_key=2483b60e375f3a60... for term_id=8837948998884528419
-[  21.419]   [ROLE] Identified BRIDGE: term_id=8837948998884528419 addr=127.0.0.1:46992
-[  21.419]   [RELAY] -> CERTIFY_RESP to 127.0.0.1:46992 (80B)
-[  21.456] NEW CLIENT: term_id=-5352671531237962329 from 127.0.0.1:46992 port=28800
-[  21.457]   HDR: proto=0x7e type=0xa6(INIT_INFO) len=62 opt=0x000eb34e enc=14 ack=False resp=False
-[  21.457]   HEX: 7e a6 3e 00 d3 e6 8c 35 06 60 5c ae 47 37 91 1a 9f 77 1d 34 4e b3 0e 00 d6 fa 99 08 93 08 5e 0c 70 b4 45 0c ac c1 11 da 33 b0 c1 62 45 dc 9f 48 33 b0 c1 62 45 dc 9f 48 01 00 00 00 00 0d
-[  21.457] ← INIT_INFO from 127.0.0.1:46992 term_id=-5352671531237962329
-[  21.458]   [ROLE] Identified BRIDGE: term_id=-5352671531237962329 addr=127.0.0.1:46992
-[  21.458]   [DEBUG] Using predicted sqnum=200504031 for INIT_INFO_RESP
-[  21.458]   → INIT_INFO_RESP to 127.0.0.1:46992 (60B)
-[  21.507] NEW CLIENT: term_id=739092769261887872 from 127.0.0.1:46992 port=28800
-[  21.507]   HDR: proto=0x7e type=0xa0(SUBSCRIBE) len=48 opt=0x000affc0 enc=10 ack=False resp=False
-[  21.508]   HEX: 7e a0 30 00 a4 8c f5 d8 d4 af 4b 0e 30 5d e8 f7 4d b8 0a 94 c0 ff 0a 00 76 34 32 26 40 a3 35 26 8c 3e bc 7b 5d a8 4f 91 d9 d7 fa f7 0a c8 46 e3
-[  21.508] ← SUBSCRIBE from 127.0.0.1:46992 term_id=739092769261887872 (48B)
-[  21.508]   [DEBUG] SUBSCRIBE predicted_sqnum=200504033 (base=200504031)
-[  21.508]   → SUBSCRIBE_RESP to 127.0.0.1:46992 (54B) chkval=200504033
-[  22.357] ← SUBSCRIBE from 127.0.0.1:46992 term_id=8835459259339120040 (48B)
-[  22.358]   [DEBUG] SUBSCRIBE predicted_sqnum=200504035 (base=200504033)
-[  22.359]   → SUBSCRIBE_RESP to 127.0.0.1:46992 (54B) chkval=200504035
-[  23.356] ← SUBSCRIBE from 127.0.0.1:46992 term_id=739092769261887872 (48B)
-[  23.356]   [DEBUG] SUBSCRIBE predicted_sqnum=200504037 (base=200504035)
-[  23.357]   → SUBSCRIBE_RESP to 127.0.0.1:46992 (54B) chkval=200504037
-[  24.359]   TCP-SIG connection from 127.0.0.1:43852 closed: 0 bytes read on a total of 4 expected bytes
-[  24.459] NEW CLIENT: term_id=-3505568100500412866 from 127.0.0.1:46992 port=51701
-[  24.459]   HDR: proto=0x7f type=0x15(LIST_REQ) len=40 opt=0x00010000 enc=1 ack=False resp=False
-[  24.460]   HEX: 7f 15 28 00 34 ce 85 7b 51 02 b6 24 34 03 8a 2c b9 9c b1 9a 00 00 01 00 b4 03 bc b0 4c 02 f4 14 1b 54 3c 61 0e 1b ce 3b
-[  24.460] ← LIST_REQ from 127.0.0.1:46992 term_id=-3505568100500412866 (40B)
-[  24.461] → LIST_RESP to 127.0.0.1:46992 (local, servers: 127.0.0.1, 68B)
-[  24.464] NEW CLIENT: term_id=3431284567487559103 from 127.0.0.1:46992 port=28800
-[  24.464]   HDR: proto=0x7f type=0x01(DETECT_REQ) len=68 opt=0x00010000 enc=1 ack=False resp=False
-[  24.465]   HEX: 7f 01 44 00 ea b1 21 7e 9e b2 00 43 ea 7c 2e 29 76 2c 07 fd 00 00 01 00 a0 1d 18 d1 13 3e c0 d8 fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee 00 00 00 00
-[  24.465] ← DETECT_REQ from 127.0.0.1:46992:28800 client_tid=3431284567487559103 (68B)
-[  24.466] → DETECT_RESP to 127.0.0.1:46992 server_tid=-3195816737827617183 (56B)
-[  25.358] ← SUBSCRIBE from 127.0.0.1:46992 term_id=739092769261887872 (48B)
-[  25.359]   [DEBUG] SUBSCRIBE predicted_sqnum=200504039 (base=200504037)
-[  25.360]   → SUBSCRIBE_RESP to 127.0.0.1:46992 (54B) chkval=200504039
-[  25.465] NEW CLIENT: term_id=-4995901129512059682 from 127.0.0.1:46992 port=28800
-[  25.466]   HDR: proto=0x7f type=0x01(DETECT_REQ) len=68 opt=0x00010000 enc=1 ack=False resp=False
-[  25.467]   HEX: 7f 01 44 00 87 fb a3 5e 51 69 22 06 87 36 ac 09 b9 f7 25 b8 00 00 01 00 bb f2 51 2a 3b 0e ec 1e fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee 00 00 00 00
-[  25.467] ← DETECT_REQ from 127.0.0.1:46992:28800 client_tid=-4995901129512059682 (68B)
-[  25.468] → DETECT_RESP to 127.0.0.1:46992 server_tid=-3195816737827617183 (56B)
-[  26.468] NEW CLIENT: term_id=-3716375070288119756 from 127.0.0.1:46992 port=28800
-[  26.469]   HDR: proto=0x7f type=0x01(DETECT_REQ) len=68 opt=0x00010000 enc=1 ack=False resp=False
-[  26.469]   HEX: 7f 01 44 00 2a af c8 db 10 cc c8 7b 2a 62 c7 8c f8 52 cf c5 00 00 01 00 f4 7c 50 3d c7 78 76 a8 fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee 00 00 00 00
-[  26.470] ← DETECT_REQ from 127.0.0.1:46992:28800 client_tid=-3716375070288119756 (68B)
-[  26.470] → DETECT_RESP to 127.0.0.1:46992 server_tid=-3195816737827617183 (56B)
-[  27.360] ← SUBSCRIBE from 127.0.0.1:46992 term_id=739092769261887872 (48B)
-[  27.361]   [DEBUG] SUBSCRIBE predicted_sqnum=200504041 (base=200504039)
-[  27.362]   → SUBSCRIBE_RESP to 127.0.0.1:46992 (54B) chkval=200504041
-[  28.469] NEW CLIENT: term_id=2577094927650373184 from 127.0.0.1:46992 port=28800
-[  28.469]   HDR: proto=0x7f type=0x01(DETECT_REQ) len=68 opt=0x00010000 enc=1 ack=False resp=False
-[  28.469]   HEX: 7f 01 44 00 72 53 51 47 05 1b 25 7e 72 9e 5e 10 ed 85 22 c0 00 00 01 00 16 73 c8 53 24 48 b1 82 fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee 00 00 00 00
-[  28.470] ← DETECT_REQ from 127.0.0.1:46992:28800 client_tid=2577094927650373184 (68B)
-[  28.470] → DETECT_RESP to 127.0.0.1:46992 server_tid=-3195816737827617183 (56B)
-[  29.359] ← SUBSCRIBE from 127.0.0.1:46992 term_id=739092769261887872 (48B)
-[  29.360]   [DEBUG] SUBSCRIBE predicted_sqnum=200504043 (base=200504041)
-[  29.360]   → SUBSCRIBE_RESP to 127.0.0.1:46992 (54B) chkval=200504043
-[  30.007] --- STATUS: 24 clients ---
-[  30.008]   term_id=-5783601125351474452 addr=127.0.0.1:57853 role=unknown cert=False in=1 out=0 last_seen=26s ago
-[  30.009]   term_id=-913747067928313442 addr=127.0.0.1:57853 role=unknown cert=False in=1 out=0 last_seen=26s ago
-[  30.009]   term_id=-4900602222110392933 addr=127.0.0.1:57853 role=bridge cert=True in=1 out=0 last_seen=26s ago
-[  30.009]   term_id=-5876101252447242930 addr=127.0.0.1:57853 role=bridge cert=True in=1 out=0 last_seen=26s ago
-[  30.009]   term_id=8835459259339120040 addr=127.0.0.1:46992 role=unknown cert=False in=10 out=0 last_seen=8s ago
-[  30.010]   term_id=5663851184402975553 addr=127.0.0.1:46992 role=unknown cert=False in=27 out=0 last_seen=10s ago
-[  30.010]   term_id=3867097302486563338 addr=127.0.0.1:57853 role=unknown cert=False in=1 out=0 last_seen=25s ago
-[  30.010]   term_id=-7775470171188184859 addr=127.0.0.1:57853 role=unknown cert=False in=1 out=0 last_seen=24s ago
-[  30.010]   term_id=2411800713759164309 addr=127.0.0.1:57853 role=unknown cert=False in=1 out=0 last_seen=23s ago
-[  30.010]   term_id=2839181989471035398 addr=127.0.0.1:57853 role=unknown cert=False in=1 out=0 last_seen=22s ago
-[  30.011]   term_id=-3465154451536345583 addr=127.0.0.1:57853 role=unknown cert=False in=1 out=0 last_seen=21s ago
-[  30.011]   term_id=-6109954824659852801 addr=127.0.0.1:57853 role=unknown cert=False in=1 out=0 last_seen=19s ago
-[  30.011]   term_id=-5782835841794748635 addr=127.0.0.1:46992 role=unknown cert=False in=1 out=0 last_seen=14s ago
-[  30.011]   term_id=333659438713554136 addr=127.0.0.1:46992 role=unknown cert=False in=1 out=0 last_seen=12s ago
-[  30.011]   term_id=-7485186841332841727 addr=127.0.0.1:46992 role=unknown cert=False in=1 out=0 last_seen=9s ago
-[  30.012]   term_id=5491082664421909932 addr=127.0.0.1:43852 role=unknown cert=False in=1 out=0 last_seen=9s ago
-[  30.012]   term_id=8837948998884528419 addr=127.0.0.1:46992 role=bridge cert=True in=1 out=0 last_seen=9s ago
-[  30.012]   term_id=-5352671531237962329 addr=127.0.0.1:46992 role=bridge cert=True in=1 out=0 last_seen=9s ago
-[  30.012]   term_id=739092769261887872 addr=127.0.0.1:46992 role=unknown cert=False in=5 out=0 last_seen=1s ago
-[  30.013]   term_id=-3505568100500412866 addr=127.0.0.1:46992 role=unknown cert=False in=1 out=0 last_seen=6s ago
-[  30.013]   term_id=3431284567487559103 addr=127.0.0.1:46992 role=unknown cert=False in=1 out=0 last_seen=6s ago
-[  30.013]   term_id=-4995901129512059682 addr=127.0.0.1:46992 role=unknown cert=False in=1 out=0 last_seen=5s ago
-[  30.013]   term_id=-3716375070288119756 addr=127.0.0.1:46992 role=unknown cert=False in=1 out=0 last_seen=4s ago
-[  30.013]   term_id=2577094927650373184 addr=127.0.0.1:46992 role=unknown cert=False in=1 out=0 last_seen=2s ago
-[  30.408] NEW CLIENT: term_id=-585628780727779968 from 127.0.0.1:57853 port=28800
-[  30.408]   HDR: proto=0x7e type=0xa4(CALLING_REQ) len=161 opt=0x0006af16 enc=6 ack=False resp=False
-[  30.409]   HEX: 7e a4 a1 00 1e 50 6c 5c 0d dc ea 78 8a 81 71 73 94 cb ab e2 16 af 06 00 12 6d 23 e6 9f 53 63 28 67 c5 e2 05 e8 95 b3 eb ff c2 3c 5c 8c f1 9d 45 86 76 eb 4e 2b f0 e1 35 33 b0 c1 62 45 dc 9f 48 0f e0 c0 19 5b 5e f5 7b 33 b0 c1 62 45 dc 9f 48 33 b0 c1 62 45 dc 9f 48 33 b0 c1 62 45 dc 9f 48 33 b0 c1 62 45 dc 9f 48 33 b0 c1 62 45 dc 9f 48 33 b0 c1 62 45 dc 9f 48 a6 a4 14 aa 66 c7 4d b4 f4 2a 0c b6 f8 04 49 6b 6c a8 6a 0e 2d 3f 71 b7 57 d8 3b f5 4f f9 b0 c2 c7 bb 3d 0b 5e 11 54 0b 38
-[  30.409] ← CALLING_REQ from 127.0.0.1:57853 term_id=-585628780727779968 (161B)
-[  30.410]   HEX: 7e a4 a1 00 1e 50 6c 5c 0d dc ea 78 8a 81 71 73 94 cb ab e2 16 af 06 00 12 6d 23 e6 9f 53 63 28 67 c5 e2 05 e8 95 b3 eb ff c2 3c 5c 8c f1 9d 45 86 76 eb 4e 2b f0 e1 35 33 b0 c1 62 45 dc 9f 48 0f e0 c0 19 5b 5e f5 7b 33 b0 c1 62 45 dc 9f 48 33 b0 c1 62 45 dc 9f 48 33 b0 c1 62 45 dc 9f 48 33 b0 c1 62 45 dc 9f 48 33 b0 c1 62 45 dc 9f 48 33 b0 c1 62 45 dc 9f 48 a6 a4 14 aa 66 c7 4d b4 f4 2a 0c b6 f8 04 49 6b 6c a8 6a 0e 2d 3f 71 b7 57 d8 3b f5 4f f9 b0 c2 c7 bb 3d 0b 5e 11 54 0b 38
-[  30.412]   [CALLING] Decrypted dest_term_id=62454996351847425
-[  30.413]   [DEBUG] _extract_req_sqnum: using session_key=2483b60e375f3a60... for addr=('127.0.0.1', 57853)
-[  30.414]   [DEBUG] _extract_req_sqnum: decrypted sqnum=200504039 from enc_bytes=8a81717394cbabe2
-[  30.414]   [MTP] CALLING req_sqnum=200504039 (for ACK matching)
-[  30.414]   [MTP] Built CALLING_ACK (session-enc): doorbell=192.168.1.81:8899 req_sqnum=200504039 frame_size=40
-[  30.415]   [MTP] Extracted link_id=14541437 from CALLING (session-dec)
-[  30.415]   [MTP] Built MTP_RES_RESP: link_id=14541437 doorbell_lan=192.168.1.81:8899 v4_cnt=0 v6_cnt=0 (LAN-only, no relay servers) (122B)
-[  30.416]   [MTP] Sending CALLING_ACK + MTP_RES_RESP to bridge 127.0.0.1:57853
-[  30.469] NEW CLIENT: term_id=-5457633401358619971 from 127.0.0.1:57853 port=28800
-[  30.469]   HDR: proto=0x7f type=0x01(DETECT_REQ) len=68 opt=0x00010000 enc=1 ack=False resp=False
-[  30.470]   HEX: 7f 01 44 00 ca d1 8c a5 b4 13 ae 6c ca 1c 83 f2 5c 8d a9 d2 00 00 01 00 8d 35 50 13 38 61 cc 20 fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee 00 00 00 00
-[  30.470] ← DETECT_REQ from 127.0.0.1:57853:28800 client_tid=-5457633401358619971 (68B)
-[  30.471] → DETECT_RESP to 127.0.0.1:57853 server_tid=-3195816737827617183 (56B)
-[  31.358] ← SUBSCRIBE from 127.0.0.1:57853 term_id=739092769261887872 (48B)
-[  31.359]   [DEBUG] SUBSCRIBE predicted_sqnum=200504055 (base=200504053)
-[  31.360]   → SUBSCRIBE_RESP to 127.0.0.1:57853 (54B) chkval=200504055
-[  31.607] NEW CLIENT: term_id=1259001462607094375 from 127.0.0.1:57853 port=28800
-[  31.608]   HDR: proto=0x7e type=0xb9(0xB9) len=76 opt=0x000687fa enc=6 ack=False resp=False
-[  31.608]   HEX: 7e b9 4c 00 70 ee 80 33 b2 53 eb df e4 3f 9d 1c 2b 44 aa 45 fa 87 06 00 31 43 af 39 12 71 b7 90 5b 75 75 da 81 92 ac 46 38 01 20 be 53 85 fb f6 33 b0 c1 62 45 dc 9f 48 9c 1f c1 ad 3a 3d 58 7f e7 0a 8a eb ce 55 f0 35 00 00 00 00
-[  31.608] ← 0xB9 from 127.0.0.1:57853:28800 term_id=1259001462607094375 (76B) opt=0x000687fa enc=6
-[  31.609]   HEX: 7e b9 4c 00 70 ee 80 33 b2 53 eb df e4 3f 9d 1c 2b 44 aa 45 fa 87 06 00 31 43 af 39 12 71 b7 90 5b 75 75 da 81 92 ac 46 38 01 20 be 53 85 fb f6 33 b0 c1 62 45 dc 9f 48 9c 1f c1 ad 3a 3d 58 7f e7 0a 8a eb ce 55 f0 35 00 00 00 00
-[  31.609]   ! NO PEER to route 0xB9 (term_id=1259001462607094375, clients=[-5783601125351474452, -913747067928313442, -4900602222110392933, -5876101252447242930, 8835459259339120040, 5663851184402975553, 3867097302486563338, -7775470171188184859, 2411800713759164309, 2839181989471035398, -3465154451536345583, -6109954824659852801, -5782835841794748635, 333659438713554136, -7485186841332841727, 5491082664421909932, 8837948998884528419, -5352671531237962329, 739092769261887872, -3505568100500412866, 3431284567487559103, -4995901129512059682, -3716375070288119756, 2577094927650373184, -585628780727779968, -5457633401358619971, 1259001462607094375])
-[  31.709] NEW CLIENT: term_id=3636414859371744256 from 127.0.0.1:57853 port=28800
-[  31.710]   HDR: proto=0x7e type=0xbc(0xBC) len=56 opt=0x0006bec6 enc=6 ack=False resp=False
-[  31.710]   HEX: 7e bc 38 00 d5 fd 40 22 ce 02 9d b7 41 2c 5d 0d 57 15 dc 2d c6 be 06 00 60 19 05 4d e1 a7 00 b8 17 97 2a ef 5d 41 1d 82 93 a8 85 59 4a 08 14 9a 33 0d 78 24 dc 75 91 c9
-[  31.710] ← 0xBC from 127.0.0.1:57853:28800 term_id=3636414859371744256 (56B) opt=0x0006bec6 enc=6
-[  31.710]   HEX: 7e bc 38 00 d5 fd 40 22 ce 02 9d b7 41 2c 5d 0d 57 15 dc 2d c6 be 06 00 60 19 05 4d e1 a7 00 b8 17 97 2a ef 5d 41 1d 82 93 a8 85 59 4a 08 14 9a 33 0d 78 24 dc 75 91 c9
-[  31.711]   ! NO PEER to route 0xBC (term_id=3636414859371744256, clients=[-5783601125351474452, -913747067928313442, -4900602222110392933, -5876101252447242930, 8835459259339120040, 5663851184402975553, 3867097302486563338, -7775470171188184859, 2411800713759164309, 2839181989471035398, -3465154451536345583, -6109954824659852801, -5782835841794748635, 333659438713554136, -7485186841332841727, 5491082664421909932, 8837948998884528419, -5352671531237962329, 739092769261887872, -3505568100500412866, 3431284567487559103, -4995901129512059682, -3716375070288119756, 2577094927650373184, -585628780727779968, -5457633401358619971, 1259001462607094375, 3636414859371744256])
-[  31.711] NEW CLIENT: term_id=2992656223980285017 from 127.0.0.1:57853 port=28800
-[  31.711]   HDR: proto=0x7e type=0xd8(0xD8) len=54 opt=0x00060e26 enc=6 ack=False resp=False
-[  31.712]   HEX: 7e d8 36 00 55 fa ef 6a 1f b8 6a 36 c1 2b f2 45 86 af 2b ac 26 0e 06 00 67 c5 e2 05 e8 95 b3 eb ff c2 3c 5c 8c f1 9d 45 7f 41 77 37 f2 c8 99 5e 00 00 01 00 00 00
-[  31.712] ← 0xD8 from 127.0.0.1:57853:28800 term_id=2992656223980285017 (54B) opt=0x00060e26 enc=6
-[  31.712]   HEX: 7e d8 36 00 55 fa ef 6a 1f b8 6a 36 c1 2b f2 45 86 af 2b ac 26 0e 06 00 67 c5 e2 05 e8 95 b3 eb ff c2 3c 5c 8c f1 9d 45 7f 41 77 37 f2 c8 99 5e 00 00 01 00 00 00
-[  31.712]   ! NO PEER to route 0xD8 (term_id=2992656223980285017, clients=[-5783601125351474452, -913747067928313442, -4900602222110392933, -5876101252447242930, 8835459259339120040, 5663851184402975553, 3867097302486563338, -7775470171188184859, 2411800713759164309, 2839181989471035398, -3465154451536345583, -6109954824659852801, -5782835841794748635, 333659438713554136, -7485186841332841727, 5491082664421909932, 8837948998884528419, -5352671531237962329, 739092769261887872, -3505568100500412866, 3431284567487559103, -4995901129512059682, -3716375070288119756, 2577094927650373184, -585628780727779968, -5457633401358619971, 1259001462607094375, 3636414859371744256, 2992656223980285017])
-[  60.015] --- STATUS: 29 clients ---
-[  60.016]   term_id=-5783601125351474452 addr=127.0.0.1:57853 role=unknown cert=False in=1 out=0 last_seen=56s ago
-[  60.016]   term_id=-913747067928313442 addr=127.0.0.1:57853 role=unknown cert=False in=1 out=0 last_seen=56s ago
-[  60.017]   term_id=-4900602222110392933 addr=127.0.0.1:57853 role=bridge cert=True in=1 out=0 last_seen=56s ago
-[  60.017]   term_id=-5876101252447242930 addr=127.0.0.1:57853 role=bridge cert=True in=1 out=0 last_seen=56s ago
-[  60.017]   term_id=8835459259339120040 addr=127.0.0.1:46992 role=unknown cert=False in=10 out=0 last_seen=38s ago
-[  60.018]   term_id=5663851184402975553 addr=127.0.0.1:46992 role=unknown cert=False in=27 out=0 last_seen=40s ago
-[  60.018]   term_id=3867097302486563338 addr=127.0.0.1:57853 role=unknown cert=False in=1 out=0 last_seen=55s ago
-[  60.018]   term_id=-7775470171188184859 addr=127.0.0.1:57853 role=unknown cert=False in=1 out=0 last_seen=54s ago
-[  60.018]   term_id=2411800713759164309 addr=127.0.0.1:57853 role=unknown cert=False in=1 out=0 last_seen=53s ago
-[  60.018]   term_id=2839181989471035398 addr=127.0.0.1:57853 role=unknown cert=False in=1 out=0 last_seen=52s ago
-[  60.018]   term_id=-3465154451536345583 addr=127.0.0.1:57853 role=unknown cert=False in=1 out=0 last_seen=51s ago
-[  60.019]   term_id=-6109954824659852801 addr=127.0.0.1:57853 role=unknown cert=False in=1 out=0 last_seen=49s ago
-[  60.019]   term_id=-5782835841794748635 addr=127.0.0.1:46992 role=unknown cert=False in=1 out=0 last_seen=44s ago
-[  60.020]   term_id=333659438713554136 addr=127.0.0.1:46992 role=unknown cert=False in=1 out=0 last_seen=42s ago
-[  60.020]   term_id=-7485186841332841727 addr=127.0.0.1:46992 role=unknown cert=False in=1 out=0 last_seen=39s ago
-[  60.020]   term_id=5491082664421909932 addr=127.0.0.1:43852 role=unknown cert=False in=1 out=0 last_seen=39s ago
-[  60.020]   term_id=8837948998884528419 addr=127.0.0.1:46992 role=bridge cert=True in=1 out=0 last_seen=39s ago
-[  60.020]   term_id=-5352671531237962329 addr=127.0.0.1:46992 role=bridge cert=True in=1 out=0 last_seen=39s ago
-[  60.021]   term_id=739092769261887872 addr=127.0.0.1:57853 role=unknown cert=False in=6 out=0 last_seen=29s ago
-[  60.021]   term_id=-3505568100500412866 addr=127.0.0.1:46992 role=unknown cert=False in=1 out=0 last_seen=36s ago
-[  60.021]   term_id=3431284567487559103 addr=127.0.0.1:46992 role=unknown cert=False in=1 out=0 last_seen=36s ago
-[  60.021]   term_id=-4995901129512059682 addr=127.0.0.1:46992 role=unknown cert=False in=1 out=0 last_seen=35s ago
-[  60.021]   term_id=-3716375070288119756 addr=127.0.0.1:46992 role=unknown cert=False in=1 out=0 last_seen=34s ago
-[  60.021]   term_id=2577094927650373184 addr=127.0.0.1:46992 role=unknown cert=False in=1 out=0 last_seen=32s ago
-[  60.022]   term_id=-585628780727779968 addr=127.0.0.1:57853 role=unknown cert=False in=1 out=0 last_seen=30s ago
-[  60.022]   term_id=-5457633401358619971 addr=127.0.0.1:57853 role=unknown cert=False in=1 out=0 last_seen=30s ago
-[  60.022]   term_id=1259001462607094375 addr=127.0.0.1:57853 role=unknown cert=False in=1 out=0 last_seen=28s ago
-[  60.022]   term_id=3636414859371744256 addr=127.0.0.1:57853 role=unknown cert=False in=1 out=0 last_seen=28s ago
-[  60.022]   term_id=2992656223980285017 addr=127.0.0.1:57853 role=unknown cert=False in=1 out=0 last_seen=28s ago
-[  90.024] --- STATUS: 29 clients ---
-[  90.025]   term_id=-5783601125351474452 addr=127.0.0.1:57853 role=unknown cert=False in=1 out=0 last_seen=86s ago
-[  90.026]   term_id=-913747067928313442 addr=127.0.0.1:57853 role=unknown cert=False in=1 out=0 last_seen=86s ago
-[  90.026]   term_id=-4900602222110392933 addr=127.0.0.1:57853 role=bridge cert=True in=1 out=0 last_seen=86s ago
-[  90.027]   term_id=-5876101252447242930 addr=127.0.0.1:57853 role=bridge cert=True in=1 out=0 last_seen=86s ago
-[  90.027]   term_id=8835459259339120040 addr=127.0.0.1:46992 role=unknown cert=False in=10 out=0 last_seen=68s ago
-[  90.027]   term_id=5663851184402975553 addr=127.0.0.1:46992 role=unknown cert=False in=27 out=0 last_seen=70s ago
-[  90.028]   term_id=3867097302486563338 addr=127.0.0.1:57853 role=unknown cert=False in=1 out=0 last_seen=85s ago
-[  90.028]   term_id=-7775470171188184859 addr=127.0.0.1:57853 role=unknown cert=False in=1 out=0 last_seen=84s ago
-[  90.029]   term_id=2411800713759164309 addr=127.0.0.1:57853 role=unknown cert=False in=1 out=0 last_seen=83s ago
-[  90.029]   term_id=2839181989471035398 addr=127.0.0.1:57853 role=unknown cert=False in=1 out=0 last_seen=82s ago
-[  90.030]   term_id=-3465154451536345583 addr=127.0.0.1:57853 role=unknown cert=False in=1 out=0 last_seen=81s ago
-[  90.030]   term_id=-6109954824659852801 addr=127.0.0.1:57853 role=unknown cert=False in=1 out=0 last_seen=79s ago
-[  90.030]   term_id=-5782835841794748635 addr=127.0.0.1:46992 role=unknown cert=False in=1 out=0 last_seen=74s ago
-[  90.031]   term_id=333659438713554136 addr=127.0.0.1:46992 role=unknown cert=False in=1 out=0 last_seen=72s ago
-[  90.031]   term_id=-7485186841332841727 addr=127.0.0.1:46992 role=unknown cert=False in=1 out=0 last_seen=69s ago
-[  90.031]   term_id=5491082664421909932 addr=127.0.0.1:43852 role=unknown cert=False in=1 out=0 last_seen=69s ago
-[  90.032]   term_id=8837948998884528419 addr=127.0.0.1:46992 role=bridge cert=True in=1 out=0 last_seen=69s ago
-[  90.032]   term_id=-5352671531237962329 addr=127.0.0.1:46992 role=bridge cert=True in=1 out=0 last_seen=69s ago
-[  90.032]   term_id=739092769261887872 addr=127.0.0.1:57853 role=unknown cert=False in=6 out=0 last_seen=59s ago
-[  90.033]   term_id=-3505568100500412866 addr=127.0.0.1:46992 role=unknown cert=False in=1 out=0 last_seen=66s ago
-[  90.033]   term_id=3431284567487559103 addr=127.0.0.1:46992 role=unknown cert=False in=1 out=0 last_seen=66s ago
-[  90.033]   term_id=-4995901129512059682 addr=127.0.0.1:46992 role=unknown cert=False in=1 out=0 last_seen=65s ago
-[  90.034]   term_id=-3716375070288119756 addr=127.0.0.1:46992 role=unknown cert=False in=1 out=0 last_seen=64s ago
-[  90.034]   term_id=2577094927650373184 addr=127.0.0.1:46992 role=unknown cert=False in=1 out=0 last_seen=62s ago
-[  90.034]   term_id=-585628780727779968 addr=127.0.0.1:57853 role=unknown cert=False in=1 out=0 last_seen=60s ago
-[  90.035]   term_id=-5457633401358619971 addr=127.0.0.1:57853 role=unknown cert=False in=1 out=0 last_seen=60s ago
-[  90.035]   term_id=1259001462607094375 addr=127.0.0.1:57853 role=unknown cert=False in=1 out=0 last_seen=58s ago
-[  90.035]   term_id=3636414859371744256 addr=127.0.0.1:57853 role=unknown cert=False in=1 out=0 last_seen=58s ago
-[  90.035]   term_id=2992656223980285017 addr=127.0.0.1:57853 role=unknown cert=False in=1 out=0 last_seen=58s ago
+[   0.003]   Listening on UDP :28800
+[   0.004]   Listening on UDP :8443
+[   0.004]   Listening on UDP :8000
+[   0.005]   Listening on UDP :51701 (list)
+[   0.005] 
+[   0.006] Ready — waiting for connections...
+[   0.006] ============================================================
+[   0.012] [KEEPALIVE] Loop started (interval=25s, max_misses=3)
+[   0.014]   Listening on TCP :28800 (signaling)
+[   0.020]   Listening on TCP :8443 (signaling)
+[   0.021]   Listening on TCP :8000 (signaling)
+[   0.021]   [MTP] Listening on TCP :23000 (MTP relay)
+[   4.461] NEW CLIENT: term_id=-5783601125351474452 from 127.0.0.1:35115 port=51701
+[   4.464]   HDR: proto=0x7f type=0x15(LIST_REQ) len=40 opt=0x00010000 enc=1 ack=False resp=False
+[   4.468]   HEX: 7f 15 28 00 40 b2 1c ed c2 af 2c e4 40 7f 13 ba 2a 31 2b 5a 00 00 01 00 b4 03 bc b0 4c 02 f4 14 1b 54 3c 61 0e 1b ce 3b
+[   4.468] ← LIST_REQ from 127.0.0.1:35115 term_id=-5783601125351474452 (40B)
+[   4.470] → LIST_RESP to 127.0.0.1:35115 (local, servers: 127.0.0.1, 68B)
+[   4.471] NEW CLIENT: term_id=-7219003057890360435 from 127.0.0.1:35115 port=28800
+[   4.471]   HDR: proto=0x7f type=0x01(DETECT_REQ) len=68 opt=0x00010000 enc=1 ack=False resp=False
+[   4.471]   HEX: 7f 01 44 00 80 f0 96 d2 8e 51 68 23 80 3d 99 85 66 cf 6f 9d 00 00 01 00 93 60 3b b1 53 a6 5d d4 fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee 00 00 00 00
+[   4.472] ← DETECT_REQ from 127.0.0.1:35115:28800 client_tid=-7219003057890360435 (68B)
+[   4.472] → DETECT_RESP to 127.0.0.1:35115 server_tid=-3195816737827617183 (56B)
+[   4.511] NEW CLIENT: term_id=1442374233034517850 from 127.0.0.1:35115 port=28800
+[   4.511]   HDR: proto=0x7f type=0x0c(CERTIFY) len=164 opt=0x014d0fe8 enc=13 ack=False resp=False
+[   4.511]   HEX: 7f 0c a4 00 a9 4d 77 58 5c 8b e7 6d a9 80 78 0f b4 15 e0 d3 e8 0f 4d 01 34 e0 c8 4d b2 b1 bf b5 de 44 9e a0 61 ae 09 23 2d 8d 40 73 94 34 d5 66 19 90 69 e9 b1 ba d1 61 01 77 17 9c c1 00 84 93 08 04 00 00 66 e8 4e 0a 00 00 00 00 00 00 00 00 00 00 00 00 01 01 8a 38 a2 f3 e9 ff 11 bc d0 fb 6a e5 f0 df ab a9 be 2c 50 e6 a5 17 ce 49 42 43 e8 07 1f 00 06 82 b6 f7 2f 38 1a f2 cd 24 98 37 aa b2 ef 25 b9 1e 12 8c 3e 75 49 be 21 72 d3 97 2d b4 c4 73 9e ed c4 ce c4 e7 f1 f4 66 13 ca e8 9c cb 72 53
+[   4.512] ← CERTIFY_REQ from 127.0.0.1:35115 term_id=1442374233034517850 (164B)
+[   4.512]   [DEBUG] CERTIFY plaintext sqnum=804880733
+[   4.512]   [DEBUG] Raw payload (first 48B): 34e0c84db2b1bfb5de449ea061ae09232d8d40739434d566199069e9b1bad1610177179cc10084930804000066e84e0a encrypt_mode=1
+[   4.512]   [DEBUG] Per-frame key: 7f0ca400e80f4d00
+[   4.512]   [DEBUG] Decrypted payload (first 48B): 0100000070812db2bba2278cd6ef093ba00a121ee49bc6c4aad1db88b4c8ef003ac42afed007566dda4aef9a3faca287
+[   4.513]   [DEBUG] hash_checksum=0xb22d8170 enc_key=bba2278cd6ef093ba00a121ee49bc6c4aad1db88b4c8ef003ac42afed007566d
+[   4.513]   [RELAY] Certify key: e7bcaca9a5fa7a8c83a9a5362b5458c0
+[   4.514]   [RELAY] Session key VERIFIED! hash=0xb22d8170
+[   4.514]   [RELAY] CERTIFY session_key=72dee7d3284ffac5... session_id=0100000070812db2
+[   4.515]   [RELAY] Cached REAL session_key=72dee7d3284ffac5... for term_id=1442374233034517850
+[   4.515]   [ROLE] Identified BRIDGE: term_id=1442374233034517850 addr=127.0.0.1:35115
+[   4.515]   [RELAY] -> CERTIFY_RESP to 127.0.0.1:35115 (80B)
+[   4.560] NEW CLIENT: term_id=231766161252629576 from 127.0.0.1:35115 port=28800
+[   4.560]   HDR: proto=0x7e type=0xa6(INIT_INFO) len=62 opt=0x000e5892 enc=14 ack=False resp=False
+[   4.560]   HEX: 7e a6 3e 00 f1 2a 4e e4 97 60 19 e1 dc 83 99 d0 67 54 39 c9 92 58 0e 00 e0 21 26 4a 6d c3 eb 64 7f 13 19 7d c1 a7 f9 11 55 e1 bd 8c 18 ce b1 19 55 e1 bd 8c 18 ce b1 19 01 00 00 00 00 0d
+[   4.560] ← INIT_INFO from 127.0.0.1:35115 term_id=231766161252629576
+[   4.560]   [ROLE] Identified BRIDGE: term_id=231766161252629576 addr=127.0.0.1:35115
+[   4.560]   [DEBUG] Using predicted sqnum=804880734 for INIT_INFO_RESP
+[   4.561]   → INIT_INFO_RESP to 127.0.0.1:35115 (60B)
+[   4.610] NEW CLIENT: term_id=-3554358750666100721 from 127.0.0.1:35115 port=28800
+[   4.610]   HDR: proto=0x7e type=0xa0(SUBSCRIBE) len=48 opt=0x000afc36 enc=10 ack=False resp=False
+[   4.611]   HEX: 7e a0 30 00 0d 3f c4 79 9c f1 94 75 20 96 13 4d 6c c5 b4 5d 36 fc 0a 00 33 4f e4 d2 ce 60 bf 08 9e 1c c7 ff 91 31 c7 3d 6d 68 88 ca 4d 9f c0 c7
+[   4.611] ← SUBSCRIBE from 127.0.0.1:35115 term_id=-3554358750666100721 (48B)
+[   4.611]   [DEBUG] SUBSCRIBE predicted_sqnum=804880736 (base=804880734)
+[   4.611]   → SUBSCRIBE_RESP to 127.0.0.1:35115 (54B) chkval=804880736
+[   4.660] NEW CLIENT: term_id=6485038709726482987 from 127.0.0.1:35115 port=28800
+[   4.660]   HDR: proto=0x7e type=0xb0(SESSION_CTL) len=108 opt=0x000e99a4 enc=14 ack=False resp=False
+[   4.660]   HEX: 7e b0 6c 00 99 63 3c a2 f6 0c 07 ab b4 ca eb 96 06 38 27 83 a4 99 0e 00 8c 06 62 25 ca d1 7e b4 c7 b8 52 6c 50 e0 6c 12 af 87 e3 17 70 25 7f 38 69 7c 5b 72 e0 d7 5b 53 a4 56 10 17 92 18 3b d7 96 0c 1f 8a 94 a7 5d 50 d8 b4 7c e3 00 e9 87 2b f6 de 6f e7 03 75 59 e4 95 ff 85 44 98 c3 a1 b3 d0 16 86 6d 83 aa e3 74 5c b6 69 28
+[   4.661] ← SESSION_CTL from 127.0.0.1:35115 term_id=6485038709726482987 (108B)
+[   4.661]   → SESSION_CTL_RESP to 127.0.0.1:35115 (54B)
+[   5.061] ← SESSION_CTL from 127.0.0.1:35115 term_id=6485038709726482987 (108B)
+[   5.061]   → SESSION_CTL_RESP to 127.0.0.1:35115 (54B)
+[   5.471] NEW CLIENT: term_id=2400171453399355710 from 127.0.0.1:35115 port=28800
+[   5.471]   HDR: proto=0x7f type=0x01(DETECT_REQ) len=68 opt=0x00010000 enc=1 ack=False resp=False
+[   5.472]   HEX: 7f 01 44 00 30 6a bc 19 77 e4 3e 6b 30 a7 b3 4e 9f 7a 39 d5 00 00 01 00 9b 7b 68 06 80 a6 70 39 fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee 00 00 00 00
+[   5.472] ← DETECT_REQ from 127.0.0.1:35115:28800 client_tid=2400171453399355710 (68B)
+[   5.472] → DETECT_RESP to 127.0.0.1:35115 server_tid=-3195816737827617183 (56B)
+[   5.660] ← SESSION_CTL from 127.0.0.1:35115 term_id=6485038709726482987 (108B)
+[   5.661]   → SESSION_CTL_RESP to 127.0.0.1:35115 (54B)
+[   6.262] ← SESSION_CTL from 127.0.0.1:35115 term_id=6485038709726482987 (108B)
+[   6.263]   → SESSION_CTL_RESP to 127.0.0.1:35115 (54B)
+[   6.461] ← SUBSCRIBE from 127.0.0.1:35115 term_id=-3554358750666100721 (48B)
+[   6.462]   [DEBUG] SUBSCRIBE predicted_sqnum=804880746 (base=804880744)
+[   6.462]   → SUBSCRIBE_RESP to 127.0.0.1:35115 (54B) chkval=804880746
+[   6.471] NEW CLIENT: term_id=-7934817149693727291 from 127.0.0.1:35115 port=28800
+[   6.472]   HDR: proto=0x7f type=0x01(DETECT_REQ) len=68 opt=0x00010000 enc=1 ack=False resp=False
+[   6.472]   HEX: 7f 01 44 00 ba 69 eb c0 42 60 0e 64 ba a4 e4 97 aa fe 09 da 00 00 01 00 88 a5 a3 49 8a 8d af 4c fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee 00 00 00 00
+[   6.473] ← DETECT_REQ from 127.0.0.1:35115:28800 client_tid=-7934817149693727291 (68B)
+[   6.473] → DETECT_RESP to 127.0.0.1:35115 server_tid=-3195816737827617183 (56B)
+[   6.862] ← SESSION_CTL from 127.0.0.1:35115 term_id=6485038709726482987 (108B)
+[   6.862]   → SESSION_CTL_RESP to 127.0.0.1:35115 (54B)
+[   7.461] ← SESSION_CTL from 127.0.0.1:35115 term_id=6485038709726482987 (108B)
+[   7.462]   → SESSION_CTL_RESP to 127.0.0.1:35115 (54B)
+[   7.474] NEW CLIENT: term_id=3857141487286463068 from 127.0.0.1:35115 port=28800
+[   7.474]   HDR: proto=0x7f type=0x01(DETECT_REQ) len=68 opt=0x00010000 enc=1 ack=False resp=False
+[   7.475]   HEX: 7f 01 44 00 c8 7f a5 3f 4e c5 02 fb c8 b2 aa 68 a6 5b 05 45 00 00 01 00 e6 40 e8 fb da 54 30 c3 fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee 00 00 00 00
+[   7.476] ← DETECT_REQ from 127.0.0.1:35115:28800 client_tid=3857141487286463068 (68B)
+[   7.477] → DETECT_RESP to 127.0.0.1:35115 server_tid=-3195816737827617183 (56B)
+[   7.761] NEW CLIENT: term_id=8113443479093925006 from 127.0.0.1:35115 port=28800
+[   7.762]   HDR: proto=0x7e type=0xa4(CALLING_REQ) len=161 opt=0x0006b236 enc=6 ack=False resp=False
+[   7.763]   HEX: 7e a4 a1 00 32 d8 b7 25 e6 5a 19 18 1f 71 60 11 16 6e 39 30 36 b2 06 00 54 4f 86 17 14 6a c0 1d f8 55 62 26 cb 88 bc 98 34 3a 24 11 c1 c4 2e 03 f0 e0 c5 2e 9c a4 b3 db 55 e1 bd 8c 18 ce b1 19 ec ff b3 55 1d 71 5f 89 55 e1 bd 8c 18 ce b1 19 55 e1 bd 8c 18 ce b1 19 55 e1 bd 8c 18 ce b1 19 55 e1 bd 8c 18 ce b1 19 55 e1 bd 8c 18 ce b1 19 55 e1 bd 8c 18 ce b1 19 44 d4 78 9b 16 70 4a 6d 64 c8 a0 2a 20 e7 94 fb 58 e2 99 16 d6 49 c7 11 9f d6 6d b4 94 0a aa 03 9c c8 fa ac 1a 4d d1 f9 38
+[   7.763] ← CALLING_REQ from 127.0.0.1:35115 term_id=8113443479093925006 (161B)
+[   7.764]   HEX: 7e a4 a1 00 32 d8 b7 25 e6 5a 19 18 1f 71 60 11 16 6e 39 30 36 b2 06 00 54 4f 86 17 14 6a c0 1d f8 55 62 26 cb 88 bc 98 34 3a 24 11 c1 c4 2e 03 f0 e0 c5 2e 9c a4 b3 db 55 e1 bd 8c 18 ce b1 19 ec ff b3 55 1d 71 5f 89 55 e1 bd 8c 18 ce b1 19 55 e1 bd 8c 18 ce b1 19 55 e1 bd 8c 18 ce b1 19 55 e1 bd 8c 18 ce b1 19 55 e1 bd 8c 18 ce b1 19 55 e1 bd 8c 18 ce b1 19 44 d4 78 9b 16 70 4a 6d 64 c8 a0 2a 20 e7 94 fb 58 e2 99 16 d6 49 c7 11 9f d6 6d b4 94 0a aa 03 9c c8 fa ac 1a 4d d1 f9 38
+[   7.766]   [CALLING] Decrypted dest_term_id=67898132960119809
+[   7.767]   [DEBUG] _extract_req_sqnum: using session_key=72dee7d3284ffac5... for addr=('127.0.0.1', 35115)
+[   7.768]   [DEBUG] _extract_req_sqnum: decrypted sqnum=804880741 from enc_bytes=1f716011166e3930
+[   7.768]   [MTP] CALLING req_sqnum=804880741 (for ACK matching)
+[   7.769]   [MTP] Built CALLING_ACK (session-enc): doorbell=192.168.1.81:8899 req_sqnum=804880741 frame_size=40
+[   7.770]   [MTP] Extracted link_id=15808766 from CALLING (session-dec)
+[   7.770]   [MTP] Built MTP_RES_RESP: link_id=15808766 doorbell_lan=192.168.1.81:8899 v4_cnt=0 v6_cnt=0 (LAN-only, no relay servers) (122B)
+[   7.771]   [MTP] Sending CALLING_ACK + MTP_RES_RESP to bridge 127.0.0.1:35115
+[   8.061] ← SESSION_CTL from 127.0.0.1:35115 term_id=6485038709726482987 (108B)
+[   8.062]   → SESSION_CTL_RESP to 127.0.0.1:35115 (54B)
+[   8.461] ← SUBSCRIBE from 127.0.0.1:35115 term_id=-3554358750666100721 (48B)
+[   8.462]   [DEBUG] SUBSCRIBE predicted_sqnum=804880754 (base=804880752)
+[   8.462]   → SUBSCRIBE_RESP to 127.0.0.1:35115 (54B) chkval=804880754
+[   8.660] ← SESSION_CTL from 127.0.0.1:35115 term_id=6485038709726482987 (108B)
+[   8.661]   → SESSION_CTL_RESP to 127.0.0.1:35115 (54B)
+[   9.260] ← SESSION_CTL from 127.0.0.1:35115 term_id=6485038709726482987 (108B)
+[   9.261]   → SESSION_CTL_RESP to 127.0.0.1:35115 (54B)
+[   9.473] NEW CLIENT: term_id=4764994027382245313 from 127.0.0.1:35115 port=28800
+[   9.474]   HDR: proto=0x7f type=0x01(DETECT_REQ) len=68 opt=0x00010000 enc=1 ack=False resp=False
+[   9.474]   HEX: 7f 01 44 00 2c 22 f1 b8 d9 8b 03 e5 2c ef fe ef 31 15 04 5b 00 00 01 00 b4 74 cf 57 ab 24 8c 7c fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee 00 00 00 00
+[   9.475] ← DETECT_REQ from 127.0.0.1:35115:28800 client_tid=4764994027382245313 (68B)
+[   9.475] → DETECT_RESP to 127.0.0.1:35115 server_tid=-3195816737827617183 (56B)
+[   9.861] ← SESSION_CTL from 127.0.0.1:35115 term_id=6485038709726482987 (108B)
+[   9.862]   → SESSION_CTL_RESP to 127.0.0.1:35115 (54B)
+[  10.460] ← SUBSCRIBE from 127.0.0.1:35115 term_id=-3554358750666100721 (48B)
+[  10.461]   [DEBUG] SUBSCRIBE predicted_sqnum=804880762 (base=804880760)
+[  10.461]   → SUBSCRIBE_RESP to 127.0.0.1:35115 (54B) chkval=804880762
+[  10.461] ← SESSION_CTL from 127.0.0.1:35115 term_id=6485038709726482987 (108B)
+[  10.462]   → SESSION_CTL_RESP to 127.0.0.1:35115 (54B)
+[  11.060] ← SESSION_CTL from 127.0.0.1:35115 term_id=6485038709726482987 (108B)
+[  11.060]   → SESSION_CTL_RESP to 127.0.0.1:35115 (54B)
+[  11.473] NEW CLIENT: term_id=8294712516721191796 from 127.0.0.1:35115 port=28800
+[  11.474]   HDR: proto=0x7f type=0x01(DETECT_REQ) len=68 opt=0x00010000 enc=1 ack=False resp=False
+[  11.474]   HEX: 7f 01 44 00 e3 ff 21 72 5c 62 60 c4 e3 32 2e 25 b4 fc 67 7a 00 00 01 00 c5 e0 5f 9f fb 7c aa 9d fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee 00 00 00 00
+[  11.474] ← DETECT_REQ from 127.0.0.1:35115:28800 client_tid=8294712516721191796 (68B)
+[  11.475] → DETECT_RESP to 127.0.0.1:35115 server_tid=-3195816737827617183 (56B)
+[  11.661] ← SESSION_CTL from 127.0.0.1:35115 term_id=6485038709726482987 (108B)
+[  11.662]   → SESSION_CTL_RESP to 127.0.0.1:35115 (54B)
+[  12.261] ← SESSION_CTL from 127.0.0.1:35115 term_id=6485038709726482987 (108B)
+[  12.261]   → SESSION_CTL_RESP to 127.0.0.1:35115 (54B)
+[  12.461] ← SUBSCRIBE from 127.0.0.1:35115 term_id=-3554358750666100721 (48B)
+[  12.462]   [DEBUG] SUBSCRIBE predicted_sqnum=804880772 (base=804880770)
+[  12.462]   → SUBSCRIBE_RESP to 127.0.0.1:35115 (54B) chkval=804880772
+[  12.861] ← SESSION_CTL from 127.0.0.1:37008 term_id=6485038709726482987 (108B)
+[  12.861]   → SESSION_CTL_RESP to 127.0.0.1:37008 (54B)
+[  13.461] ← SESSION_CTL from 127.0.0.1:37008 term_id=6485038709726482987 (108B)
+[  13.461]   → SESSION_CTL_RESP to 127.0.0.1:37008 (54B)
+[  14.061] ← SESSION_CTL from 127.0.0.1:37008 term_id=6485038709726482987 (108B)
+[  14.062]   → SESSION_CTL_RESP to 127.0.0.1:37008 (54B)
+[  14.462] ← SUBSCRIBE from 127.0.0.1:37008 term_id=-3554358750666100721 (48B)
+[  14.462]   [DEBUG] SUBSCRIBE predicted_sqnum=8 (base=6)
+[  14.462]   → SUBSCRIBE_RESP to 127.0.0.1:37008 (54B) chkval=8
+[  14.661] ← SESSION_CTL from 127.0.0.1:37008 term_id=6485038709726482987 (108B)
+[  14.662]   → SESSION_CTL_RESP to 127.0.0.1:37008 (54B)
+[  15.261] ← SESSION_CTL from 127.0.0.1:37008 term_id=6485038709726482987 (108B)
+[  15.261]   → SESSION_CTL_RESP to 127.0.0.1:37008 (54B)
+[  15.861] ← SESSION_CTL from 127.0.0.1:37008 term_id=6485038709726482987 (108B)
+[  15.862]   → SESSION_CTL_RESP to 127.0.0.1:37008 (54B)
+[  16.460] ← SUBSCRIBE from 127.0.0.1:37008 term_id=-3554358750666100721 (48B)
+[  16.461]   [DEBUG] SUBSCRIBE predicted_sqnum=16 (base=14)
+[  16.461]   → SUBSCRIBE_RESP to 127.0.0.1:37008 (54B) chkval=16
+[  16.462] ← SESSION_CTL from 127.0.0.1:37008 term_id=6485038709726482987 (108B)
+[  16.462]   → SESSION_CTL_RESP to 127.0.0.1:37008 (54B)
+[  16.474] NEW CLIENT: term_id=5944816870779744778 from 127.0.0.1:37008 port=28800
+[  16.475]   HDR: proto=0x7f type=0x01(DETECT_REQ) len=68 opt=0x00010000 enc=1 ack=False resp=False
+[  16.475]   HEX: 7f 01 44 00 7e 0d 49 78 b7 7b 34 bc 7e c0 46 2f 5f e5 33 02 00 00 01 00 80 f3 29 ff 3c fe 81 16 fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee 00 00 00 00
+[  16.476] ← DETECT_REQ from 127.0.0.1:37008:28800 client_tid=5944816870779744778 (68B)
+[  16.477] → DETECT_RESP to 127.0.0.1:37008 server_tid=-3195816737827617183 (56B)
+[  17.060] ← SESSION_CTL from 127.0.0.1:37008 term_id=6485038709726482987 (108B)
+[  17.061]   → SESSION_CTL_RESP to 127.0.0.1:37008 (54B)
+[  17.661] ← SESSION_CTL from 127.0.0.1:37008 term_id=6485038709726482987 (108B)
+[  17.661]   → SESSION_CTL_RESP to 127.0.0.1:37008 (54B)
+[  18.260] ← SESSION_CTL from 127.0.0.1:37008 term_id=6485038709726482987 (108B)
+[  18.261]   → SESSION_CTL_RESP to 127.0.0.1:37008 (54B)
+[  18.461] ← SUBSCRIBE from 127.0.0.1:37008 term_id=-3554358750666100721 (48B)
+[  18.461]   [DEBUG] SUBSCRIBE predicted_sqnum=26 (base=24)
+[  18.462]   → SUBSCRIBE_RESP to 127.0.0.1:37008 (54B) chkval=26
+[  18.510] NEW CLIENT: term_id=2336689257536276771 from 127.0.0.1:37008 port=28800
+[  18.510]   HDR: proto=0x7e type=0xa4(CALLING_REQ) len=161 opt=0x00067858 enc=6 ack=False resp=False
+[  18.511]   HEX: 7e a4 a1 00 bb 4d 38 58 99 40 5c d3 96 e4 ef 6c 69 74 7c fb 58 78 06 00 49 fa fd 1e 2c 1a 6b 65 f8 55 62 26 cb 88 bc 98 34 3a 24 11 c1 c4 2e 03 5b a4 18 f0 a2 38 57 69 55 e1 bd 8c 18 ce b1 19 ec ff b3 55 1d 71 5f 89 55 e1 bd 8c 18 ce b1 19 55 e1 bd 8c 18 ce b1 19 55 e1 bd 8c 18 ce b1 19 55 e1 bd 8c 18 ce b1 19 55 e1 bd 8c 18 ce b1 19 55 e1 bd 8c 18 ce b1 19 78 e0 a9 79 f5 70 11 5a 64 c8 a0 2a 20 e7 94 fb 58 e2 99 16 d6 49 c7 11 9f d6 6d b4 94 0a aa 03 9c c8 fa ac 1a 4d d1 f9 38
+[  18.511] ← CALLING_REQ from 127.0.0.1:37008 term_id=2336689257536276771 (161B)
+[  18.511]   HEX: 7e a4 a1 00 bb 4d 38 58 99 40 5c d3 96 e4 ef 6c 69 74 7c fb 58 78 06 00 49 fa fd 1e 2c 1a 6b 65 f8 55 62 26 cb 88 bc 98 34 3a 24 11 c1 c4 2e 03 5b a4 18 f0 a2 38 57 69 55 e1 bd 8c 18 ce b1 19 ec ff b3 55 1d 71 5f 89 55 e1 bd 8c 18 ce b1 19 55 e1 bd 8c 18 ce b1 19 55 e1 bd 8c 18 ce b1 19 55 e1 bd 8c 18 ce b1 19 55 e1 bd 8c 18 ce b1 19 55 e1 bd 8c 18 ce b1 19 78 e0 a9 79 f5 70 11 5a 64 c8 a0 2a 20 e7 94 fb 58 e2 99 16 d6 49 c7 11 9f d6 6d b4 94 0a aa 03 9c c8 fa ac 1a 4d d1 f9 38
+[  18.512]   [CALLING] Decrypted dest_term_id=39292104580533249
+[  18.513]   [DEBUG] _extract_req_sqnum: using session_key=72dee7d3284ffac5... for addr=('127.0.0.1', 37008)
+[  18.513]   [DEBUG] _extract_req_sqnum: decrypted sqnum=804880746 from enc_bytes=96e4ef6c69747cfb
+[  18.513]   [MTP] CALLING req_sqnum=804880746 (for ACK matching)
+[  18.514]   [MTP] Built CALLING_ACK (session-enc): doorbell=192.168.1.81:8899 req_sqnum=804880746 frame_size=40
+[  18.514]   [MTP] Extracted link_id=9148406 from CALLING (session-dec)
+[  18.514]   [MTP] Built MTP_RES_RESP: link_id=9148406 doorbell_lan=192.168.1.81:8899 v4_cnt=0 v6_cnt=0 (LAN-only, no relay servers) (122B)
+[  18.514]   [MTP] Sending CALLING_ACK + MTP_RES_RESP to bridge 127.0.0.1:37008
+[  18.861] ← SESSION_CTL from 127.0.0.1:37008 term_id=6485038709726482987 (108B)
+[  18.861]   → SESSION_CTL_RESP to 127.0.0.1:37008 (54B)
+[  19.461] ← SESSION_CTL from 127.0.0.1:37008 term_id=6485038709726482987 (108B)
+[  19.462]   → SESSION_CTL_RESP to 127.0.0.1:37008 (54B)
+[  20.061] ← SESSION_CTL from 127.0.0.1:37008 term_id=6485038709726482987 (108B)
+[  20.061]   → SESSION_CTL_RESP to 127.0.0.1:37008 (54B)
+[  20.461] ← SUBSCRIBE from 127.0.0.1:37008 term_id=-3554358750666100721 (48B)
+[  20.461]   [DEBUG] SUBSCRIBE predicted_sqnum=34 (base=32)
+[  20.461]   → SUBSCRIBE_RESP to 127.0.0.1:37008 (54B) chkval=34
+[  21.475] NEW CLIENT: term_id=-339208810119550756 from 127.0.0.1:37008 port=28800
+[  21.476]   HDR: proto=0x7f type=0x01(DETECT_REQ) len=68 opt=0x00010000 enc=1 ack=False resp=False
+[  21.477]   HEX: 7f 01 44 00 76 f6 1c 11 ac 0d 88 02 76 3b 13 46 44 93 8f bc 00 00 01 00 e0 f7 bd 90 c1 8e 2d 08 fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee 00 00 00 00
+[  21.478] ← DETECT_REQ from 127.0.0.1:37008:28800 client_tid=-339208810119550756 (68B)
+[  21.478] → DETECT_RESP to 127.0.0.1:37008 server_tid=-3195816737827617183 (56B)
+[  21.480] ← TCP signaling connection from 127.0.0.1:39126 on port 28800
+[  21.481]   TCP-SIG ← DETECT_REQ (36B) from 127.0.0.1:39126
+[  21.482] NEW CLIENT: term_id=-8389263343611241691 from 127.0.0.1:39126 port=28800
+[  21.482]   HDR: proto=0x7f type=0x01(DETECT_REQ) len=36 opt=0x00010000 enc=1 ack=False resp=False
+[  21.483]   HEX: 7f 01 24 00 a4 fd b5 3a e8 b2 e4 c4 a4 30 ba 6d 00 2c e3 7a 00 00 01 00 cb 5f bd 3e 5d 06 73 ad 00 00 00 00
+[  21.483] ← DETECT_REQ from 127.0.0.1:39126:28800 client_tid=-8389263343611241691 (36B)
+[  21.484] → DETECT_RESP to 127.0.0.1:39126 server_tid=-3195816737827617183 (56B)
+[  21.484]   TCP-SIG → DETECT_RESP (56B)
+[  21.510] NEW CLIENT: term_id=-6850256859764676615 from 127.0.0.1:37008 port=28800
+[  21.511]   HDR: proto=0x7f type=0x0c(CERTIFY) len=172 opt=0x014d9350 enc=13 ack=False resp=False
+[  21.511]   HEX: 7f 0c ac 00 ca f4 3d 31 bd 90 3b 55 ca 39 32 66 55 0e 3c eb 50 93 4d 01 b4 a2 61 16 32 15 9f 1f f0 7a b2 33 8f 95 ce cf d3 6d c5 c9 8a 55 91 01 a0 6d 39 a1 e8 e9 e9 98 ee 6e fe b9 7c b3 e0 aa 8b 5e 8a ec 79 84 96 45 70 81 2d b2 d5 2a 4f 0a 00 00 00 00 00 00 00 00 00 00 00 00 01 01 45 06 ef 18 f8 56 18 1a 73 87 52 4d bd df cf 9e ee 6d 34 f2 d2 66 36 eb 6f 51 a3 06 b7 fa be 55 a4 7b 18 18 be 63 c2 e1 82 08 42 69 ce df 77 69 6e 69 c3 e9 22 0b b0 f4 57 e4 5b 4c 04 d8 96 71 6a 0c ed 8d 73 98 b8 70 e6 a2 2b c9 96 76
+[  21.512] ← CERTIFY_REQ from 127.0.0.1:37008 term_id=-6850256859764676615 (172B)
+[  21.512]   [DEBUG] CERTIFY plaintext sqnum=804880749
+[  21.512]   [DEBUG] Raw payload (first 48B): b4a2611632159f1ff07ab2338f95cecfd36dc5c98a559101a06d39a1e8e9e998ee6efeb97cb3e0aa8b5e8aec79849645 encrypt_mode=1
+[  21.512]   [DEBUG] Per-frame key: 7f0cac0050934d00
+[  21.512]   [DEBUG] Decrypted payload (first 48B): 0500000070812db2bba2278cd6ef093ba00a121ee49bc6c4aad1db88b4c8ef003ac42afed007566d0804000001000000
+[  21.513]   [DEBUG] hash_checksum=0xb22d8170 enc_key=bba2278cd6ef093ba00a121ee49bc6c4aad1db88b4c8ef003ac42afed007566d
+[  21.514]   [RELAY] Certify key: e7bcaca9a5fa7a8c83a9a5362b5458c0
+[  21.514]   [RELAY] Session key VERIFIED! hash=0xb22d8170
+[  21.514]   [RELAY] CERTIFY session_key=72dee7d3284ffac5... session_id=0500000070812db2
+[  21.518]   [RELAY] Cached REAL session_key=72dee7d3284ffac5... for term_id=-6850256859764676615
+[  21.518]   [ROLE] Identified BRIDGE: term_id=-6850256859764676615 addr=127.0.0.1:37008
+[  21.518]   [RELAY] -> CERTIFY_RESP to 127.0.0.1:37008 (80B)
+[  21.560] NEW CLIENT: term_id=6027680087780645700 from 127.0.0.1:37008 port=28800
+[  21.560]   HDR: proto=0x7e type=0xa6(INIT_INFO) len=62 opt=0x000ef58e enc=14 ack=False resp=False
+[  21.560]   HEX: 7e a6 3e 00 76 bd fd eb fc d2 05 34 7e 0a cf a6 01 31 89 9d 8e f5 0e 00 e0 21 26 4a 6d c3 eb 64 7f 13 19 7d c1 a7 f9 11 55 e1 bd 8c 18 ce b1 19 55 e1 bd 8c 18 ce b1 19 01 00 00 00 00 0d
+[  21.560] ← INIT_INFO from 127.0.0.1:37008 term_id=6027680087780645700
+[  21.561]   [ROLE] Identified BRIDGE: term_id=6027680087780645700 addr=127.0.0.1:37008
+[  21.561]   [DEBUG] Using predicted sqnum=804880750 for INIT_INFO_RESP
+[  21.561]   → INIT_INFO_RESP to 127.0.0.1:37008 (60B)
+[  21.610] NEW CLIENT: term_id=-4902853181174578714 from 127.0.0.1:37008 port=28800
+[  21.610]   HDR: proto=0x7e type=0xa0(SUBSCRIBE) len=48 opt=0x000a4136 enc=10 ack=False resp=False
+[  21.611]   HEX: 7e a0 30 00 f1 ef bf e8 08 19 2e 37 f9 58 8d a5 f5 fa a2 9e 36 41 0a 00 38 13 f8 b6 8e f8 7a 82 9e 1c c7 ff 91 31 c7 3d a3 56 2d cc fc b6 c3 27
+[  21.611] ← SUBSCRIBE from 127.0.0.1:37008 term_id=-4902853181174578714 (48B)
+[  21.611]   [DEBUG] SUBSCRIBE predicted_sqnum=804880752 (base=804880750)
+[  21.611]   → SUBSCRIBE_RESP to 127.0.0.1:37008 (54B) chkval=804880752
+[  22.461] ← SUBSCRIBE from 127.0.0.1:37008 term_id=-3554358750666100721 (48B)
+[  22.462]   [DEBUG] SUBSCRIBE predicted_sqnum=804880754 (base=804880752)
+[  22.462]   → SUBSCRIBE_RESP to 127.0.0.1:37008 (54B) chkval=804880754
+[  23.461] ← SUBSCRIBE from 127.0.0.1:37008 term_id=-4902853181174578714 (48B)
+[  23.461]   [DEBUG] SUBSCRIBE predicted_sqnum=804880756 (base=804880754)
+[  23.462]   → SUBSCRIBE_RESP to 127.0.0.1:37008 (54B) chkval=804880756
+[  24.460]   TCP-SIG connection from 127.0.0.1:39126 closed: 0 bytes read on a total of 4 expected bytes
+[  24.463] NEW CLIENT: term_id=-589924976082354753 from 127.0.0.1:37008 port=51701
+[  24.463]   HDR: proto=0x7f type=0x15(LIST_REQ) len=40 opt=0x00010000 enc=1 ack=False resp=False
+[  24.463]   HEX: 7f 15 28 00 d7 5b 21 2a 4a e6 90 b6 d7 96 2e 7d a2 78 97 08 00 00 01 00 b4 03 bc b0 4c 02 f4 14 1b 54 3c 61 0e 1b ce 3b
+[  24.464] ← LIST_REQ from 127.0.0.1:37008 term_id=-589924976082354753 (40B)
+[  24.464] → LIST_RESP to 127.0.0.1:37008 (local, servers: 127.0.0.1, 68B)
+[  24.466] NEW CLIENT: term_id=7623356792362971550 from 127.0.0.1:37008 port=28800
+[  24.466]   HDR: proto=0x7f type=0x01(DETECT_REQ) len=68 opt=0x00010000 enc=1 ack=False resp=False
+[  24.466]   HEX: 7f 01 44 00 6e d2 fe 10 ad 2f e5 94 6e 1f f1 47 45 b1 e2 2a 00 00 01 00 ed e9 e9 0a 75 78 5d d2 fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee 00 00 00 00
+[  24.466] ← DETECT_REQ from 127.0.0.1:37008:28800 client_tid=7623356792362971550 (68B)
+[  24.467] → DETECT_RESP to 127.0.0.1:37008 server_tid=-3195816737827617183 (56B)
+[  25.461] ← SUBSCRIBE from 127.0.0.1:37008 term_id=-4902853181174578714 (48B)
+[  25.461]   [DEBUG] SUBSCRIBE predicted_sqnum=804880758 (base=804880756)
+[  25.461]   → SUBSCRIBE_RESP to 127.0.0.1:37008 (54B) chkval=804880758
+[  25.464] NEW CLIENT: term_id=-1287254575882618695 from 127.0.0.1:37008 port=28800
+[  25.464]   HDR: proto=0x7f type=0x01(DETECT_REQ) len=68 opt=0x00010000 enc=1 ack=False resp=False
+[  25.465]   HEX: 7f 01 44 00 ff 51 fd 9d 79 b7 8e cb ff 9c f2 ca 91 29 89 75 00 00 01 00 aa 28 e7 65 ed d9 d3 dd fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee 00 00 00 00
+[  25.465] ← DETECT_REQ from 127.0.0.1:37008:28800 client_tid=-1287254575882618695 (68B)
+[  25.465] → DETECT_RESP to 127.0.0.1:37008 server_tid=-3195816737827617183 (56B)
+[  26.464] NEW CLIENT: term_id=8830116051441444552 from 127.0.0.1:37008 port=28800
+[  26.465]   HDR: proto=0x7f type=0x01(DETECT_REQ) len=68 opt=0x00010000 enc=1 ack=False resp=False
+[  26.465]   HEX: 7f 01 44 00 03 fc 7f ad a3 8d 17 90 03 31 70 fa 4b 13 10 2e 00 00 01 00 d1 ee 21 4e 7f 4d c7 67 fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee 00 00 00 00
+[  26.465] ← DETECT_REQ from 127.0.0.1:37008:28800 client_tid=8830116051441444552 (68B)
+[  26.466] → DETECT_RESP to 127.0.0.1:37008 server_tid=-3195816737827617183 (56B)
+[  27.461] ← SUBSCRIBE from 127.0.0.1:37008 term_id=-4902853181174578714 (48B)
+[  27.462]   [DEBUG] SUBSCRIBE predicted_sqnum=804880760 (base=804880758)
+[  27.462]   → SUBSCRIBE_RESP to 127.0.0.1:37008 (54B) chkval=804880760
+[  28.465] NEW CLIENT: term_id=-9008701224527661263 from 127.0.0.1:37008 port=28800
+[  28.466]   HDR: proto=0x7f type=0x01(DETECT_REQ) len=68 opt=0x00010000 enc=1 ack=False resp=False
+[  28.467]   HEX: 7f 01 44 00 9a a2 9b 78 e5 45 85 a8 9a 6f 94 2f 0d db 82 16 00 00 01 00 fe 50 f3 e0 66 62 96 88 fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee 00 00 00 00
+[  28.467] ← DETECT_REQ from 127.0.0.1:37008:28800 client_tid=-9008701224527661263 (68B)
+[  28.468] → DETECT_RESP to 127.0.0.1:37008 server_tid=-3195816737827617183 (56B)
+[  29.461] ← SUBSCRIBE from 127.0.0.1:37008 term_id=-4902853181174578714 (48B)
+[  29.462]   [DEBUG] SUBSCRIBE predicted_sqnum=804880762 (base=804880760)
+[  29.462]   → SUBSCRIBE_RESP to 127.0.0.1:37008 (54B) chkval=804880762
+[  30.014] --- STATUS: 24 clients ---
+[  30.014]   term_id=-5783601125351474452 addr=127.0.0.1:35115 role=unknown cert=False in=1 out=0 last_seen=26s ago
+[  30.014]   term_id=-7219003057890360435 addr=127.0.0.1:35115 role=unknown cert=False in=1 out=0 last_seen=26s ago
+[  30.015]   term_id=1442374233034517850 addr=127.0.0.1:35115 role=bridge cert=True in=1 out=0 last_seen=26s ago
+[  30.015]   term_id=231766161252629576 addr=127.0.0.1:35115 role=bridge cert=True in=1 out=0 last_seen=25s ago
+[  30.015]   term_id=-3554358750666100721 addr=127.0.0.1:37008 role=unknown cert=False in=10 out=0 last_seen=8s ago
+[  30.015]   term_id=6485038709726482987 addr=127.0.0.1:37008 role=unknown cert=False in=27 out=0 last_seen=10s ago
+[  30.015]   term_id=2400171453399355710 addr=127.0.0.1:35115 role=unknown cert=False in=1 out=0 last_seen=25s ago
+[  30.016]   term_id=-7934817149693727291 addr=127.0.0.1:35115 role=unknown cert=False in=1 out=0 last_seen=24s ago
+[  30.016]   term_id=3857141487286463068 addr=127.0.0.1:35115 role=unknown cert=False in=1 out=0 last_seen=23s ago
+[  30.017]   term_id=8113443479093925006 addr=127.0.0.1:35115 role=unknown cert=False in=1 out=0 last_seen=22s ago
+[  30.017]   term_id=4764994027382245313 addr=127.0.0.1:35115 role=unknown cert=False in=1 out=0 last_seen=21s ago
+[  30.018]   term_id=8294712516721191796 addr=127.0.0.1:35115 role=unknown cert=False in=1 out=0 last_seen=19s ago
+[  30.018]   term_id=5944816870779744778 addr=127.0.0.1:37008 role=unknown cert=False in=1 out=0 last_seen=14s ago
+[  30.018]   term_id=2336689257536276771 addr=127.0.0.1:37008 role=unknown cert=False in=1 out=0 last_seen=12s ago
+[  30.019]   term_id=-339208810119550756 addr=127.0.0.1:37008 role=unknown cert=False in=1 out=0 last_seen=9s ago
+[  30.020]   term_id=-8389263343611241691 addr=127.0.0.1:39126 role=unknown cert=False in=1 out=0 last_seen=9s ago
+[  30.020]   term_id=-6850256859764676615 addr=127.0.0.1:37008 role=bridge cert=True in=1 out=0 last_seen=9s ago
+[  30.021]   term_id=6027680087780645700 addr=127.0.0.1:37008 role=bridge cert=True in=1 out=0 last_seen=8s ago
+[  30.021]   term_id=-4902853181174578714 addr=127.0.0.1:37008 role=unknown cert=False in=5 out=0 last_seen=1s ago
+[  30.022]   term_id=-589924976082354753 addr=127.0.0.1:37008 role=unknown cert=False in=1 out=0 last_seen=6s ago
+[  30.022]   term_id=7623356792362971550 addr=127.0.0.1:37008 role=unknown cert=False in=1 out=0 last_seen=6s ago
+[  30.022]   term_id=-1287254575882618695 addr=127.0.0.1:37008 role=unknown cert=False in=1 out=0 last_seen=5s ago
+[  30.023]   term_id=8830116051441444552 addr=127.0.0.1:37008 role=unknown cert=False in=1 out=0 last_seen=4s ago
+[  30.023]   term_id=-9008701224527661263 addr=127.0.0.1:37008 role=unknown cert=False in=1 out=0 last_seen=2s ago
+[  30.466] NEW CLIENT: term_id=6021726719890995474 from 127.0.0.1:35115 port=28800
+[  30.466]   HDR: proto=0x7f type=0x01(DETECT_REQ) len=68 opt=0x00010000 enc=1 ack=False resp=False
+[  30.466]   HEX: 7f 01 44 00 e5 8f 06 46 03 d1 16 fc e5 42 09 11 eb 4f 11 42 00 00 01 00 91 56 d5 19 88 c9 6b bf fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee 00 00 00 00
+[  30.467] ← DETECT_REQ from 127.0.0.1:35115:28800 client_tid=6021726719890995474 (68B)
+[  30.467] → DETECT_RESP to 127.0.0.1:35115 server_tid=-3195816737827617183 (56B)
+[  30.511] NEW CLIENT: term_id=1208335804483794676 from 127.0.0.1:35115 port=28800
+[  30.512]   HDR: proto=0x7e type=0xa4(CALLING_REQ) len=161 opt=0x00061642 enc=6 ack=False resp=False
+[  30.512]   HEX: 7e a4 a1 00 e9 69 91 e6 4a 1b 2f 08 e1 de a3 ab b7 f8 a3 a1 42 16 06 00 a2 36 91 74 dc 7a 8e 5f f8 55 62 26 cb 88 bc 98 34 3a 24 11 c1 c4 2e 03 f0 e0 c5 2e 9c a4 b3 db 55 e1 bd 8c 18 ce b1 19 ec ff b3 55 1d 71 5f 89 55 e1 bd 8c 18 ce b1 19 55 e1 bd 8c 18 ce b1 19 55 e1 bd 8c 18 ce b1 19 55 e1 bd 8c 18 ce b1 19 55 e1 bd 8c 18 ce b1 19 55 e1 bd 8c 18 ce b1 19 a2 7c b7 36 e4 09 b9 f5 64 c8 a0 2a 20 e7 94 fb 58 e2 99 16 d6 49 c7 11 9f d6 6d b4 94 0a aa 03 9c c8 fa ac 1a 4d d1 f9 38
+[  30.512] ← CALLING_REQ from 127.0.0.1:35115 term_id=1208335804483794676 (161B)
+[  30.513]   HEX: 7e a4 a1 00 e9 69 91 e6 4a 1b 2f 08 e1 de a3 ab b7 f8 a3 a1 42 16 06 00 a2 36 91 74 dc 7a 8e 5f f8 55 62 26 cb 88 bc 98 34 3a 24 11 c1 c4 2e 03 f0 e0 c5 2e 9c a4 b3 db 55 e1 bd 8c 18 ce b1 19 ec ff b3 55 1d 71 5f 89 55 e1 bd 8c 18 ce b1 19 55 e1 bd 8c 18 ce b1 19 55 e1 bd 8c 18 ce b1 19 55 e1 bd 8c 18 ce b1 19 55 e1 bd 8c 18 ce b1 19 55 e1 bd 8c 18 ce b1 19 a2 7c b7 36 e4 09 b9 f5 64 c8 a0 2a 20 e7 94 fb 58 e2 99 16 d6 49 c7 11 9f d6 6d b4 94 0a aa 03 9c c8 fa ac 1a 4d d1 f9 38
+[  30.514]   [CALLING] Decrypted dest_term_id=53290468150086657
+[  30.515]   [DEBUG] _extract_req_sqnum: using session_key=72dee7d3284ffac5... for addr=('127.0.0.1', 35115)
+[  30.516]   [DEBUG] _extract_req_sqnum: decrypted sqnum=804880759 from enc_bytes=e1dea3abb7f8a3a1
+[  30.516]   [MTP] CALLING req_sqnum=804880759 (for ACK matching)
+[  30.516]   [MTP] Built CALLING_ACK (session-enc): doorbell=192.168.1.81:8899 req_sqnum=804880759 frame_size=40
+[  30.517]   [MTP] Extracted link_id=12407654 from CALLING (session-dec)
+[  30.517]   [MTP] Built MTP_RES_RESP: link_id=12407654 doorbell_lan=192.168.1.81:8899 v4_cnt=0 v6_cnt=0 (LAN-only, no relay servers) (122B)
+[  30.517]   [MTP] Sending CALLING_ACK + MTP_RES_RESP to bridge 127.0.0.1:35115
+[  31.460] ← SUBSCRIBE from 127.0.0.1:35115 term_id=-4902853181174578714 (48B)
+[  31.460]   [DEBUG] SUBSCRIBE predicted_sqnum=804880774 (base=804880772)
+[  31.461]   → SUBSCRIBE_RESP to 127.0.0.1:35115 (54B) chkval=804880774
+[  31.611] NEW CLIENT: term_id=4402296297884164333 from 127.0.0.1:35115 port=28800
+[  31.611]   HDR: proto=0x7e type=0xb9(0xB9) len=76 opt=0x0006d138 enc=6 ack=False resp=False
+[  31.611]   HEX: 7e b9 4c 00 12 69 fe 3c be fe 0f 14 1a de cc 71 43 1d 83 bd 38 d1 06 00 f7 26 39 54 a2 56 45 76 2d f4 8c c0 39 e0 a5 c9 77 71 f6 48 7d 93 11 e6 55 e1 bd 8c 18 ce b1 19 81 1c bb 2c 92 04 91 d2 fc 07 13 9f e0 d1 f5 97 00 00 00 00
+[  31.612] ← 0xB9 from 127.0.0.1:35115:28800 term_id=4402296297884164333 (76B) opt=0x0006d138 enc=6
+[  31.612]   HEX: 7e b9 4c 00 12 69 fe 3c be fe 0f 14 1a de cc 71 43 1d 83 bd 38 d1 06 00 f7 26 39 54 a2 56 45 76 2d f4 8c c0 39 e0 a5 c9 77 71 f6 48 7d 93 11 e6 55 e1 bd 8c 18 ce b1 19 81 1c bb 2c 92 04 91 d2 fc 07 13 9f e0 d1 f5 97 00 00 00 00
+[  31.612]   ! NO PEER to route 0xB9 (term_id=4402296297884164333, clients=[-5783601125351474452, -7219003057890360435, 1442374233034517850, 231766161252629576, -3554358750666100721, 6485038709726482987, 2400171453399355710, -7934817149693727291, 3857141487286463068, 8113443479093925006, 4764994027382245313, 8294712516721191796, 5944816870779744778, 2336689257536276771, -339208810119550756, -8389263343611241691, -6850256859764676615, 6027680087780645700, -4902853181174578714, -589924976082354753, 7623356792362971550, -1287254575882618695, 8830116051441444552, -9008701224527661263, 6021726719890995474, 1208335804483794676, 4402296297884164333])
+[  31.661] NEW CLIENT: term_id=61162649559171299 from 127.0.0.1:35115 port=28800
+[  31.661]   HDR: proto=0x7e type=0xbc(0xBC) len=56 opt=0x0006a6be enc=6 ack=False resp=False
+[  31.662]   HEX: 7e bc 38 00 60 ff 6d a8 b1 58 22 ac 68 48 5f e5 4c bb ae 05 be a6 06 00 53 5a 29 ed c9 3f 4f 89 51 f7 dc 78 65 61 4b ee 0c ea b3 52 40 3f 66 13 d3 f7 57 19 7e dc 2d 89
+[  31.662] ← 0xBC from 127.0.0.1:35115:28800 term_id=61162649559171299 (56B) opt=0x0006a6be enc=6
+[  31.662]   HEX: 7e bc 38 00 60 ff 6d a8 b1 58 22 ac 68 48 5f e5 4c bb ae 05 be a6 06 00 53 5a 29 ed c9 3f 4f 89 51 f7 dc 78 65 61 4b ee 0c ea b3 52 40 3f 66 13 d3 f7 57 19 7e dc 2d 89
+[  31.662]   ! NO PEER to route 0xBC (term_id=61162649559171299, clients=[-5783601125351474452, -7219003057890360435, 1442374233034517850, 231766161252629576, -3554358750666100721, 6485038709726482987, 2400171453399355710, -7934817149693727291, 3857141487286463068, 8113443479093925006, 4764994027382245313, 8294712516721191796, 5944816870779744778, 2336689257536276771, -339208810119550756, -8389263343611241691, -6850256859764676615, 6027680087780645700, -4902853181174578714, -589924976082354753, 7623356792362971550, -1287254575882618695, 8830116051441444552, -9008701224527661263, 6021726719890995474, 1208335804483794676, 4402296297884164333, 61162649559171299])
+[  31.663] NEW CLIENT: term_id=8463835688840171845 from 127.0.0.1:35115 port=28800
+[  31.663]   HDR: proto=0x7e type=0xd8(0xD8) len=54 opt=0x000642ae enc=6 ack=False resp=False
+[  31.663]   HEX: 7e d8 36 00 c7 94 ee c9 98 23 6d 28 cf 23 dc 84 65 c0 e1 81 ae 42 06 00 f8 55 62 26 cb 88 bc 98 34 3a 24 11 c1 c4 2e 03 20 01 f6 1d 23 9c 64 54 00 00 01 00 00 00
+[  31.663] ← 0xD8 from 127.0.0.1:35115:28800 term_id=8463835688840171845 (54B) opt=0x000642ae enc=6
+[  31.664]   HEX: 7e d8 36 00 c7 94 ee c9 98 23 6d 28 cf 23 dc 84 65 c0 e1 81 ae 42 06 00 f8 55 62 26 cb 88 bc 98 34 3a 24 11 c1 c4 2e 03 20 01 f6 1d 23 9c 64 54 00 00 01 00 00 00
+[  31.664]   ! NO PEER to route 0xD8 (term_id=8463835688840171845, clients=[-5783601125351474452, -7219003057890360435, 1442374233034517850, 231766161252629576, -3554358750666100721, 6485038709726482987, 2400171453399355710, -7934817149693727291, 3857141487286463068, 8113443479093925006, 4764994027382245313, 8294712516721191796, 5944816870779744778, 2336689257536276771, -339208810119550756, -8389263343611241691, -6850256859764676615, 6027680087780645700, -4902853181174578714, -589924976082354753, 7623356792362971550, -1287254575882618695, 8830116051441444552, -9008701224527661263, 6021726719890995474, 1208335804483794676, 4402296297884164333, 61162649559171299, 8463835688840171845])
+[  31.664] ← 0xB9 from 127.0.0.1:35115:28800 term_id=4402296297884164333 (76B) opt=0x1006d138 enc=6
+[  31.665]   HEX: 7e b9 4c 00 12 69 fe 3c be fe 0f 14 1a de cc 71 43 1d 83 bd 38 d1 06 10 f7 26 39 54 a2 56 45 76 2d f4 8c c0 39 e0 a5 c9 77 71 f6 48 7d 93 11 e6 55 e1 bd 8c 18 ce b1 19 81 1c bb 2c 92 04 91 d2 fc 07 13 9f e0 d1 f5 97 00 00 00 00
+[  31.665]   ! NO PEER to route 0xB9 (term_id=4402296297884164333, clients=[-5783601125351474452, -7219003057890360435, 1442374233034517850, 231766161252629576, -3554358750666100721, 6485038709726482987, 2400171453399355710, -7934817149693727291, 3857141487286463068, 8113443479093925006, 4764994027382245313, 8294712516721191796, 5944816870779744778, 2336689257536276771, -339208810119550756, -8389263343611241691, -6850256859764676615, 6027680087780645700, -4902853181174578714, -589924976082354753, 7623356792362971550, -1287254575882618695, 8830116051441444552, -9008701224527661263, 6021726719890995474, 1208335804483794676, 4402296297884164333, 61162649559171299, 8463835688840171845])
+[  60.025] --- STATUS: 29 clients ---
+[  60.027]   term_id=-5783601125351474452 addr=127.0.0.1:35115 role=unknown cert=False in=1 out=0 last_seen=56s ago
+[  60.028]   term_id=-7219003057890360435 addr=127.0.0.1:35115 role=unknown cert=False in=1 out=0 last_seen=56s ago
+[  60.029]   term_id=1442374233034517850 addr=127.0.0.1:35115 role=bridge cert=True in=1 out=0 last_seen=56s ago
+[  60.029]   term_id=231766161252629576 addr=127.0.0.1:35115 role=bridge cert=True in=1 out=0 last_seen=55s ago
+[  60.030]   term_id=-3554358750666100721 addr=127.0.0.1:37008 role=unknown cert=False in=10 out=0 last_seen=38s ago
+[  60.030]   term_id=6485038709726482987 addr=127.0.0.1:37008 role=unknown cert=False in=27 out=0 last_seen=40s ago
+[  60.031]   term_id=2400171453399355710 addr=127.0.0.1:35115 role=unknown cert=False in=1 out=0 last_seen=55s ago
+[  60.031]   term_id=-7934817149693727291 addr=127.0.0.1:35115 role=unknown cert=False in=1 out=0 last_seen=54s ago
+[  60.031]   term_id=3857141487286463068 addr=127.0.0.1:35115 role=unknown cert=False in=1 out=0 last_seen=53s ago
+[  60.032]   term_id=8113443479093925006 addr=127.0.0.1:35115 role=unknown cert=False in=1 out=0 last_seen=52s ago
+[  60.032]   term_id=4764994027382245313 addr=127.0.0.1:35115 role=unknown cert=False in=1 out=0 last_seen=51s ago
+[  60.032]   term_id=8294712516721191796 addr=127.0.0.1:35115 role=unknown cert=False in=1 out=0 last_seen=49s ago
+[  60.032]   term_id=5944816870779744778 addr=127.0.0.1:37008 role=unknown cert=False in=1 out=0 last_seen=44s ago
+[  60.032]   term_id=2336689257536276771 addr=127.0.0.1:37008 role=unknown cert=False in=1 out=0 last_seen=42s ago
+[  60.033]   term_id=-339208810119550756 addr=127.0.0.1:37008 role=unknown cert=False in=1 out=0 last_seen=39s ago
+[  60.033]   term_id=-8389263343611241691 addr=127.0.0.1:39126 role=unknown cert=False in=1 out=0 last_seen=39s ago
+[  60.033]   term_id=-6850256859764676615 addr=127.0.0.1:37008 role=bridge cert=True in=1 out=0 last_seen=39s ago
+[  60.033]   term_id=6027680087780645700 addr=127.0.0.1:37008 role=bridge cert=True in=1 out=0 last_seen=38s ago
+[  60.033]   term_id=-4902853181174578714 addr=127.0.0.1:35115 role=unknown cert=False in=6 out=0 last_seen=29s ago
+[  60.034]   term_id=-589924976082354753 addr=127.0.0.1:37008 role=unknown cert=False in=1 out=0 last_seen=36s ago
+[  60.034]   term_id=7623356792362971550 addr=127.0.0.1:37008 role=unknown cert=False in=1 out=0 last_seen=36s ago
+[  60.034]   term_id=-1287254575882618695 addr=127.0.0.1:37008 role=unknown cert=False in=1 out=0 last_seen=35s ago
+[  60.034]   term_id=8830116051441444552 addr=127.0.0.1:37008 role=unknown cert=False in=1 out=0 last_seen=34s ago
+[  60.035]   term_id=-9008701224527661263 addr=127.0.0.1:37008 role=unknown cert=False in=1 out=0 last_seen=32s ago
+[  60.035]   term_id=6021726719890995474 addr=127.0.0.1:35115 role=unknown cert=False in=1 out=0 last_seen=30s ago
+[  60.035]   term_id=1208335804483794676 addr=127.0.0.1:35115 role=unknown cert=False in=1 out=0 last_seen=30s ago
+[  60.036]   term_id=4402296297884164333 addr=127.0.0.1:35115 role=unknown cert=False in=2 out=0 last_seen=28s ago
+[  60.036]   term_id=61162649559171299 addr=127.0.0.1:35115 role=unknown cert=False in=1 out=0 last_seen=28s ago
+[  60.036]   term_id=8463835688840171845 addr=127.0.0.1:35115 role=unknown cert=False in=1 out=0 last_seen=28s ago
