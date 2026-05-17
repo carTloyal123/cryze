@@ -1362,6 +1362,13 @@ class GutesRelay:
         self._persist_session_key(term_id, session_key)
         self.log(f"  [RELAY] Cached REAL session_key={session_key[:8].hex()}... for term_id={term_id}")
         
+        # Track doorbell's source port as its MTP port
+        # The doorbell's GUTES source port IS the port it listens on for MTP
+        role = self.identify_device_role(addr, term_id)
+        if role == "doorbell" and addr[1] > 0:
+            self.state.doorbell_mtp_port = addr[1]
+            self.log(f"  [RELAY] Doorbell MTP port captured: {addr[1]} (from CERTIFY source port)")
+        
         # Mark client as certified
         if term_id in self.state.clients:
             self.state.clients[term_id].certified = True
