@@ -1521,15 +1521,20 @@ class GutesRelay:
 
     async def _route_to_peer(self, data: bytes, sender_addr: tuple,
                              sender_port: int, sender_sock: socket.socket):
-        """Route frame to the appropriate peer (relay mode)."""
+        """Route frame to the appropriate peer (relay mode).
+        
+        Only routes to clients on DIFFERENT IPs to prevent echo-back to the same device.
+        The SDK creates multiple ports from the same IP — routing back to those is harmful.
+        """
         term_id = self.decode_term_id(data) if len(data) >= HEADER_SIZE else 0
         ftype = data[1] if len(data) > 1 else 0
         type_name = FRAME_TYPES.get(ftype, f"0x{ftype:02X}")
         
-        # Find ALL other connected clients to forward to
+        # Only route to clients on a DIFFERENT IP (prevent echo to self)
+        sender_ip = sender_addr[0]
         routed = False
         for tid, client in self.state.clients.items():
-            if tid != term_id and client.addr != sender_addr:
+            if client.addr[0] != sender_ip:
                 if client.our_port in self.relay_socks:
                     try:
                         self.relay_socks[client.our_port].sendto(data, client.addr)

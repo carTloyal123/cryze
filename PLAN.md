@@ -80,6 +80,28 @@ echo "start" > /proc/PID/fd/0   # instant restart (<2s)
 
 ---
 
+## ⚠️ Critical: DNAT Configuration
+
+**Current blocker**: Router-level DNAT redirects ALL Mars traffic (TCP+UDP to
+`wyze-mars-asrv.wyzecam.com` IPs) to the local bridge host. This also breaks:
+- **Doorbell → Mars session**: doorbell can't maintain its cloud connection
+- **Chime → Mars session**: chime can't receive push notifications
+- **Cloud wakeup**: DMS `run_action_batch` queues but never reaches doorbell
+
+**Required fix (on OPNsense router):**
+1. **Remove** the broad Mars DNAT rule (or restrict source to bridge host IP only)
+2. The bridge does NOT need DNAT — it uses `P2P_URL=|127.0.0.1` to talk to the local relay directly
+3. The doorbell and chime MUST be able to reach real Mars for wakeup to work
+4. Alternatively: add source exception for doorbell (192.168.1.81) and chime (192.168.1.12)
+
+Once DNAT is fixed:
+- Cloud wakeup (`run_action_batch`) → Mars → doorbell (via chime BT or direct session)
+- Doorbell wakes, connects to real Mars, responds to LAN broadcast
+- SDK finds doorbell in broadcast list with correct P2P port
+- LAN CALLING succeeds with `opt_lan_call=1` → MTP establishes → video flows
+
+---
+
 ## Architecture (Final)
 
 ```

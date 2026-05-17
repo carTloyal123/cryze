@@ -298,7 +298,11 @@ int main(int argc, char** argv) {
         creds.access_token.c_str(), creds.device_mac.c_str(), (uint32_t)creds.access_token.size());
     std::fprintf(stderr, "  iv_subscribe_dev returned msg_id=%u\n", msg_id);
 
-    if (!wait_for(cb::g_sub_success, 20, "subscribe")) {
+    // In relay mode, subscribe will always timeout (can't decrypt session responses).
+    // Use short timeout (3s) to detect if it somehow works, otherwise proceed quickly.
+    const char* sub_wait_env = std::getenv("SUBSCRIBE_WAIT");
+    int sub_wait = sub_wait_env ? std::atoi(sub_wait_env) : 20;
+    if (!wait_for(cb::g_sub_success, sub_wait, "subscribe")) {
         uint32_t err = cb::g_sub_error.load();
         std::fprintf(stderr, "  subscribe failed: error=0x%x\n", err);
         // In relay mode, subscribe may timeout because we can't decrypt session-encrypted responses.
