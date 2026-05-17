@@ -330,12 +330,73 @@ class GutesRelay:
 
         return bytes(resp)
 
-    def _extract_req_sqnum(self, req_data: bytes) -> int:
+    def _decrypt_session_key(self, encrypted_key: bytes) -> bytes:
+        """Decrypt the 32-byte session key from CERTIFY_REQ.
+        
+        The SDK encrypts the session key with RC5(16-byte blocks, 6 rounds)
+        using certify_key = mars_access_token_bytes[0x30:0x40] (16 bytes).
+        Two 16-byte blocks are encrypted separately.
+        """
+        # Get mars_access_token from env or cache
+        access_token = os.environ.get('MARS_ACCESS_TOKEN', '')
+        if not access_token:
+            # Try loading from cache
+            try:
+                import json
+                cache_path = os.environ.get('SESSION_CACHE', '/work/cache/session_keys.json')
+                auth_path = os.path.join(os.path.dirname(cache_path), 'auth.json')
+                with open(auth_path) as f:
+                    auth = json.load(f)
+                access_token = auth.get('mars_access_token', '')
+            except (FileNotFoundError, json.JSONDecodeError, KeyError):
+                pass
+        
+        if not access_token:
+            self.log("  [RELAY] No mars_access_token available for session key decryption")
+            return None
+        
+        # mars_access_token: first 128 hex chars = 64 bytes
+        try:
+            token_bytes = bytes.fromhex(access_token[:128])
+        except ValueError:
+            self.log(f"  [RELAY] mars_access_token not valid hex")
+            return None
+        
+        if len(token_bytes) < 0x40:
+            self.log(f"  [RELAY] mars_access_token too short ({len(token_bytes)}B, need 64B)")
+            return None
+        
+        # Certify key is bytes [0x30:0x40] (16 bytes)
+        certify_key = token_bytes[0x30:0x40]
+        self.log(f"  [RELAY] Certify key: {certify_key.hex()}")
+        
+        # RC5 decrypt: 16-byte blocks, 6 rounds
+        rc5 = RC5(block_bytes=16, rounds=6)
+        rc5.setkey(certify_key)
+        
+        # Decrypt two 16-byte blocks
+        block1 = rc5.decrypt_block(bytes(encrypted_key[0:16]))
+        block2 = rc5.decrypt_block(bytes(encrypted_key[16:32]))
+        
+        return block1 + block2
+    
+    def _giot_hash_string(self, data: bytes) -> int:
+        """Compute the hash checksum used to verify the session key.
+        
+        From decompiled: giot_hash_string(param_1, param_2)
+        Initial value = 0x4e67c6a7
+        hash = hash ^ (byte + hash * 0x20 + (hash >> 2))
+        """
+        h = 0x4e67c6a7
+        for b in data:
+            h = (h ^ (b + (h * 0x20) + (h >> 2))) & 0xFFFFFFFF
+        return h
+
+    def _extract_req_sqnum(self, req_data: bytes, addr: tuple = None) -> int:
         """Extract the plaintext sqnum from an encrypted request frame.
         
-        For opt_encrypt=1, bytes 0x0C-0x13 are encrypted with the per-frame key.
-        The per-frame key is derived from raw frame bytes [0],[1],[2],[3],[0x14],[0x15],[0x16].
-        We decrypt the 8 bytes at 0x0C to get plaintext sqnum (first 4 bytes).
+        For opt_encrypt=1: bytes 0x0C-0x13 encrypted with per-frame key.
+        For opt_encrypt=2: bytes 0x0C-0x13 encrypted with session RC5 key.
         """
         if len(req_data) < HEADER_SIZE:
             return 0
@@ -347,7 +408,22 @@ class GutesRelay:
             # Not encrypted — read sqnum directly
             return struct.unpack_from('<I', req_data, 0x0C)[0]
         
-        # Derive per-frame key from header bytes
+        if opt_encrypt == 2 and addr:
+            # Session-encrypted — use session key
+            session_key = self.state.addr_session_keys.get(addr)
+            if not session_key:
+                # Try matching by IP only (SDK may use different ports per socket)
+                for a, sk in self.state.addr_session_keys.items():
+                    if a[0] == addr[0]:
+                        session_key = sk
+                        break
+            if session_key:
+                rc5 = RC5(block_bytes=8, rounds=6)
+                rc5.setkey(session_key)  # Full 32-byte session key
+                decrypted_block = rc5.decrypt_block(bytes(req_data[0x0C:0x14]))
+                return struct.unpack_from('<I', decrypted_block, 0)[0]
+        
+        # Fallback: per-frame key (for opt_encrypt=1, or if no session key)
         pfk = derive_per_frame_key(req_data)
         rc5 = RC5(block_bytes=8, rounds=6)
         rc5.setkey(pfk)
@@ -557,54 +633,106 @@ class GutesRelay:
         return bytes(resp)
 
     def _build_calling_ack(self, calling_data: bytes, addr: tuple, sender_term_id: int) -> Optional[bytes]:
-        """Build CALLING ACK (type 0xA4 with ack bit) containing doorbell's network address.
+        """Build session-encrypted CALLING response containing doorbell's network address.
         
-        The SDK's iv_on_ackfrm_Calling expects:
+        The response must be fully session-encrypted (opt_encrypt=2) for the SDK
+        to accept it on the session channel.
+        
+        The SDK's iv_on_ackfrm_Calling expects (after decryption):
           - payload[0:2] (frame+0x18): flags uint16, bit 0 = opt_with_netaddr
           - payload[8:12] (frame+0x20): doorbell IPv4 (in_addr_t, network byte order)
           - payload[12:14] (frame+0x24): doorbell port (uint16, network byte order)
-        Total payload: 14 bytes. Frame len = 24 + 14 = 38.
         """
-        # Get doorbell IP
+        # Get session key for this client
+        session_key = self.state.addr_session_keys.get(addr)
+        if not session_key:
+            for a, sk in self.state.addr_session_keys.items():
+                if a[0] == addr[0]:
+                    session_key = sk
+                    break
+        if not session_key:
+            self.log(f"  [MTP] No session key for CALLING_ACK, cannot session-encrypt")
+            return None
+        
         doorbell_ip_str = os.environ.get('DOORBELL_IP', '192.168.1.81')
         doorbell_port = 8899
         
-        # Build frame: proto=0x7E, type=0xA4, len=38
-        frame_size = 38
+        # Frame layout:
+        # [0]: proto=0x7E  [1]: type=0xA4  [2-3]: frm_len
+        # [4-11]: term_id  [0x0C-0x0F]: sqnum  [0x10-0x13]: chkval
+        # [0x14-0x17]: opt_flags  [0x18+]: payload
+        frame_size = 38  # 24 header + 14 payload
         resp = bytearray(frame_size)
-        resp[0] = 0x7E  # session proto
-        resp[1] = 0xA4  # CALLING type (same as request — it's an ACK)
+        resp[0] = 0x7E
+        resp[1] = 0xA4  # Same type as request
         struct.pack_into('<H', resp, 2, frame_size)
         
-        # term_id: use session_id from CERTIFY (stored as bytes)
+        # term_id: use server session_id (from CERTIFY)
         session_id_bytes = self.state.addr_session_id.get(addr)
+        if not session_id_bytes:
+            for a, sid in self.state.addr_session_id.items():
+                if a[0] == addr[0]:
+                    session_id_bytes = sid
+                    break
         if session_id_bytes and len(session_id_bytes) >= 8:
             resp[4:12] = session_id_bytes[:8]
         else:
             struct.pack_into('<q', resp, 4, self.server_term_id)
         
-        # sqnum and chkval for ACK matching
-        # For ACK frames, chkval = the request's sqnum (matching key)
-        req_sqnum = self._extract_req_sqnum(calling_data)
-        struct.pack_into('<I', resp, 0x0C, 0)  # sqnum (not important for ACK)
-        struct.pack_into('<I', resp, 0x10, req_sqnum)  # chkval = req sqnum
+        # Extract request's plaintext sqnum for response matching
+        req_sqnum = self._extract_req_sqnum(calling_data, addr)
+        self.log(f"  [MTP] CALLING req_sqnum={req_sqnum} (from session-decrypt)")
         
-        # opt_flags: encrypt=0, ack=1 (bit 20), relay_flag bit25
-        # bit 20 = is_ack, bit 25 = relay_flag (bypass routing)
-        opt_flags = (1 << 20) | (1 << 25)  # ack + relay_flag
+        # Plaintext sqnum and chkval (will be encrypted later)
+        sqnum = self._next_sqnum()
+        struct.pack_into('<I', resp, 0x0C, sqnum)
+        struct.pack_into('<I', resp, 0x10, req_sqnum)  # chkval = req sqnum for matching
+        
+        # opt_flags: encrypt=2 (session), resp=1 (bit 21), nonce
+        import random as _rand
+        nonce = _rand.randint(0, 0x7FFF)
+        opt_flags = (nonce << 1) | (2 << 16) | (1 << 21)  # encrypt=2, opt_resp=1
         struct.pack_into('<I', resp, 0x14, opt_flags)
         
-        # Payload (starts at offset 0x18):
-        # +0x00: flags (uint16) — bit 0 = opt_with_netaddr
+        # Payload at 0x18 (plaintext, will be encrypted):
         struct.pack_into('<H', resp, 0x18, 1)  # opt_with_netaddr = 1
-        # +0x02-0x07: padding (zeros)
-        # +0x08: IPv4 address (network byte order)
+        # IPv4 at payload+8 = frame 0x20
         ip_bytes = socket.inet_aton(doorbell_ip_str)
         resp[0x20:0x24] = ip_bytes
-        # +0x0C: port (network byte order) 
+        # Port at payload+12 = frame 0x24
         struct.pack_into('>H', resp, 0x24, doorbell_port)
         
-        self.log(f"  [MTP] Built CALLING_ACK: doorbell={doorbell_ip_str}:{doorbell_port} chkval={req_sqnum}")
+        # --- Session encrypt ---
+        rc5 = RC5(block_bytes=8, rounds=6)
+        rc5.setkey(session_key)
+        
+        # 1. Encrypt payload (0x18 to end) — must be multiple of 8 bytes
+        payload_len = frame_size - 0x18  # 14 bytes → pad to 16
+        padded_payload = bytes(resp[0x18:0x18 + ((payload_len + 7) // 8) * 8].ljust(16, b'\x00'))
+        enc_payload = rc5.encrypt(padded_payload)
+        resp[0x18:0x18 + len(enc_payload)] = enc_payload
+        # Update frame_size if needed
+        new_size = 0x18 + len(enc_payload)
+        if new_size != frame_size:
+            resp = resp[:new_size] if new_size < len(resp) else resp + bytearray(new_size - len(resp))
+            struct.pack_into('<H', resp, 2, new_size)
+        
+        # 2. Encrypt sqnum+chkval (0x0C-0x13) with session key
+        enc_sqchk = rc5.encrypt_block(bytes(resp[0x0C:0x14]))
+        resp[0x0C:0x14] = enc_sqchk
+        
+        # 3. Encrypt term_id (0x04-0x0B):
+        #    RC5_encrypt(id_bytes) then XOR with encrypted sqnum+chkval
+        enc_id = rc5.encrypt_block(bytes(resp[4:12]))
+        # XOR first 4 bytes with encrypted sqnum, last 4 with encrypted chkval
+        enc_id_arr = bytearray(enc_id)
+        for i in range(4):
+            enc_id_arr[i] ^= resp[0x0C + i]
+            enc_id_arr[4 + i] ^= resp[0x10 + i]
+        resp[4:12] = enc_id_arr
+        
+        self.log(f"  [MTP] Built session-encrypted CALLING_RESP: doorbell={doorbell_ip_str}:{doorbell_port} "
+                 f"req_sqnum={req_sqnum} frame_size={len(resp)}")
         return bytes(resp)
 
     def _build_mtp_res_resp(self, calling_data: bytes, addr: tuple, sender_term_id: int) -> Optional[bytes]:
@@ -1006,35 +1134,65 @@ class GutesRelay:
             return None  # ACK from client, no response needed
         
         # --- Extract client key from CERTIFY_REQ payload ---
-        encrypt_mode = (opt_flags >> 16) & 0xF
-        payload = data[HEADER_SIZE:]
+        encrypt_mode = (opt_flags >> 16) & 3  # 2 bits: 0=none, 1=per-frame, 2=session
+        # Per-frame encryption starts at offset 0x18 (not HEADER_SIZE=0x1C!)
+        # Frame layout: [0x00-0x17]=header, [0x18+]=encrypted payload
+        payload = data[0x18:]
+        self.log(f"  [DEBUG] Raw payload (first 48B): {payload[:48].hex()} encrypt_mode={encrypt_mode}")
         
         if encrypt_mode == 1:
             # Per-frame key decryption (opt_encrypt=1)
             pfk = derive_per_frame_key(data[:0x18])
+            self.log(f"  [DEBUG] Per-frame key: {pfk.hex()}")
             rc5 = RC5(block_bytes=8, rounds=6).setkey(pfk)
             dec_len = (len(payload) // 8) * 8
             if dec_len > 0:
                 payload = rc5.decrypt(bytes(payload[:dec_len]))
+            self.log(f"  [DEBUG] Decrypted payload (first 48B): {payload[:48].hex()}")
         
-        # Payload format: session_id(8B) + client_key(32B) + possible padding
+        # Payload format after per-frame decrypt:
+        #   payload[0:4] = flags2/ack_result
+        #   payload[4:8] = hash checksum of session key (giot_hash_string)
+        #   payload[8:40] = ENCRYPTED 32-byte session key (encrypted with certify RC5 key)
         if len(payload) < 40:
             self.log(f"  [RELAY] CERTIFY_REQ payload too short ({len(payload)}B), cannot extract client key")
             return None
         
+        hash_checksum = struct.unpack_from('<I', payload, 4)[0]
+        encrypted_session_key = payload[8:40]
+        self.log(f"  [DEBUG] hash_checksum=0x{hash_checksum:08x} enc_key={encrypted_session_key.hex()}")
+        
+        # --- Decrypt the session key using the certify key ---
+        # Certify key = access_token_bytes[0x30:0x40] (16 bytes)
+        # RC5 with 16-byte blocks, 6 rounds
+        session_key = self._decrypt_session_key(encrypted_session_key)
+        if session_key:
+            # Verify with hash
+            computed_hash = self._giot_hash_string(session_key)
+            if computed_hash == hash_checksum:
+                self.log(f"  [RELAY] Session key VERIFIED! hash={hash_checksum:#x}")
+            else:
+                self.log(f"  [RELAY] Session key hash mismatch: computed={computed_hash:#x} expected={hash_checksum:#x}")
+                # Still use it — hash mismatch might be due to additional transforms
+        else:
+            # Fallback: generate our own (won't match SDK's internal key)
+            session_key = os.urandom(32)
+            self.log(f"  [RELAY] Could not decrypt session key, using random (WILL NOT WORK for session frames)")
+        
+        # Use first 8 bytes of payload as client_session_id for response
         client_session_id = payload[0:8]
-        client_key = payload[8:40]
-        self.log(f"  [RELAY] CERTIFY client_key={client_key[:8].hex()}... session_id={client_session_id.hex()}")
+        self.log(f"  [RELAY] CERTIFY session_key={session_key[:8].hex()}... session_id={client_session_id.hex()}")
         
-        # --- Generate server key and derive session key ---
-        server_key = os.urandom(32)
-        session_key = bytes(a ^ b for a, b in zip(client_key, server_key))
+        # --- Session key is already decrypted from the CERTIFY_REQ above ---
+        # No need to XOR with server_key — the SDK uses its own internal session key
+        # which is the same 32 bytes it generated and encrypted in the CERTIFY_REQ.
+        server_key = os.urandom(32)  # still needed for CERTIFY_RESP payload
         
-        # Cache the session key (by term_id AND by address)
+        # Cache the REAL session key (by term_id AND by address)
         self.state.session_keys[term_id] = session_key
         self.state.addr_session_keys[addr] = session_key
         self._persist_session_key(term_id, session_key)
-        self.log(f"  [RELAY] Derived session_key={session_key[:8].hex()}... for term_id={term_id}")
+        self.log(f"  [RELAY] Cached REAL session_key={session_key[:8].hex()}... for term_id={term_id}")
         
         # Mark client as certified
         if term_id in self.state.clients:
@@ -1156,13 +1314,19 @@ class GutesRelay:
         the destination term_id (first 8 bytes of decrypted payload).
         """
         opt_flags = struct.unpack_from('<I', data, 0x14)[0]
-        encrypt_mode = (opt_flags >> 16) & 0xF
-        payload = data[HEADER_SIZE:]
+        encrypt_mode = (opt_flags >> 16) & 3
+        payload = data[0x18:]  # Encryption starts at 0x18
         
         if encrypt_mode != 2 or len(payload) < 8:
             return 0
         
         session_key = self.get_session_key(sender_term_id)
+        if not session_key:
+            # Try addr-based lookup (CALLING comes from same addr as CERTIFY)
+            # We need to find which addr has this sender_term_id
+            for a, sk in self.state.addr_session_keys.items():
+                session_key = sk
+                break  # Use first available session key (bridge usually only has one)
         if not session_key:
             self.log(f"  [CALLING] No session key for sender {sender_term_id}, cannot extract dest")
             return 0

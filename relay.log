@@ -9,558 +9,534 @@
 [   0.001] 
 [   0.001]   Listening on UDP :28800
 [   0.001]   Listening on UDP :8443
-[   0.003]   Listening on UDP :8000
-[   0.004]   Listening on UDP :51701 (list)
-[   0.008] 
-[   0.009] Ready — waiting for connections...
-[   0.009] ============================================================
-[   0.014] [KEEPALIVE] Loop started (interval=25s, max_misses=3)
-[   0.018]   [MTP] Listening on TCP :23000 (MTP relay)
-[   2.482] NEW CLIENT: term_id=-5783601125351474452 from 127.0.0.1:52657 port=51701
-[   2.483]   HDR: proto=0x7f type=0x15(LIST_REQ) len=40 opt=0x00010000 enc=1 ack=False resp=False
-[   2.484]   HEX: 7f 15 28 00 40 b2 1c ed c2 af 2c e4 40 7f 13 ba 2a 31 2b 5a 00 00 01 00 b4 03 bc b0 4c 02 f4 14 1b 54 3c 61 0e 1b ce 3b
-[   2.484] ← LIST_REQ from 127.0.0.1:52657 term_id=-5783601125351474452 (40B)
-[   2.491] → LIST_RESP to 127.0.0.1:52657 (local, servers: 127.0.0.1, 68B)
-[   2.494] NEW CLIENT: term_id=-7661813344423986543 from 127.0.0.1:52657 port=28800
-[   2.494]   HDR: proto=0x7f type=0x01(DETECT_REQ) len=68 opt=0x00010000 enc=1 ack=False resp=False
-[   2.494]   HEX: 7f 01 44 00 f8 0c 58 b5 83 5b 43 4c f8 c1 57 e2 6b c5 44 f2 00 00 01 00 87 4e a7 a6 94 4a d8 ab fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee 00 00 00 00
-[   2.495] ← DETECT_REQ from 127.0.0.1:52657:28800 client_tid=-7661813344423986543 (68B)
-[   2.495] → DETECT_RESP to 127.0.0.1:52657 server_tid=-3195816737827617183 (56B)
-[   2.531] NEW CLIENT: term_id=4423740938965436208 from 127.0.0.1:52657 port=28800
-[   2.531]   HDR: proto=0x7f type=0x0c(CERTIFY) len=164 opt=0x014d9ea8 enc=13 ack=False resp=False
-[   2.531]   HEX: 7f 0c a4 00 b6 5f e2 c2 95 08 44 1b b6 92 ed 95 7d 96 43 a5 a8 9e 4d 01 48 81 43 cb f4 09 72 a2 59 a5 29 f3 ac 5d b5 df 4e d9 1a b6 8c fd a6 c0 fe e3 f4 99 f3 66 f3 d5 b8 1a b8 e8 93 8f 22 04 08 04 00 00 9c c1 8b 07 00 00 00 00 00 00 00 00 00 00 00 00 01 01 9b 27 c3 1a b4 1f 10 af e1 2b 8b 5e e4 eb 83 dc 69 62 48 d3 c7 a2 80 08 22 af 54 9c 0d 9b 90 84 d2 f9 21 48 5a f6 4b ca 3a 96 ab 81 d1 0d 3d 87 dd 8e c9 86 d6 42 44 a3 07 a2 35 5b c9 65 4c be 81 36 eb cd 3d 9d ee 54 3f 18 74 22 3b 5e
-[   2.531] ← CERTIFY_REQ from 127.0.0.1:52657 term_id=4423740938965436208 (164B)
-[   2.531]   [DEBUG] CERTIFY plaintext sqnum=1050952158
-[   2.533]   [RELAY] CERTIFY client_key=ac5db5df4ed91ab6... session_id=f40972a259a529f3
-[   2.534]   [RELAY] Derived session_key=f2c2a501bb58ef8d... for term_id=4423740938965436208
-[   2.535]   [ROLE] Identified BRIDGE: term_id=4423740938965436208 addr=127.0.0.1:52657
-[   2.535]   [RELAY] -> CERTIFY_RESP to 127.0.0.1:52657 (80B)
-[   2.581] NEW CLIENT: term_id=2512005781278870585 from 127.0.0.1:52657 port=28800
-[   2.581]   HDR: proto=0x7e type=0xa6(INIT_INFO) len=62 opt=0x000e6f20 enc=14 ack=False resp=False
-[   2.582]   HEX: 7e a6 3e 00 49 05 33 bb 22 ae 30 07 84 c9 8d 28 ff ef 1f 55 20 6f 0e 00 2d 59 0d fc cd ff 7c 7e ef 07 54 de 0f 04 7b 65 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 01 00 00 00 00 0d
-[   2.582] ← INIT_INFO from 127.0.0.1:52657 term_id=2512005781278870585
-[   2.582]   [ROLE] Identified BRIDGE: term_id=2512005781278870585 addr=127.0.0.1:52657
-[   2.582]   [DEBUG] Using predicted sqnum=1050952159 for INIT_INFO_RESP
-[   2.582]   → INIT_INFO_RESP to 127.0.0.1:52657 (60B)
-[   2.631] NEW CLIENT: term_id=740149742957335897 from 127.0.0.1:52657 port=28800
-[   2.631]   HDR: proto=0x7e type=0xa0(SUBSCRIBE) len=48 opt=0x000a9432 enc=10 ack=False resp=False
-[   2.631]   HEX: 7e a0 30 00 08 83 28 6c 0c b9 2a e1 c5 4f 96 ff d1 f8 05 b3 32 94 0a 00 60 17 88 39 f4 b2 60 16 d7 98 82 bf cb 5a 0c 93 13 f4 4f af d9 bb 52 0f
-[   2.631] ← SUBSCRIBE from 127.0.0.1:52657 term_id=740149742957335897 (48B)
-[   2.631]   [DEBUG] SUBSCRIBE predicted_sqnum=1050952161 (base=1050952159)
-[   2.632]   → SUBSCRIBE_RESP to 127.0.0.1:52657 (54B) chkval=1050952161
-[   2.683] NEW CLIENT: term_id=322909207332635881 from 127.0.0.1:52657 port=28800
-[   2.683]   HDR: proto=0x7e type=0xb0(SESSION_CTL) len=108 opt=0x000e743e enc=14 ack=False resp=False
-[   2.683]   HEX: 7e b0 6c 00 59 26 14 b4 ff e7 9d b7 94 ea aa 27 22 a6 b2 e5 3e 74 0e 00 b5 1e 85 98 16 44 3f 58 af b4 0c 4f fa 63 03 7a 60 2e bd 11 f5 76 77 3e 34 a7 b8 3c 66 b7 1b e6 39 c8 af 9a cc d9 db fb c0 4b 3d 2b 30 a0 d4 4b 0e be 39 bd 0e b1 09 bf 7b e5 c6 75 fe ae 4c 05 e3 bc 1f 99 07 89 92 a9 5e 3f 34 0e 0b e7 14 09 5c b6 69 28
-[   2.683] ← SESSION_CTL from 127.0.0.1:52657:28800 term_id=322909207332635881 (108B) opt=0x000e743e enc=14
-[   2.683]   HEX: 7e b0 6c 00 59 26 14 b4 ff e7 9d b7 94 ea aa 27 22 a6 b2 e5 3e 74 0e 00 b5 1e 85 98 16 44 3f 58 af b4 0c 4f fa 63 03 7a 60 2e bd 11 f5 76 77 3e 34 a7 b8 3c 66 b7 1b e6 39 c8 af 9a cc d9 db fb c0 4b 3d 2b 30 a0 d4 4b 0e be 39 bd 0e b1 09 bf 7b e5 c6 75 fe ae 4c 05 e3 bc 1f 99 07 89 92 a9 5e 3f 34 0e 0b e7 14 09 5c b6 69 28
-[   2.684]   ! NO PEER to route SESSION_CTL (term_id=322909207332635881, clients=[-5783601125351474452, -7661813344423986543, 4423740938965436208, 2512005781278870585, 740149742957335897, 322909207332635881])
-[   3.083] ← SESSION_CTL from 127.0.0.1:52657:28800 term_id=322909207332635881 (108B) opt=0x100e743e enc=14
-[   3.084]   HEX: 7e b0 6c 00 59 26 14 b4 ff e7 9d b7 94 ea aa 27 22 a6 b2 e5 3e 74 0e 10 b5 1e 85 98 16 44 3f 58 af b4 0c 4f fa 63 03 7a 60 2e bd 11 f5 76 77 3e 34 a7 b8 3c 66 b7 1b e6 39 c8 af 9a cc d9 db fb c0 4b 3d 2b 30 a0 d4 4b 0e be 39 bd 0e b1 09 bf 7b e5 c6 75 fe ae 4c 05 e3 bc 1f 99 07 89 92 a9 5e 3f 34 0e 0b e7 14 09 5c b6 69 28
-[   3.085]   ! NO PEER to route SESSION_CTL (term_id=322909207332635881, clients=[-5783601125351474452, -7661813344423986543, 4423740938965436208, 2512005781278870585, 740149742957335897, 322909207332635881])
-[   3.495] NEW CLIENT: term_id=-8510020609255156259 from 127.0.0.1:52657 port=28800
-[   3.498]   HDR: proto=0x7f type=0x01(DETECT_REQ) len=68 opt=0x00010000 enc=1 ack=False resp=False
-[   3.499]   HEX: 7f 01 44 00 86 c6 f0 ee aa 0f c3 0b 86 0b ff b9 42 91 c4 b5 00 00 01 00 55 84 44 6d 05 2c bb 9b fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee 00 00 00 00
-[   3.499] ← DETECT_REQ from 127.0.0.1:52657:28800 client_tid=-8510020609255156259 (68B)
-[   3.500] → DETECT_RESP to 127.0.0.1:52657 server_tid=-3195816737827617183 (56B)
-[   3.683] ← SESSION_CTL from 127.0.0.1:52657:28800 term_id=322909207332635881 (108B) opt=0x200e743e enc=14
-[   3.684]   HEX: 7e b0 6c 00 59 26 14 b4 ff e7 9d b7 94 ea aa 27 22 a6 b2 e5 3e 74 0e 20 b5 1e 85 98 16 44 3f 58 af b4 0c 4f fa 63 03 7a 60 2e bd 11 f5 76 77 3e 34 a7 b8 3c 66 b7 1b e6 39 c8 af 9a cc d9 db fb c0 4b 3d 2b 30 a0 d4 4b 0e be 39 bd 0e b1 09 bf 7b e5 c6 75 fe ae 4c 05 e3 bc 1f 99 07 89 92 a9 5e 3f 34 0e 0b e7 14 09 5c b6 69 28
-[   3.685]   ! NO PEER to route SESSION_CTL (term_id=322909207332635881, clients=[-5783601125351474452, -7661813344423986543, 4423740938965436208, 2512005781278870585, 740149742957335897, 322909207332635881, -8510020609255156259])
-[   4.284] ← SESSION_CTL from 127.0.0.1:52657:28800 term_id=322909207332635881 (108B) opt=0x300e743e enc=14
-[   4.285]   HEX: 7e b0 6c 00 59 26 14 b4 ff e7 9d b7 94 ea aa 27 22 a6 b2 e5 3e 74 0e 30 b5 1e 85 98 16 44 3f 58 af b4 0c 4f fa 63 03 7a 60 2e bd 11 f5 76 77 3e 34 a7 b8 3c 66 b7 1b e6 39 c8 af 9a cc d9 db fb c0 4b 3d 2b 30 a0 d4 4b 0e be 39 bd 0e b1 09 bf 7b e5 c6 75 fe ae 4c 05 e3 bc 1f 99 07 89 92 a9 5e 3f 34 0e 0b e7 14 09 5c b6 69 28
-[   4.286]   ! NO PEER to route SESSION_CTL (term_id=322909207332635881, clients=[-5783601125351474452, -7661813344423986543, 4423740938965436208, 2512005781278870585, 740149742957335897, 322909207332635881, -8510020609255156259])
-[   4.483] ← SUBSCRIBE from 127.0.0.1:52657 term_id=740149742957335897 (48B)
-[   4.484]   [DEBUG] SUBSCRIBE predicted_sqnum=1050952163 (base=1050952161)
-[   4.484]   → SUBSCRIBE_RESP to 127.0.0.1:52657 (54B) chkval=1050952163
-[   4.495] NEW CLIENT: term_id=2643335389345100336 from 127.0.0.1:52657 port=28800
-[   4.496]   HDR: proto=0x7f type=0x01(DETECT_REQ) len=68 opt=0x00010000 enc=1 ack=False resp=False
-[   4.496]   HEX: 7f 01 44 00 f6 d5 6d 82 75 03 e5 2b f6 18 62 d5 9d 9d e2 95 00 00 01 00 73 b1 66 33 f2 6e 19 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee 00 00 00 00
-[   4.497] ← DETECT_REQ from 127.0.0.1:52657:28800 client_tid=2643335389345100336 (68B)
-[   4.497] → DETECT_RESP to 127.0.0.1:52657 server_tid=-3195816737827617183 (56B)
-[   4.881] ← SESSION_CTL from 127.0.0.1:52657:28800 term_id=322909207332635881 (108B) opt=0x400e743e enc=14
-[   4.882]   HEX: 7e b0 6c 00 59 26 14 b4 ff e7 9d b7 94 ea aa 27 22 a6 b2 e5 3e 74 0e 40 b5 1e 85 98 16 44 3f 58 af b4 0c 4f fa 63 03 7a 60 2e bd 11 f5 76 77 3e 34 a7 b8 3c 66 b7 1b e6 39 c8 af 9a cc d9 db fb c0 4b 3d 2b 30 a0 d4 4b 0e be 39 bd 0e b1 09 bf 7b e5 c6 75 fe ae 4c 05 e3 bc 1f 99 07 89 92 a9 5e 3f 34 0e 0b e7 14 09 5c b6 69 28
-[   4.883]   ! NO PEER to route SESSION_CTL (term_id=322909207332635881, clients=[-5783601125351474452, -7661813344423986543, 4423740938965436208, 2512005781278870585, 740149742957335897, 322909207332635881, -8510020609255156259, 2643335389345100336])
-[   5.484] ← SESSION_CTL from 127.0.0.1:52657:28800 term_id=322909207332635881 (108B) opt=0x500e743e enc=14
-[   5.485]   HEX: 7e b0 6c 00 59 26 14 b4 ff e7 9d b7 94 ea aa 27 22 a6 b2 e5 3e 74 0e 50 b5 1e 85 98 16 44 3f 58 af b4 0c 4f fa 63 03 7a 60 2e bd 11 f5 76 77 3e 34 a7 b8 3c 66 b7 1b e6 39 c8 af 9a cc d9 db fb c0 4b 3d 2b 30 a0 d4 4b 0e be 39 bd 0e b1 09 bf 7b e5 c6 75 fe ae 4c 05 e3 bc 1f 99 07 89 92 a9 5e 3f 34 0e 0b e7 14 09 5c b6 69 28
-[   5.486]   ! NO PEER to route SESSION_CTL (term_id=322909207332635881, clients=[-5783601125351474452, -7661813344423986543, 4423740938965436208, 2512005781278870585, 740149742957335897, 322909207332635881, -8510020609255156259, 2643335389345100336])
-[   5.497] NEW CLIENT: term_id=-4389352904686552668 from 127.0.0.1:52657 port=28800
-[   5.498]   HDR: proto=0x7f type=0x01(DETECT_REQ) len=68 opt=0x00010000 enc=1 ack=False resp=False
-[   5.498]   HEX: 7f 01 44 00 9d e4 4d 19 df 56 11 09 9d 29 42 4e 37 c8 16 b7 00 00 01 00 c0 19 94 e9 dc c2 1b b4 fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee 00 00 00 00
-[   5.499] ← DETECT_REQ from 127.0.0.1:52657:28800 client_tid=-4389352904686552668 (68B)
-[   5.500] → DETECT_RESP to 127.0.0.1:52657 server_tid=-3195816737827617183 (56B)
-[   5.732] NEW CLIENT: term_id=-9152420568492357812 from 127.0.0.1:52657 port=28800
-[   5.732]   HDR: proto=0x7e type=0xa4(CALLING_REQ) len=161 opt=0x00067846 enc=6 ack=False resp=False
-[   5.733]   HEX: 7e a4 a1 00 e7 00 3c de e5 d7 a3 df 2a cc 82 4d 38 96 8c 8d 46 78 06 00 7f d1 a8 66 62 b7 40 21 88 28 2b 00 21 11 d5 fa 2f 52 86 e5 a0 05 25 a4 78 0b 40 ed 83 79 1b 20 55 70 8d af 8b 15 cf 5f ee b5 53 49 c5 1d 12 76 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 0b 24 82 ca 3f 79 57 1b 0e 74 78 c0 cb 79 98 07 9b 5d eb 56 ad 7d d6 4c c8 44 b1 04 be db e2 a8 d1 62 86 86 ec 9c 51 52 38
-[   5.734] ← CALLING_REQ from 127.0.0.1:52657 term_id=-9152420568492357812 (161B)
-[   5.734]   HEX: 7e a4 a1 00 e7 00 3c de e5 d7 a3 df 2a cc 82 4d 38 96 8c 8d 46 78 06 00 7f d1 a8 66 62 b7 40 21 88 28 2b 00 21 11 d5 fa 2f 52 86 e5 a0 05 25 a4 78 0b 40 ed 83 79 1b 20 55 70 8d af 8b 15 cf 5f ee b5 53 49 c5 1d 12 76 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 0b 24 82 ca 3f 79 57 1b 0e 74 78 c0 cb 79 98 07 9b 5d eb 56 ad 7d d6 4c c8 44 b1 04 be db e2 a8 d1 62 86 86 ec 9c 51 52 38
-[   5.735]   [CALLING] Target offline (dest=0) — queuing + wakeup
-[   5.736]   [WAKEUP] No chime connected — cannot trigger local wakeup
-[   5.739]   [WAKEUP] Falling back to cloud wakeup (DMS HTTP)
-[   5.740]   [MTP] Built CALLING_ACK: doorbell=192.168.1.81:8899 chkval=3091627140
-[   5.741]   [MTP] Built MTP_RES_RESP: link_id=1 relay=192.168.1.245:23000 doorbell_udp=192.168.1.245:23000 chkval=3091627140 (76B)
-[   5.741]   [MTP] Sending CALLING_ACK + MTP_RES_RESP to bridge 127.0.0.1:52657
-[   5.882] ← CALLING_REQ from 127.0.0.1:52657 term_id=-9152420568492357812 (161B)
-[   5.883]   HEX: 7e a4 a1 00 e7 00 3c de e5 d7 a3 df 2a cc 82 4d 38 96 8c 8d 46 78 06 10 7f d1 a8 66 62 b7 40 21 88 28 2b 00 21 11 d5 fa 2f 52 86 e5 a0 05 25 a4 78 0b 40 ed 83 79 1b 20 55 70 8d af 8b 15 cf 5f ee b5 53 49 c5 1d 12 76 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 0b 24 82 ca 3f 79 57 1b 0e 74 78 c0 cb 79 98 07 9b 5d eb 56 ad 7d d6 4c c8 44 b1 04 be db e2 a8 d1 62 86 86 ec 9c 51 52 38
-[   5.883]   [CALLING] Target offline (dest=0) — queuing + wakeup
-[   5.883]   [WAKEUP] No chime connected — cannot trigger local wakeup
-[   5.883]   [WAKEUP] Falling back to cloud wakeup (DMS HTTP)
-[   5.884]   [MTP] Built CALLING_ACK: doorbell=192.168.1.81:8899 chkval=3091627140
-[   5.884]   [MTP] Built MTP_RES_RESP: link_id=2 relay=192.168.1.245:23000 doorbell_udp=192.168.1.245:23000 chkval=3091627140 (76B)
-[   5.884]   [MTP] Sending CALLING_ACK + MTP_RES_RESP to bridge 127.0.0.1:52657
-[   6.082] ← SESSION_CTL from 127.0.0.1:52657:28800 term_id=322909207332635881 (108B) opt=0x600e743e enc=14
-[   6.083]   HEX: 7e b0 6c 00 59 26 14 b4 ff e7 9d b7 94 ea aa 27 22 a6 b2 e5 3e 74 0e 60 b5 1e 85 98 16 44 3f 58 af b4 0c 4f fa 63 03 7a 60 2e bd 11 f5 76 77 3e 34 a7 b8 3c 66 b7 1b e6 39 c8 af 9a cc d9 db fb c0 4b 3d 2b 30 a0 d4 4b 0e be 39 bd 0e b1 09 bf 7b e5 c6 75 fe ae 4c 05 e3 bc 1f 99 07 89 92 a9 5e 3f 34 0e 0b e7 14 09 5c b6 69 28
-[   6.084]   ! NO PEER to route SESSION_CTL (term_id=322909207332635881, clients=[-5783601125351474452, -7661813344423986543, 4423740938965436208, 2512005781278870585, 740149742957335897, 322909207332635881, -8510020609255156259, 2643335389345100336, -4389352904686552668, -9152420568492357812])
-[   6.482] ← SUBSCRIBE from 127.0.0.1:52657 term_id=740149742957335897 (48B)
-[   6.483]   [DEBUG] SUBSCRIBE predicted_sqnum=1050952165 (base=1050952163)
-[   6.484]   → SUBSCRIBE_RESP to 127.0.0.1:52657 (54B) chkval=1050952165
-[   6.485] ← CALLING_REQ from 127.0.0.1:52657 term_id=-9152420568492357812 (161B)
-[   6.486]   HEX: 7e a4 a1 00 e7 00 3c de e5 d7 a3 df 2a cc 82 4d 38 96 8c 8d 46 78 06 20 7f d1 a8 66 62 b7 40 21 88 28 2b 00 21 11 d5 fa 2f 52 86 e5 a0 05 25 a4 78 0b 40 ed 83 79 1b 20 55 70 8d af 8b 15 cf 5f ee b5 53 49 c5 1d 12 76 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 0b 24 82 ca 3f 79 57 1b 0e 74 78 c0 cb 79 98 07 9b 5d eb 56 ad 7d d6 4c c8 44 b1 04 be db e2 a8 d1 62 86 86 ec 9c 51 52 38
-[   6.486]   [CALLING] Target offline (dest=0) — queuing + wakeup
-[   6.487]   [WAKEUP] No chime connected — cannot trigger local wakeup
-[   6.487]   [WAKEUP] Falling back to cloud wakeup (DMS HTTP)
-[   6.488]   [MTP] Built CALLING_ACK: doorbell=192.168.1.81:8899 chkval=3091627140
-[   6.488]   [MTP] Built MTP_RES_RESP: link_id=3 relay=192.168.1.245:23000 doorbell_udp=192.168.1.245:23000 chkval=3091627140 (76B)
-[   6.489]   [MTP] Sending CALLING_ACK + MTP_RES_RESP to bridge 127.0.0.1:52657
-[   6.682] ← SESSION_CTL from 127.0.0.1:52657:28800 term_id=322909207332635881 (108B) opt=0x700e743e enc=14
-[   6.682]   HEX: 7e b0 6c 00 59 26 14 b4 ff e7 9d b7 94 ea aa 27 22 a6 b2 e5 3e 74 0e 70 b5 1e 85 98 16 44 3f 58 af b4 0c 4f fa 63 03 7a 60 2e bd 11 f5 76 77 3e 34 a7 b8 3c 66 b7 1b e6 39 c8 af 9a cc d9 db fb c0 4b 3d 2b 30 a0 d4 4b 0e be 39 bd 0e b1 09 bf 7b e5 c6 75 fe ae 4c 05 e3 bc 1f 99 07 89 92 a9 5e 3f 34 0e 0b e7 14 09 5c b6 69 28
-[   6.683]   ! NO PEER to route SESSION_CTL (term_id=322909207332635881, clients=[-5783601125351474452, -7661813344423986543, 4423740938965436208, 2512005781278870585, 740149742957335897, 322909207332635881, -8510020609255156259, 2643335389345100336, -4389352904686552668, -9152420568492357812])
-[   7.082] ← CALLING_REQ from 127.0.0.1:52657 term_id=-9152420568492357812 (161B)
-[   7.083]   HEX: 7e a4 a1 00 e7 00 3c de e5 d7 a3 df 2a cc 82 4d 38 96 8c 8d 46 78 06 30 7f d1 a8 66 62 b7 40 21 88 28 2b 00 21 11 d5 fa 2f 52 86 e5 a0 05 25 a4 78 0b 40 ed 83 79 1b 20 55 70 8d af 8b 15 cf 5f ee b5 53 49 c5 1d 12 76 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 0b 24 82 ca 3f 79 57 1b 0e 74 78 c0 cb 79 98 07 9b 5d eb 56 ad 7d d6 4c c8 44 b1 04 be db e2 a8 d1 62 86 86 ec 9c 51 52 38
-[   7.083]   [CALLING] Target offline (dest=0) — queuing + wakeup
-[   7.084]   [WAKEUP] No chime connected — cannot trigger local wakeup
-[   7.084]   [WAKEUP] Falling back to cloud wakeup (DMS HTTP)
-[   7.085]   [MTP] Built CALLING_ACK: doorbell=192.168.1.81:8899 chkval=3091627140
-[   7.086]   [MTP] Built MTP_RES_RESP: link_id=4 relay=192.168.1.245:23000 doorbell_udp=192.168.1.245:23000 chkval=3091627140 (76B)
-[   7.086]   [MTP] Sending CALLING_ACK + MTP_RES_RESP to bridge 127.0.0.1:52657
-[   7.283] ← SESSION_CTL from 127.0.0.1:52657:28800 term_id=322909207332635881 (108B) opt=0x800e743e enc=14
-[   7.283]   HEX: 7e b0 6c 00 59 26 14 b4 ff e7 9d b7 94 ea aa 27 22 a6 b2 e5 3e 74 0e 80 b5 1e 85 98 16 44 3f 58 af b4 0c 4f fa 63 03 7a 60 2e bd 11 f5 76 77 3e 34 a7 b8 3c 66 b7 1b e6 39 c8 af 9a cc d9 db fb c0 4b 3d 2b 30 a0 d4 4b 0e be 39 bd 0e b1 09 bf 7b e5 c6 75 fe ae 4c 05 e3 bc 1f 99 07 89 92 a9 5e 3f 34 0e 0b e7 14 09 5c b6 69 28
-[   7.284]   ! NO PEER to route SESSION_CTL (term_id=322909207332635881, clients=[-5783601125351474452, -7661813344423986543, 4423740938965436208, 2512005781278870585, 740149742957335897, 322909207332635881, -8510020609255156259, 2643335389345100336, -4389352904686552668, -9152420568492357812])
-[   7.500] NEW CLIENT: term_id=8623247590573170235 from 127.0.0.1:52657 port=28800
-[   7.501]   HDR: proto=0x7f type=0x01(DETECT_REQ) len=68 opt=0x00010000 enc=1 ack=False resp=False
-[   7.502]   HEX: 7f 01 44 00 68 3a 16 c8 2c 36 69 ab 68 f7 19 9f c4 a8 6e 15 00 00 01 00 33 35 2c c4 61 29 4f 62 fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee 00 00 00 00
-[   7.502] ← DETECT_REQ from 127.0.0.1:52657:28800 client_tid=8623247590573170235 (68B)
-[   7.503] → DETECT_RESP to 127.0.0.1:52657 server_tid=-3195816737827617183 (56B)
-[   7.681] ← CALLING_REQ from 127.0.0.1:52657 term_id=-9152420568492357812 (161B)
-[   7.682]   HEX: 7e a4 a1 00 e7 00 3c de e5 d7 a3 df 2a cc 82 4d 38 96 8c 8d 46 78 06 40 7f d1 a8 66 62 b7 40 21 88 28 2b 00 21 11 d5 fa 2f 52 86 e5 a0 05 25 a4 78 0b 40 ed 83 79 1b 20 55 70 8d af 8b 15 cf 5f ee b5 53 49 c5 1d 12 76 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 0b 24 82 ca 3f 79 57 1b 0e 74 78 c0 cb 79 98 07 9b 5d eb 56 ad 7d d6 4c c8 44 b1 04 be db e2 a8 d1 62 86 86 ec 9c 51 52 38
-[   7.683]   [CALLING] Target offline (dest=0) — queuing + wakeup
-[   7.683]   [WAKEUP] No chime connected — cannot trigger local wakeup
-[   7.683]   [WAKEUP] Falling back to cloud wakeup (DMS HTTP)
-[   7.684]   [MTP] Built CALLING_ACK: doorbell=192.168.1.81:8899 chkval=3091627140
-[   7.684]   [MTP] Built MTP_RES_RESP: link_id=5 relay=192.168.1.245:23000 doorbell_udp=192.168.1.245:23000 chkval=3091627140 (76B)
-[   7.684]   [MTP] Sending CALLING_ACK + MTP_RES_RESP to bridge 127.0.0.1:52657
-[   7.882] ← SESSION_CTL from 127.0.0.1:52657:28800 term_id=322909207332635881 (108B) opt=0x900e743e enc=14
-[   7.882]   HEX: 7e b0 6c 00 59 26 14 b4 ff e7 9d b7 94 ea aa 27 22 a6 b2 e5 3e 74 0e 90 b5 1e 85 98 16 44 3f 58 af b4 0c 4f fa 63 03 7a 60 2e bd 11 f5 76 77 3e 34 a7 b8 3c 66 b7 1b e6 39 c8 af 9a cc d9 db fb c0 4b 3d 2b 30 a0 d4 4b 0e be 39 bd 0e b1 09 bf 7b e5 c6 75 fe ae 4c 05 e3 bc 1f 99 07 89 92 a9 5e 3f 34 0e 0b e7 14 09 5c b6 69 28
-[   7.883]   ! NO PEER to route SESSION_CTL (term_id=322909207332635881, clients=[-5783601125351474452, -7661813344423986543, 4423740938965436208, 2512005781278870585, 740149742957335897, 322909207332635881, -8510020609255156259, 2643335389345100336, -4389352904686552668, -9152420568492357812, 8623247590573170235])
-[   8.283] ← CALLING_REQ from 127.0.0.1:52657 term_id=-9152420568492357812 (161B)
-[   8.284]   HEX: 7e a4 a1 00 e7 00 3c de e5 d7 a3 df 2a cc 82 4d 38 96 8c 8d 46 78 06 50 7f d1 a8 66 62 b7 40 21 88 28 2b 00 21 11 d5 fa 2f 52 86 e5 a0 05 25 a4 78 0b 40 ed 83 79 1b 20 55 70 8d af 8b 15 cf 5f ee b5 53 49 c5 1d 12 76 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 0b 24 82 ca 3f 79 57 1b 0e 74 78 c0 cb 79 98 07 9b 5d eb 56 ad 7d d6 4c c8 44 b1 04 be db e2 a8 d1 62 86 86 ec 9c 51 52 38
-[   8.285]   [CALLING] Target offline (dest=0) — queuing + wakeup
-[   8.286]   [WAKEUP] No chime connected — cannot trigger local wakeup
-[   8.286]   [WAKEUP] Falling back to cloud wakeup (DMS HTTP)
-[   8.287]   [MTP] Built CALLING_ACK: doorbell=192.168.1.81:8899 chkval=3091627140
-[   8.287]   [MTP] Built MTP_RES_RESP: link_id=6 relay=192.168.1.245:23000 doorbell_udp=192.168.1.245:23000 chkval=3091627140 (76B)
-[   8.288]   [MTP] Sending CALLING_ACK + MTP_RES_RESP to bridge 127.0.0.1:52657
-[   8.483] ← SUBSCRIBE from 127.0.0.1:52657 term_id=740149742957335897 (48B)
-[   8.484]   [DEBUG] SUBSCRIBE predicted_sqnum=1050952167 (base=1050952165)
-[   8.484]   → SUBSCRIBE_RESP to 127.0.0.1:52657 (54B) chkval=1050952167
-[   8.487] ← SESSION_CTL from 127.0.0.1:52657:28800 term_id=322909207332635881 (108B) opt=0xa00e743e enc=14
-[   8.488]   HEX: 7e b0 6c 00 59 26 14 b4 ff e7 9d b7 94 ea aa 27 22 a6 b2 e5 3e 74 0e a0 b5 1e 85 98 16 44 3f 58 af b4 0c 4f fa 63 03 7a 60 2e bd 11 f5 76 77 3e 34 a7 b8 3c 66 b7 1b e6 39 c8 af 9a cc d9 db fb c0 4b 3d 2b 30 a0 d4 4b 0e be 39 bd 0e b1 09 bf 7b e5 c6 75 fe ae 4c 05 e3 bc 1f 99 07 89 92 a9 5e 3f 34 0e 0b e7 14 09 5c b6 69 28
-[   8.489]   ! NO PEER to route SESSION_CTL (term_id=322909207332635881, clients=[-5783601125351474452, -7661813344423986543, 4423740938965436208, 2512005781278870585, 740149742957335897, 322909207332635881, -8510020609255156259, 2643335389345100336, -4389352904686552668, -9152420568492357812, 8623247590573170235])
-[   8.882] ← CALLING_REQ from 127.0.0.1:52657 term_id=-9152420568492357812 (161B)
-[   8.883]   HEX: 7e a4 a1 00 e7 00 3c de e5 d7 a3 df 2a cc 82 4d 38 96 8c 8d 46 78 06 60 7f d1 a8 66 62 b7 40 21 88 28 2b 00 21 11 d5 fa 2f 52 86 e5 a0 05 25 a4 78 0b 40 ed 83 79 1b 20 55 70 8d af 8b 15 cf 5f ee b5 53 49 c5 1d 12 76 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 0b 24 82 ca 3f 79 57 1b 0e 74 78 c0 cb 79 98 07 9b 5d eb 56 ad 7d d6 4c c8 44 b1 04 be db e2 a8 d1 62 86 86 ec 9c 51 52 38
-[   8.883]   [CALLING] Target offline (dest=0) — queuing + wakeup
-[   8.884]   [WAKEUP] No chime connected — cannot trigger local wakeup
-[   8.884]   [WAKEUP] Falling back to cloud wakeup (DMS HTTP)
-[   8.884]   [MTP] Built CALLING_ACK: doorbell=192.168.1.81:8899 chkval=3091627140
-[   8.884]   [MTP] Built MTP_RES_RESP: link_id=7 relay=192.168.1.245:23000 doorbell_udp=192.168.1.245:23000 chkval=3091627140 (76B)
-[   8.885]   [MTP] Sending CALLING_ACK + MTP_RES_RESP to bridge 127.0.0.1:52657
-[   9.081] ← SESSION_CTL from 127.0.0.1:52657:28800 term_id=322909207332635881 (108B) opt=0xb00e743e enc=14
-[   9.082]   HEX: 7e b0 6c 00 59 26 14 b4 ff e7 9d b7 94 ea aa 27 22 a6 b2 e5 3e 74 0e b0 b5 1e 85 98 16 44 3f 58 af b4 0c 4f fa 63 03 7a 60 2e bd 11 f5 76 77 3e 34 a7 b8 3c 66 b7 1b e6 39 c8 af 9a cc d9 db fb c0 4b 3d 2b 30 a0 d4 4b 0e be 39 bd 0e b1 09 bf 7b e5 c6 75 fe ae 4c 05 e3 bc 1f 99 07 89 92 a9 5e 3f 34 0e 0b e7 14 09 5c b6 69 28
-[   9.083]   ! NO PEER to route SESSION_CTL (term_id=322909207332635881, clients=[-5783601125351474452, -7661813344423986543, 4423740938965436208, 2512005781278870585, 740149742957335897, 322909207332635881, -8510020609255156259, 2643335389345100336, -4389352904686552668, -9152420568492357812, 8623247590573170235])
-[   9.482] ← CALLING_REQ from 127.0.0.1:52657 term_id=-9152420568492357812 (161B)
-[   9.483]   HEX: 7e a4 a1 00 e7 00 3c de e5 d7 a3 df 2a cc 82 4d 38 96 8c 8d 46 78 06 70 7f d1 a8 66 62 b7 40 21 88 28 2b 00 21 11 d5 fa 2f 52 86 e5 a0 05 25 a4 78 0b 40 ed 83 79 1b 20 55 70 8d af 8b 15 cf 5f ee b5 53 49 c5 1d 12 76 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 0b 24 82 ca 3f 79 57 1b 0e 74 78 c0 cb 79 98 07 9b 5d eb 56 ad 7d d6 4c c8 44 b1 04 be db e2 a8 d1 62 86 86 ec 9c 51 52 38
-[   9.483]   [CALLING] Target offline (dest=0) — queuing + wakeup
-[   9.484]   [WAKEUP] No chime connected — cannot trigger local wakeup
-[   9.484]   [WAKEUP] Falling back to cloud wakeup (DMS HTTP)
-[   9.485]   [MTP] Built CALLING_ACK: doorbell=192.168.1.81:8899 chkval=3091627140
-[   9.486]   [MTP] Built MTP_RES_RESP: link_id=8 relay=192.168.1.245:23000 doorbell_udp=192.168.1.245:23000 chkval=3091627140 (76B)
-[   9.486]   [MTP] Sending CALLING_ACK + MTP_RES_RESP to bridge 127.0.0.1:52657
-[   9.503] NEW CLIENT: term_id=7932109562083218878 from 127.0.0.1:52657 port=28800
-[   9.503]   HDR: proto=0x7f type=0x01(DETECT_REQ) len=68 opt=0x00010000 enc=1 ack=False resp=False
-[   9.504]   HEX: 7f 01 44 00 b9 6f 23 e7 82 c1 b7 e6 b9 a2 2c b0 6a 5f b0 58 00 00 01 00 ce d1 01 13 01 af b4 ae fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee 00 00 00 00
-[   9.504] ← DETECT_REQ from 127.0.0.1:52657:28800 client_tid=7932109562083218878 (68B)
-[   9.505] → DETECT_RESP to 127.0.0.1:52657 server_tid=-3195816737827617183 (56B)
-[   9.682] ← SESSION_CTL from 127.0.0.1:52657:28800 term_id=322909207332635881 (108B) opt=0xc00e743e enc=14
-[   9.683]   HEX: 7e b0 6c 00 59 26 14 b4 ff e7 9d b7 94 ea aa 27 22 a6 b2 e5 3e 74 0e c0 b5 1e 85 98 16 44 3f 58 af b4 0c 4f fa 63 03 7a 60 2e bd 11 f5 76 77 3e 34 a7 b8 3c 66 b7 1b e6 39 c8 af 9a cc d9 db fb c0 4b 3d 2b 30 a0 d4 4b 0e be 39 bd 0e b1 09 bf 7b e5 c6 75 fe ae 4c 05 e3 bc 1f 99 07 89 92 a9 5e 3f 34 0e 0b e7 14 09 5c b6 69 28
-[   9.684]   ! NO PEER to route SESSION_CTL (term_id=322909207332635881, clients=[-5783601125351474452, -7661813344423986543, 4423740938965436208, 2512005781278870585, 740149742957335897, 322909207332635881, -8510020609255156259, 2643335389345100336, -4389352904686552668, -9152420568492357812, 8623247590573170235, 7932109562083218878])
-[  10.081] ← CALLING_REQ from 127.0.0.1:52657 term_id=-9152420568492357812 (161B)
-[  10.082]   HEX: 7e a4 a1 00 e7 00 3c de e5 d7 a3 df 2a cc 82 4d 38 96 8c 8d 46 78 06 80 7f d1 a8 66 62 b7 40 21 88 28 2b 00 21 11 d5 fa 2f 52 86 e5 a0 05 25 a4 78 0b 40 ed 83 79 1b 20 55 70 8d af 8b 15 cf 5f ee b5 53 49 c5 1d 12 76 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 0b 24 82 ca 3f 79 57 1b 0e 74 78 c0 cb 79 98 07 9b 5d eb 56 ad 7d d6 4c c8 44 b1 04 be db e2 a8 d1 62 86 86 ec 9c 51 52 38
-[  10.083]   [CALLING] Target offline (dest=0) — queuing + wakeup
-[  10.083]   [WAKEUP] No chime connected — cannot trigger local wakeup
-[  10.084]   [WAKEUP] Falling back to cloud wakeup (DMS HTTP)
-[  10.085]   [MTP] Built CALLING_ACK: doorbell=192.168.1.81:8899 chkval=3091627140
-[  10.085]   [MTP] Built MTP_RES_RESP: link_id=9 relay=192.168.1.245:23000 doorbell_udp=192.168.1.245:23000 chkval=3091627140 (76B)
-[  10.086]   [MTP] Sending CALLING_ACK + MTP_RES_RESP to bridge 127.0.0.1:52657
-[  10.283] ← SESSION_CTL from 127.0.0.1:52657:28800 term_id=322909207332635881 (108B) opt=0xd00e743e enc=14
-[  10.284]   HEX: 7e b0 6c 00 59 26 14 b4 ff e7 9d b7 94 ea aa 27 22 a6 b2 e5 3e 74 0e d0 b5 1e 85 98 16 44 3f 58 af b4 0c 4f fa 63 03 7a 60 2e bd 11 f5 76 77 3e 34 a7 b8 3c 66 b7 1b e6 39 c8 af 9a cc d9 db fb c0 4b 3d 2b 30 a0 d4 4b 0e be 39 bd 0e b1 09 bf 7b e5 c6 75 fe ae 4c 05 e3 bc 1f 99 07 89 92 a9 5e 3f 34 0e 0b e7 14 09 5c b6 69 28
-[  10.285]   ! NO PEER to route SESSION_CTL (term_id=322909207332635881, clients=[-5783601125351474452, -7661813344423986543, 4423740938965436208, 2512005781278870585, 740149742957335897, 322909207332635881, -8510020609255156259, 2643335389345100336, -4389352904686552668, -9152420568492357812, 8623247590573170235, 7932109562083218878])
-[  10.483] ← SUBSCRIBE from 127.0.0.1:52657 term_id=740149742957335897 (48B)
-[  10.484]   [DEBUG] SUBSCRIBE predicted_sqnum=1050952169 (base=1050952167)
-[  10.485]   → SUBSCRIBE_RESP to 127.0.0.1:52657 (54B) chkval=1050952169
-[  10.683] ← CALLING_REQ from 127.0.0.1:58748 term_id=-9152420568492357812 (161B)
-[  10.684]   HEX: 7e a4 a1 00 e7 00 3c de e5 d7 a3 df 2a cc 82 4d 38 96 8c 8d 46 78 06 90 7f d1 a8 66 62 b7 40 21 88 28 2b 00 21 11 d5 fa 2f 52 86 e5 a0 05 25 a4 78 0b 40 ed 83 79 1b 20 55 70 8d af 8b 15 cf 5f ee b5 53 49 c5 1d 12 76 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 0b 24 82 ca 3f 79 57 1b 0e 74 78 c0 cb 79 98 07 9b 5d eb 56 ad 7d d6 4c c8 44 b1 04 be db e2 a8 d1 62 86 86 ec 9c 51 52 38
-[  10.685]   [CALLING] Target offline (dest=0) — queuing + wakeup
-[  10.686]   [WAKEUP] No chime connected — cannot trigger local wakeup
-[  10.686]   [WAKEUP] Falling back to cloud wakeup (DMS HTTP)
-[  10.687]   [MTP] Built CALLING_ACK: doorbell=192.168.1.81:8899 chkval=3091627140
-[  10.688]   [MTP] Built MTP_RES_RESP: link_id=10 relay=192.168.1.245:23000 doorbell_udp=192.168.1.245:23000 chkval=3091627140 (76B)
-[  10.688]   [MTP] Sending CALLING_ACK + MTP_RES_RESP to bridge 127.0.0.1:58748
-[  10.883] ← SESSION_CTL from 127.0.0.1:58748:28800 term_id=322909207332635881 (108B) opt=0xe00e743e enc=14
-[  10.884]   HEX: 7e b0 6c 00 59 26 14 b4 ff e7 9d b7 94 ea aa 27 22 a6 b2 e5 3e 74 0e e0 b5 1e 85 98 16 44 3f 58 af b4 0c 4f fa 63 03 7a 60 2e bd 11 f5 76 77 3e 34 a7 b8 3c 66 b7 1b e6 39 c8 af 9a cc d9 db fb c0 4b 3d 2b 30 a0 d4 4b 0e be 39 bd 0e b1 09 bf 7b e5 c6 75 fe ae 4c 05 e3 bc 1f 99 07 89 92 a9 5e 3f 34 0e 0b e7 14 09 5c b6 69 28
-[  10.885]   ! NO PEER to route SESSION_CTL (term_id=322909207332635881, clients=[-5783601125351474452, -7661813344423986543, 4423740938965436208, 2512005781278870585, 740149742957335897, 322909207332635881, -8510020609255156259, 2643335389345100336, -4389352904686552668, -9152420568492357812, 8623247590573170235, 7932109562083218878])
-[  11.282] ← CALLING_REQ from 127.0.0.1:58748 term_id=-9152420568492357812 (161B)
-[  11.284]   HEX: 7e a4 a1 00 e7 00 3c de e5 d7 a3 df 2a cc 82 4d 38 96 8c 8d 46 78 06 a0 7f d1 a8 66 62 b7 40 21 88 28 2b 00 21 11 d5 fa 2f 52 86 e5 a0 05 25 a4 78 0b 40 ed 83 79 1b 20 55 70 8d af 8b 15 cf 5f ee b5 53 49 c5 1d 12 76 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 0b 24 82 ca 3f 79 57 1b 0e 74 78 c0 cb 79 98 07 9b 5d eb 56 ad 7d d6 4c c8 44 b1 04 be db e2 a8 d1 62 86 86 ec 9c 51 52 38
-[  11.284]   [CALLING] Target offline (dest=0) — queuing + wakeup
-[  11.285]   [WAKEUP] No chime connected — cannot trigger local wakeup
-[  11.285]   [WAKEUP] Falling back to cloud wakeup (DMS HTTP)
-[  11.286]   [MTP] Built CALLING_ACK: doorbell=192.168.1.81:8899 chkval=3091627140
-[  11.287]   [MTP] Built MTP_RES_RESP: link_id=11 relay=192.168.1.245:23000 doorbell_udp=192.168.1.245:23000 chkval=3091627140 (76B)
-[  11.287]   [MTP] Sending CALLING_ACK + MTP_RES_RESP to bridge 127.0.0.1:58748
-[  11.481] ← SESSION_CTL from 127.0.0.1:58748:28800 term_id=322909207332635881 (108B) opt=0xf00e743e enc=14
-[  11.482]   HEX: 7e b0 6c 00 59 26 14 b4 ff e7 9d b7 94 ea aa 27 22 a6 b2 e5 3e 74 0e f0 b5 1e 85 98 16 44 3f 58 af b4 0c 4f fa 63 03 7a 60 2e bd 11 f5 76 77 3e 34 a7 b8 3c 66 b7 1b e6 39 c8 af 9a cc d9 db fb c0 4b 3d 2b 30 a0 d4 4b 0e be 39 bd 0e b1 09 bf 7b e5 c6 75 fe ae 4c 05 e3 bc 1f 99 07 89 92 a9 5e 3f 34 0e 0b e7 14 09 5c b6 69 28
-[  11.483]   ! NO PEER to route SESSION_CTL (term_id=322909207332635881, clients=[-5783601125351474452, -7661813344423986543, 4423740938965436208, 2512005781278870585, 740149742957335897, 322909207332635881, -8510020609255156259, 2643335389345100336, -4389352904686552668, -9152420568492357812, 8623247590573170235, 7932109562083218878])
-[  11.882] ← CALLING_REQ from 127.0.0.1:58748 term_id=-9152420568492357812 (161B)
-[  11.883]   HEX: 7e a4 a1 00 e7 00 3c de e5 d7 a3 df 2a cc 82 4d 38 96 8c 8d 46 78 06 b0 7f d1 a8 66 62 b7 40 21 88 28 2b 00 21 11 d5 fa 2f 52 86 e5 a0 05 25 a4 78 0b 40 ed 83 79 1b 20 55 70 8d af 8b 15 cf 5f ee b5 53 49 c5 1d 12 76 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 0b 24 82 ca 3f 79 57 1b 0e 74 78 c0 cb 79 98 07 9b 5d eb 56 ad 7d d6 4c c8 44 b1 04 be db e2 a8 d1 62 86 86 ec 9c 51 52 38
-[  11.884]   [CALLING] Target offline (dest=0) — queuing + wakeup
-[  11.884]   [WAKEUP] No chime connected — cannot trigger local wakeup
-[  11.884]   [WAKEUP] Falling back to cloud wakeup (DMS HTTP)
-[  11.885]   [MTP] Built CALLING_ACK: doorbell=192.168.1.81:8899 chkval=3091627140
-[  11.885]   [MTP] Built MTP_RES_RESP: link_id=12 relay=192.168.1.245:23000 doorbell_udp=192.168.1.245:23000 chkval=3091627140 (76B)
-[  11.885]   [MTP] Sending CALLING_ACK + MTP_RES_RESP to bridge 127.0.0.1:58748
-[  12.081] ← SESSION_CTL from 127.0.0.1:58748:28800 term_id=322909207332635881 (108B) opt=0x000e743e enc=14
-[  12.082]   HEX: 7e b0 6c 00 59 26 14 b4 ff e7 9d b7 94 ea aa 27 22 a6 b2 e5 3e 74 0e 00 b5 1e 85 98 16 44 3f 58 af b4 0c 4f fa 63 03 7a 60 2e bd 11 f5 76 77 3e 34 a7 b8 3c 66 b7 1b e6 39 c8 af 9a cc d9 db fb c0 4b 3d 2b 30 a0 d4 4b 0e be 39 bd 0e b1 09 bf 7b e5 c6 75 fe ae 4c 05 e3 bc 1f 99 07 89 92 a9 5e 3f 34 0e 0b e7 14 09 5c b6 69 28
-[  12.083]   ! NO PEER to route SESSION_CTL (term_id=322909207332635881, clients=[-5783601125351474452, -7661813344423986543, 4423740938965436208, 2512005781278870585, 740149742957335897, 322909207332635881, -8510020609255156259, 2643335389345100336, -4389352904686552668, -9152420568492357812, 8623247590573170235, 7932109562083218878])
-[  12.483] ← SUBSCRIBE from 127.0.0.1:58748 term_id=740149742957335897 (48B)
-[  12.484]   [DEBUG] SUBSCRIBE predicted_sqnum=2 (base=0)
-[  12.484]   → SUBSCRIBE_RESP to 127.0.0.1:58748 (54B) chkval=2
-[  12.486] ← CALLING_REQ from 127.0.0.1:58748 term_id=-9152420568492357812 (161B)
-[  12.486]   HEX: 7e a4 a1 00 e7 00 3c de e5 d7 a3 df 2a cc 82 4d 38 96 8c 8d 46 78 06 c0 7f d1 a8 66 62 b7 40 21 88 28 2b 00 21 11 d5 fa 2f 52 86 e5 a0 05 25 a4 78 0b 40 ed 83 79 1b 20 55 70 8d af 8b 15 cf 5f ee b5 53 49 c5 1d 12 76 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 0b 24 82 ca 3f 79 57 1b 0e 74 78 c0 cb 79 98 07 9b 5d eb 56 ad 7d d6 4c c8 44 b1 04 be db e2 a8 d1 62 86 86 ec 9c 51 52 38
-[  12.487]   [CALLING] Target offline (dest=0) — queuing + wakeup
-[  12.487]   [WAKEUP] No chime connected — cannot trigger local wakeup
-[  12.487]   [WAKEUP] Falling back to cloud wakeup (DMS HTTP)
-[  12.488]   [MTP] Built CALLING_ACK: doorbell=192.168.1.81:8899 chkval=3091627140
-[  12.489]   [MTP] Built MTP_RES_RESP: link_id=13 relay=192.168.1.245:23000 doorbell_udp=192.168.1.245:23000 chkval=3091627140 (76B)
-[  12.489]   [MTP] Sending CALLING_ACK + MTP_RES_RESP to bridge 127.0.0.1:58748
-[  12.683] ← SESSION_CTL from 127.0.0.1:58748:28800 term_id=322909207332635881 (108B) opt=0x100e743e enc=14
-[  12.684]   HEX: 7e b0 6c 00 59 26 14 b4 ff e7 9d b7 94 ea aa 27 22 a6 b2 e5 3e 74 0e 10 b5 1e 85 98 16 44 3f 58 af b4 0c 4f fa 63 03 7a 60 2e bd 11 f5 76 77 3e 34 a7 b8 3c 66 b7 1b e6 39 c8 af 9a cc d9 db fb c0 4b 3d 2b 30 a0 d4 4b 0e be 39 bd 0e b1 09 bf 7b e5 c6 75 fe ae 4c 05 e3 bc 1f 99 07 89 92 a9 5e 3f 34 0e 0b e7 14 09 5c b6 69 28
-[  12.685]   ! NO PEER to route SESSION_CTL (term_id=322909207332635881, clients=[-5783601125351474452, -7661813344423986543, 4423740938965436208, 2512005781278870585, 740149742957335897, 322909207332635881, -8510020609255156259, 2643335389345100336, -4389352904686552668, -9152420568492357812, 8623247590573170235, 7932109562083218878])
-[  13.081] ← CALLING_REQ from 127.0.0.1:58748 term_id=-9152420568492357812 (161B)
-[  13.081]   HEX: 7e a4 a1 00 e7 00 3c de e5 d7 a3 df 2a cc 82 4d 38 96 8c 8d 46 78 06 d0 7f d1 a8 66 62 b7 40 21 88 28 2b 00 21 11 d5 fa 2f 52 86 e5 a0 05 25 a4 78 0b 40 ed 83 79 1b 20 55 70 8d af 8b 15 cf 5f ee b5 53 49 c5 1d 12 76 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 0b 24 82 ca 3f 79 57 1b 0e 74 78 c0 cb 79 98 07 9b 5d eb 56 ad 7d d6 4c c8 44 b1 04 be db e2 a8 d1 62 86 86 ec 9c 51 52 38
-[  13.081]   [CALLING] Target offline (dest=0) — queuing + wakeup
-[  13.081]   [WAKEUP] No chime connected — cannot trigger local wakeup
-[  13.081]   [WAKEUP] Falling back to cloud wakeup (DMS HTTP)
-[  13.082]   [MTP] Built CALLING_ACK: doorbell=192.168.1.81:8899 chkval=3091627140
-[  13.082]   [MTP] Built MTP_RES_RESP: link_id=14 relay=192.168.1.245:23000 doorbell_udp=192.168.1.245:23000 chkval=3091627140 (76B)
-[  13.082]   [MTP] Sending CALLING_ACK + MTP_RES_RESP to bridge 127.0.0.1:58748
-[  13.281] ← SESSION_CTL from 127.0.0.1:58748:28800 term_id=322909207332635881 (108B) opt=0x200e743e enc=14
-[  13.282]   HEX: 7e b0 6c 00 59 26 14 b4 ff e7 9d b7 94 ea aa 27 22 a6 b2 e5 3e 74 0e 20 b5 1e 85 98 16 44 3f 58 af b4 0c 4f fa 63 03 7a 60 2e bd 11 f5 76 77 3e 34 a7 b8 3c 66 b7 1b e6 39 c8 af 9a cc d9 db fb c0 4b 3d 2b 30 a0 d4 4b 0e be 39 bd 0e b1 09 bf 7b e5 c6 75 fe ae 4c 05 e3 bc 1f 99 07 89 92 a9 5e 3f 34 0e 0b e7 14 09 5c b6 69 28
-[  13.282]   ! NO PEER to route SESSION_CTL (term_id=322909207332635881, clients=[-5783601125351474452, -7661813344423986543, 4423740938965436208, 2512005781278870585, 740149742957335897, 322909207332635881, -8510020609255156259, 2643335389345100336, -4389352904686552668, -9152420568492357812, 8623247590573170235, 7932109562083218878])
-[  13.736] NEW CLIENT: term_id=-7125088450168673459 from 127.0.0.1:58748 port=28800
-[  13.737]   HDR: proto=0x7e type=0xa4(CALLING_REQ) len=161 opt=0x0006bbf0 enc=6 ack=False resp=False
-[  13.739]   HEX: 7e a4 a1 00 68 38 0a d5 48 ff e2 ba a5 f4 b4 46 95 be cd e8 f0 bb 06 00 d1 79 87 d1 3c ca 12 a4 88 28 2b 00 21 11 d5 fa 2f 52 86 e5 a0 05 25 a4 8b 45 35 18 8c 19 78 d1 55 70 8d af 8b 15 cf 5f ee b5 53 49 c5 1d 12 76 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 2f 87 eb c4 9d 79 89 12 0e 74 78 c0 cb 79 98 07 9b 5d eb 56 ad 7d d6 4c c8 44 b1 04 be db e2 a8 d1 62 86 86 ec 9c 51 52 38
-[  13.739] ← CALLING_REQ from 127.0.0.1:58748 term_id=-7125088450168673459 (161B)
-[  13.743]   HEX: 7e a4 a1 00 68 38 0a d5 48 ff e2 ba a5 f4 b4 46 95 be cd e8 f0 bb 06 00 d1 79 87 d1 3c ca 12 a4 88 28 2b 00 21 11 d5 fa 2f 52 86 e5 a0 05 25 a4 8b 45 35 18 8c 19 78 d1 55 70 8d af 8b 15 cf 5f ee b5 53 49 c5 1d 12 76 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 2f 87 eb c4 9d 79 89 12 0e 74 78 c0 cb 79 98 07 9b 5d eb 56 ad 7d d6 4c c8 44 b1 04 be db e2 a8 d1 62 86 86 ec 9c 51 52 38
-[  13.744]   [CALLING] Target offline (dest=0) — queuing + wakeup
-[  13.744]   [WAKEUP] No chime connected — cannot trigger local wakeup
-[  13.744]   [WAKEUP] Falling back to cloud wakeup (DMS HTTP)
-[  13.745]   [MTP] Built CALLING_ACK: doorbell=192.168.1.81:8899 chkval=2828324982
-[  13.745]   [MTP] Built MTP_RES_RESP: link_id=15 relay=192.168.1.245:23000 doorbell_udp=192.168.1.245:23000 chkval=2828324982 (76B)
-[  13.746]   [MTP] Sending CALLING_ACK + MTP_RES_RESP to bridge 127.0.0.1:58748
-[  13.880] ← SESSION_CTL from 127.0.0.1:58748:28800 term_id=322909207332635881 (108B) opt=0x300e743e enc=14
-[  13.881]   HEX: 7e b0 6c 00 59 26 14 b4 ff e7 9d b7 94 ea aa 27 22 a6 b2 e5 3e 74 0e 30 b5 1e 85 98 16 44 3f 58 af b4 0c 4f fa 63 03 7a 60 2e bd 11 f5 76 77 3e 34 a7 b8 3c 66 b7 1b e6 39 c8 af 9a cc d9 db fb c0 4b 3d 2b 30 a0 d4 4b 0e be 39 bd 0e b1 09 bf 7b e5 c6 75 fe ae 4c 05 e3 bc 1f 99 07 89 92 a9 5e 3f 34 0e 0b e7 14 09 5c b6 69 28
-[  13.881]   ! NO PEER to route SESSION_CTL (term_id=322909207332635881, clients=[-5783601125351474452, -7661813344423986543, 4423740938965436208, 2512005781278870585, 740149742957335897, 322909207332635881, -8510020609255156259, 2643335389345100336, -4389352904686552668, -9152420568492357812, 8623247590573170235, 7932109562083218878, -7125088450168673459])
-[  14.281] ← CALLING_REQ from 127.0.0.1:58748 term_id=-7125088450168673459 (161B)
-[  14.282]   HEX: 7e a4 a1 00 68 38 0a d5 48 ff e2 ba a5 f4 b4 46 95 be cd e8 f0 bb 06 10 d1 79 87 d1 3c ca 12 a4 88 28 2b 00 21 11 d5 fa 2f 52 86 e5 a0 05 25 a4 8b 45 35 18 8c 19 78 d1 55 70 8d af 8b 15 cf 5f ee b5 53 49 c5 1d 12 76 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 2f 87 eb c4 9d 79 89 12 0e 74 78 c0 cb 79 98 07 9b 5d eb 56 ad 7d d6 4c c8 44 b1 04 be db e2 a8 d1 62 86 86 ec 9c 51 52 38
-[  14.283]   [CALLING] Target offline (dest=0) — queuing + wakeup
-[  14.283]   [WAKEUP] No chime connected — cannot trigger local wakeup
-[  14.284]   [WAKEUP] Falling back to cloud wakeup (DMS HTTP)
-[  14.284]   [MTP] Built CALLING_ACK: doorbell=192.168.1.81:8899 chkval=2828324982
-[  14.285]   [MTP] Built MTP_RES_RESP: link_id=16 relay=192.168.1.245:23000 doorbell_udp=192.168.1.245:23000 chkval=2828324982 (76B)
-[  14.285]   [MTP] Sending CALLING_ACK + MTP_RES_RESP to bridge 127.0.0.1:58748
-[  14.481] ← SUBSCRIBE from 127.0.0.1:58748 term_id=740149742957335897 (48B)
-[  14.482]   [DEBUG] SUBSCRIBE predicted_sqnum=4 (base=2)
-[  14.483]   → SUBSCRIBE_RESP to 127.0.0.1:58748 (54B) chkval=4
-[  14.484] ← SESSION_CTL from 127.0.0.1:58748:28800 term_id=322909207332635881 (108B) opt=0x400e743e enc=14
-[  14.484]   HEX: 7e b0 6c 00 59 26 14 b4 ff e7 9d b7 94 ea aa 27 22 a6 b2 e5 3e 74 0e 40 b5 1e 85 98 16 44 3f 58 af b4 0c 4f fa 63 03 7a 60 2e bd 11 f5 76 77 3e 34 a7 b8 3c 66 b7 1b e6 39 c8 af 9a cc d9 db fb c0 4b 3d 2b 30 a0 d4 4b 0e be 39 bd 0e b1 09 bf 7b e5 c6 75 fe ae 4c 05 e3 bc 1f 99 07 89 92 a9 5e 3f 34 0e 0b e7 14 09 5c b6 69 28
-[  14.485]   ! NO PEER to route SESSION_CTL (term_id=322909207332635881, clients=[-5783601125351474452, -7661813344423986543, 4423740938965436208, 2512005781278870585, 740149742957335897, 322909207332635881, -8510020609255156259, 2643335389345100336, -4389352904686552668, -9152420568492357812, 8623247590573170235, 7932109562083218878, -7125088450168673459])
-[  14.504] NEW CLIENT: term_id=-721204968138122137 from 127.0.0.1:58748 port=28800
-[  14.505]   HDR: proto=0x7f type=0x01(DETECT_REQ) len=68 opt=0x00010000 enc=1 ack=False resp=False
-[  14.505]   HEX: 7f 01 44 00 c5 79 50 c3 99 49 60 aa c5 b4 5f 94 71 d7 67 14 00 00 01 00 74 6f 5b 3a 78 c9 02 f9 fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee 00 00 00 00
-[  14.506] ← DETECT_REQ from 127.0.0.1:58748:28800 client_tid=-721204968138122137 (68B)
-[  14.507] → DETECT_RESP to 127.0.0.1:58748 server_tid=-3195816737827617183 (56B)
-[  14.881] ← CALLING_REQ from 127.0.0.1:58748 term_id=-7125088450168673459 (161B)
-[  14.881]   HEX: 7e a4 a1 00 68 38 0a d5 48 ff e2 ba a5 f4 b4 46 95 be cd e8 f0 bb 06 20 d1 79 87 d1 3c ca 12 a4 88 28 2b 00 21 11 d5 fa 2f 52 86 e5 a0 05 25 a4 8b 45 35 18 8c 19 78 d1 55 70 8d af 8b 15 cf 5f ee b5 53 49 c5 1d 12 76 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 2f 87 eb c4 9d 79 89 12 0e 74 78 c0 cb 79 98 07 9b 5d eb 56 ad 7d d6 4c c8 44 b1 04 be db e2 a8 d1 62 86 86 ec 9c 51 52 38
-[  14.882]   [CALLING] Target offline (dest=0) — queuing + wakeup
-[  14.882]   [WAKEUP] No chime connected — cannot trigger local wakeup
-[  14.882]   [WAKEUP] Falling back to cloud wakeup (DMS HTTP)
-[  14.882]   [MTP] Built CALLING_ACK: doorbell=192.168.1.81:8899 chkval=2828324982
-[  14.883]   [MTP] Built MTP_RES_RESP: link_id=17 relay=192.168.1.245:23000 doorbell_udp=192.168.1.245:23000 chkval=2828324982 (76B)
-[  14.883]   [MTP] Sending CALLING_ACK + MTP_RES_RESP to bridge 127.0.0.1:58748
-[  15.081] ← SESSION_CTL from 127.0.0.1:58748:28800 term_id=322909207332635881 (108B) opt=0x500e743e enc=14
-[  15.082]   HEX: 7e b0 6c 00 59 26 14 b4 ff e7 9d b7 94 ea aa 27 22 a6 b2 e5 3e 74 0e 50 b5 1e 85 98 16 44 3f 58 af b4 0c 4f fa 63 03 7a 60 2e bd 11 f5 76 77 3e 34 a7 b8 3c 66 b7 1b e6 39 c8 af 9a cc d9 db fb c0 4b 3d 2b 30 a0 d4 4b 0e be 39 bd 0e b1 09 bf 7b e5 c6 75 fe ae 4c 05 e3 bc 1f 99 07 89 92 a9 5e 3f 34 0e 0b e7 14 09 5c b6 69 28
-[  15.083]   ! NO PEER to route SESSION_CTL (term_id=322909207332635881, clients=[-5783601125351474452, -7661813344423986543, 4423740938965436208, 2512005781278870585, 740149742957335897, 322909207332635881, -8510020609255156259, 2643335389345100336, -4389352904686552668, -9152420568492357812, 8623247590573170235, 7932109562083218878, -7125088450168673459, -721204968138122137])
-[  15.482] ← CALLING_REQ from 127.0.0.1:58748 term_id=-7125088450168673459 (161B)
-[  15.483]   HEX: 7e a4 a1 00 68 38 0a d5 48 ff e2 ba a5 f4 b4 46 95 be cd e8 f0 bb 06 30 d1 79 87 d1 3c ca 12 a4 88 28 2b 00 21 11 d5 fa 2f 52 86 e5 a0 05 25 a4 8b 45 35 18 8c 19 78 d1 55 70 8d af 8b 15 cf 5f ee b5 53 49 c5 1d 12 76 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 2f 87 eb c4 9d 79 89 12 0e 74 78 c0 cb 79 98 07 9b 5d eb 56 ad 7d d6 4c c8 44 b1 04 be db e2 a8 d1 62 86 86 ec 9c 51 52 38
-[  15.483]   [CALLING] Target offline (dest=0) — queuing + wakeup
-[  15.484]   [WAKEUP] No chime connected — cannot trigger local wakeup
-[  15.484]   [WAKEUP] Falling back to cloud wakeup (DMS HTTP)
-[  15.485]   [MTP] Built CALLING_ACK: doorbell=192.168.1.81:8899 chkval=2828324982
-[  15.485]   [MTP] Built MTP_RES_RESP: link_id=18 relay=192.168.1.245:23000 doorbell_udp=192.168.1.245:23000 chkval=2828324982 (76B)
-[  15.486]   [MTP] Sending CALLING_ACK + MTP_RES_RESP to bridge 127.0.0.1:58748
-[  15.680] ← SESSION_CTL from 127.0.0.1:58748:28800 term_id=322909207332635881 (108B) opt=0x600e743e enc=14
-[  15.681]   HEX: 7e b0 6c 00 59 26 14 b4 ff e7 9d b7 94 ea aa 27 22 a6 b2 e5 3e 74 0e 60 b5 1e 85 98 16 44 3f 58 af b4 0c 4f fa 63 03 7a 60 2e bd 11 f5 76 77 3e 34 a7 b8 3c 66 b7 1b e6 39 c8 af 9a cc d9 db fb c0 4b 3d 2b 30 a0 d4 4b 0e be 39 bd 0e b1 09 bf 7b e5 c6 75 fe ae 4c 05 e3 bc 1f 99 07 89 92 a9 5e 3f 34 0e 0b e7 14 09 5c b6 69 28
-[  15.682]   ! NO PEER to route SESSION_CTL (term_id=322909207332635881, clients=[-5783601125351474452, -7661813344423986543, 4423740938965436208, 2512005781278870585, 740149742957335897, 322909207332635881, -8510020609255156259, 2643335389345100336, -4389352904686552668, -9152420568492357812, 8623247590573170235, 7932109562083218878, -7125088450168673459, -721204968138122137])
-[  16.080] ← CALLING_REQ from 127.0.0.1:58748 term_id=-7125088450168673459 (161B)
-[  16.081]   HEX: 7e a4 a1 00 68 38 0a d5 48 ff e2 ba a5 f4 b4 46 95 be cd e8 f0 bb 06 40 d1 79 87 d1 3c ca 12 a4 88 28 2b 00 21 11 d5 fa 2f 52 86 e5 a0 05 25 a4 8b 45 35 18 8c 19 78 d1 55 70 8d af 8b 15 cf 5f ee b5 53 49 c5 1d 12 76 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 2f 87 eb c4 9d 79 89 12 0e 74 78 c0 cb 79 98 07 9b 5d eb 56 ad 7d d6 4c c8 44 b1 04 be db e2 a8 d1 62 86 86 ec 9c 51 52 38
-[  16.082]   [CALLING] Target offline (dest=0) — queuing + wakeup
-[  16.082]   [WAKEUP] No chime connected — cannot trigger local wakeup
-[  16.083]   [WAKEUP] Falling back to cloud wakeup (DMS HTTP)
-[  16.083]   [MTP] Built CALLING_ACK: doorbell=192.168.1.81:8899 chkval=2828324982
-[  16.084]   [MTP] Built MTP_RES_RESP: link_id=19 relay=192.168.1.245:23000 doorbell_udp=192.168.1.245:23000 chkval=2828324982 (76B)
-[  16.085]   [MTP] Sending CALLING_ACK + MTP_RES_RESP to bridge 127.0.0.1:58748
-[  16.280] ← SESSION_CTL from 127.0.0.1:58748:28800 term_id=322909207332635881 (108B) opt=0x700e743e enc=14
-[  16.281]   HEX: 7e b0 6c 00 59 26 14 b4 ff e7 9d b7 94 ea aa 27 22 a6 b2 e5 3e 74 0e 70 b5 1e 85 98 16 44 3f 58 af b4 0c 4f fa 63 03 7a 60 2e bd 11 f5 76 77 3e 34 a7 b8 3c 66 b7 1b e6 39 c8 af 9a cc d9 db fb c0 4b 3d 2b 30 a0 d4 4b 0e be 39 bd 0e b1 09 bf 7b e5 c6 75 fe ae 4c 05 e3 bc 1f 99 07 89 92 a9 5e 3f 34 0e 0b e7 14 09 5c b6 69 28
-[  16.282]   ! NO PEER to route SESSION_CTL (term_id=322909207332635881, clients=[-5783601125351474452, -7661813344423986543, 4423740938965436208, 2512005781278870585, 740149742957335897, 322909207332635881, -8510020609255156259, 2643335389345100336, -4389352904686552668, -9152420568492357812, 8623247590573170235, 7932109562083218878, -7125088450168673459, -721204968138122137])
-[  16.480] ← SUBSCRIBE from 127.0.0.1:58748 term_id=740149742957335897 (48B)
-[  16.481]   [DEBUG] SUBSCRIBE predicted_sqnum=6 (base=4)
-[  16.482]   → SUBSCRIBE_RESP to 127.0.0.1:58748 (54B) chkval=6
-[  16.681] ← CALLING_REQ from 127.0.0.1:58748 term_id=-7125088450168673459 (161B)
-[  16.682]   HEX: 7e a4 a1 00 68 38 0a d5 48 ff e2 ba a5 f4 b4 46 95 be cd e8 f0 bb 06 50 d1 79 87 d1 3c ca 12 a4 88 28 2b 00 21 11 d5 fa 2f 52 86 e5 a0 05 25 a4 8b 45 35 18 8c 19 78 d1 55 70 8d af 8b 15 cf 5f ee b5 53 49 c5 1d 12 76 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 2f 87 eb c4 9d 79 89 12 0e 74 78 c0 cb 79 98 07 9b 5d eb 56 ad 7d d6 4c c8 44 b1 04 be db e2 a8 d1 62 86 86 ec 9c 51 52 38
-[  16.683]   [CALLING] Target offline (dest=0) — queuing + wakeup
-[  16.684]   [WAKEUP] No chime connected — cannot trigger local wakeup
-[  16.684]   [WAKEUP] Falling back to cloud wakeup (DMS HTTP)
-[  16.685]   [MTP] Built CALLING_ACK: doorbell=192.168.1.81:8899 chkval=2828324982
-[  16.685]   [MTP] Built MTP_RES_RESP: link_id=20 relay=192.168.1.245:23000 doorbell_udp=192.168.1.245:23000 chkval=2828324982 (76B)
-[  16.686]   [MTP] Sending CALLING_ACK + MTP_RES_RESP to bridge 127.0.0.1:58748
-[  16.880] ← SESSION_CTL from 127.0.0.1:58748:28800 term_id=322909207332635881 (108B) opt=0x800e743e enc=14
-[  16.881]   HEX: 7e b0 6c 00 59 26 14 b4 ff e7 9d b7 94 ea aa 27 22 a6 b2 e5 3e 74 0e 80 b5 1e 85 98 16 44 3f 58 af b4 0c 4f fa 63 03 7a 60 2e bd 11 f5 76 77 3e 34 a7 b8 3c 66 b7 1b e6 39 c8 af 9a cc d9 db fb c0 4b 3d 2b 30 a0 d4 4b 0e be 39 bd 0e b1 09 bf 7b e5 c6 75 fe ae 4c 05 e3 bc 1f 99 07 89 92 a9 5e 3f 34 0e 0b e7 14 09 5c b6 69 28
-[  16.881]   ! NO PEER to route SESSION_CTL (term_id=322909207332635881, clients=[-5783601125351474452, -7661813344423986543, 4423740938965436208, 2512005781278870585, 740149742957335897, 322909207332635881, -8510020609255156259, 2643335389345100336, -4389352904686552668, -9152420568492357812, 8623247590573170235, 7932109562083218878, -7125088450168673459, -721204968138122137])
-[  17.281] ← CALLING_REQ from 127.0.0.1:58748 term_id=-7125088450168673459 (161B)
-[  17.282]   HEX: 7e a4 a1 00 68 38 0a d5 48 ff e2 ba a5 f4 b4 46 95 be cd e8 f0 bb 06 60 d1 79 87 d1 3c ca 12 a4 88 28 2b 00 21 11 d5 fa 2f 52 86 e5 a0 05 25 a4 8b 45 35 18 8c 19 78 d1 55 70 8d af 8b 15 cf 5f ee b5 53 49 c5 1d 12 76 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 2f 87 eb c4 9d 79 89 12 0e 74 78 c0 cb 79 98 07 9b 5d eb 56 ad 7d d6 4c c8 44 b1 04 be db e2 a8 d1 62 86 86 ec 9c 51 52 38
-[  17.282]   [CALLING] Target offline (dest=0) — queuing + wakeup
-[  17.283]   [WAKEUP] No chime connected — cannot trigger local wakeup
-[  17.283]   [WAKEUP] Falling back to cloud wakeup (DMS HTTP)
-[  17.284]   [MTP] Built CALLING_ACK: doorbell=192.168.1.81:8899 chkval=2828324982
-[  17.285]   [MTP] Built MTP_RES_RESP: link_id=21 relay=192.168.1.245:23000 doorbell_udp=192.168.1.245:23000 chkval=2828324982 (76B)
-[  17.286]   [MTP] Sending CALLING_ACK + MTP_RES_RESP to bridge 127.0.0.1:58748
-[  17.480] ← SESSION_CTL from 127.0.0.1:58748:28800 term_id=322909207332635881 (108B) opt=0x900e743e enc=14
-[  17.481]   HEX: 7e b0 6c 00 59 26 14 b4 ff e7 9d b7 94 ea aa 27 22 a6 b2 e5 3e 74 0e 90 b5 1e 85 98 16 44 3f 58 af b4 0c 4f fa 63 03 7a 60 2e bd 11 f5 76 77 3e 34 a7 b8 3c 66 b7 1b e6 39 c8 af 9a cc d9 db fb c0 4b 3d 2b 30 a0 d4 4b 0e be 39 bd 0e b1 09 bf 7b e5 c6 75 fe ae 4c 05 e3 bc 1f 99 07 89 92 a9 5e 3f 34 0e 0b e7 14 09 5c b6 69 28
-[  17.482]   ! NO PEER to route SESSION_CTL (term_id=322909207332635881, clients=[-5783601125351474452, -7661813344423986543, 4423740938965436208, 2512005781278870585, 740149742957335897, 322909207332635881, -8510020609255156259, 2643335389345100336, -4389352904686552668, -9152420568492357812, 8623247590573170235, 7932109562083218878, -7125088450168673459, -721204968138122137])
-[  17.882] ← CALLING_REQ from 127.0.0.1:58748 term_id=-7125088450168673459 (161B)
-[  17.882]   HEX: 7e a4 a1 00 68 38 0a d5 48 ff e2 ba a5 f4 b4 46 95 be cd e8 f0 bb 06 70 d1 79 87 d1 3c ca 12 a4 88 28 2b 00 21 11 d5 fa 2f 52 86 e5 a0 05 25 a4 8b 45 35 18 8c 19 78 d1 55 70 8d af 8b 15 cf 5f ee b5 53 49 c5 1d 12 76 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 2f 87 eb c4 9d 79 89 12 0e 74 78 c0 cb 79 98 07 9b 5d eb 56 ad 7d d6 4c c8 44 b1 04 be db e2 a8 d1 62 86 86 ec 9c 51 52 38
-[  17.883]   [CALLING] Target offline (dest=0) — queuing + wakeup
-[  17.883]   [WAKEUP] No chime connected — cannot trigger local wakeup
-[  17.883]   [WAKEUP] Falling back to cloud wakeup (DMS HTTP)
-[  17.884]   [MTP] Built CALLING_ACK: doorbell=192.168.1.81:8899 chkval=2828324982
-[  17.884]   [MTP] Built MTP_RES_RESP: link_id=22 relay=192.168.1.245:23000 doorbell_udp=192.168.1.245:23000 chkval=2828324982 (76B)
-[  17.884]   [MTP] Sending CALLING_ACK + MTP_RES_RESP to bridge 127.0.0.1:58748
-[  18.081] ← SESSION_CTL from 127.0.0.1:58748:28800 term_id=322909207332635881 (108B) opt=0xa00e743e enc=14
-[  18.081]   HEX: 7e b0 6c 00 59 26 14 b4 ff e7 9d b7 94 ea aa 27 22 a6 b2 e5 3e 74 0e a0 b5 1e 85 98 16 44 3f 58 af b4 0c 4f fa 63 03 7a 60 2e bd 11 f5 76 77 3e 34 a7 b8 3c 66 b7 1b e6 39 c8 af 9a cc d9 db fb c0 4b 3d 2b 30 a0 d4 4b 0e be 39 bd 0e b1 09 bf 7b e5 c6 75 fe ae 4c 05 e3 bc 1f 99 07 89 92 a9 5e 3f 34 0e 0b e7 14 09 5c b6 69 28
-[  18.082]   ! NO PEER to route SESSION_CTL (term_id=322909207332635881, clients=[-5783601125351474452, -7661813344423986543, 4423740938965436208, 2512005781278870585, 740149742957335897, 322909207332635881, -8510020609255156259, 2643335389345100336, -4389352904686552668, -9152420568492357812, 8623247590573170235, 7932109562083218878, -7125088450168673459, -721204968138122137])
-[  18.481] ← SUBSCRIBE from 127.0.0.1:58748 term_id=740149742957335897 (48B)
-[  18.482]   [DEBUG] SUBSCRIBE predicted_sqnum=8 (base=6)
-[  18.482]   → SUBSCRIBE_RESP to 127.0.0.1:58748 (54B) chkval=8
-[  18.483] ← CALLING_REQ from 127.0.0.1:58748 term_id=-7125088450168673459 (161B)
-[  18.483]   HEX: 7e a4 a1 00 68 38 0a d5 48 ff e2 ba a5 f4 b4 46 95 be cd e8 f0 bb 06 80 d1 79 87 d1 3c ca 12 a4 88 28 2b 00 21 11 d5 fa 2f 52 86 e5 a0 05 25 a4 8b 45 35 18 8c 19 78 d1 55 70 8d af 8b 15 cf 5f ee b5 53 49 c5 1d 12 76 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 2f 87 eb c4 9d 79 89 12 0e 74 78 c0 cb 79 98 07 9b 5d eb 56 ad 7d d6 4c c8 44 b1 04 be db e2 a8 d1 62 86 86 ec 9c 51 52 38
-[  18.484]   [CALLING] Target offline (dest=0) — queuing + wakeup
-[  18.484]   [WAKEUP] No chime connected — cannot trigger local wakeup
-[  18.484]   [WAKEUP] Falling back to cloud wakeup (DMS HTTP)
-[  18.484]   [MTP] Built CALLING_ACK: doorbell=192.168.1.81:8899 chkval=2828324982
-[  18.485]   [MTP] Built MTP_RES_RESP: link_id=23 relay=192.168.1.245:23000 doorbell_udp=192.168.1.245:23000 chkval=2828324982 (76B)
-[  18.485]   [MTP] Sending CALLING_ACK + MTP_RES_RESP to bridge 127.0.0.1:58748
-[  19.081] ← CALLING_REQ from 127.0.0.1:58748 term_id=-7125088450168673459 (161B)
-[  19.083]   HEX: 7e a4 a1 00 68 38 0a d5 48 ff e2 ba a5 f4 b4 46 95 be cd e8 f0 bb 06 90 d1 79 87 d1 3c ca 12 a4 88 28 2b 00 21 11 d5 fa 2f 52 86 e5 a0 05 25 a4 8b 45 35 18 8c 19 78 d1 55 70 8d af 8b 15 cf 5f ee b5 53 49 c5 1d 12 76 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 2f 87 eb c4 9d 79 89 12 0e 74 78 c0 cb 79 98 07 9b 5d eb 56 ad 7d d6 4c c8 44 b1 04 be db e2 a8 d1 62 86 86 ec 9c 51 52 38
-[  19.084]   [CALLING] Target offline (dest=0) — queuing + wakeup
-[  19.084]   [WAKEUP] No chime connected — cannot trigger local wakeup
-[  19.085]   [WAKEUP] Falling back to cloud wakeup (DMS HTTP)
-[  19.085]   [MTP] Built CALLING_ACK: doorbell=192.168.1.81:8899 chkval=2828324982
-[  19.086]   [MTP] Built MTP_RES_RESP: link_id=24 relay=192.168.1.245:23000 doorbell_udp=192.168.1.245:23000 chkval=2828324982 (76B)
-[  19.087]   [MTP] Sending CALLING_ACK + MTP_RES_RESP to bridge 127.0.0.1:58748
-[  19.504] NEW CLIENT: term_id=4608793640746909508 from 127.0.0.1:58748 port=28800
-[  19.506]   HDR: proto=0x7f type=0x01(DETECT_REQ) len=68 opt=0x00010000 enc=1 ack=False resp=False
-[  19.506]   HEX: 7f 01 44 00 26 27 3f 66 4b 9a 06 f6 26 ea 30 31 a3 04 01 48 00 00 01 00 d2 0e 47 1b 66 2e bd 42 fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee 00 00 00 00
-[  19.507] ← DETECT_REQ from 127.0.0.1:58748:28800 client_tid=4608793640746909508 (68B)
-[  19.508] → DETECT_RESP to 127.0.0.1:58748 server_tid=-3195816737827617183 (56B)
-[  19.531] NEW CLIENT: term_id=-6755226637466346603 from 127.0.0.1:58748 port=28800
-[  19.532]   HDR: proto=0x7f type=0x0c(CERTIFY) len=172 opt=0x014de1d6 enc=13 ack=False resp=False
-[  19.532]   HEX: 7f 0c ac 00 fa 1d 55 ad 48 c4 71 84 fa d0 5a fa a0 5a 76 3a d6 e1 4d 01 cf 23 f1 99 4f 6e 5c cc 39 a6 9c 51 5f 84 1d 2a 84 19 03 10 1c 29 15 5a 72 98 09 0e 76 c5 10 74 46 54 bb e8 e5 75 a8 d7 5a 92 7b 53 1b 34 80 53 59 a5 29 f3 11 04 8c 07 00 00 00 00 00 00 00 00 00 00 00 00 01 01 35 2d 96 1f f6 fe 93 04 c9 f7 e4 8a a5 bf 0a c1 f4 eb 11 9a 0b 3d 55 32 d2 ca e9 13 03 05 f0 22 d1 94 96 e8 2b 6c 41 27 57 eb 2f 6e 72 13 8e 1a c6 61 6b bf 26 b5 5b b5 c9 1e 8e 4c c6 50 bf 20 80 80 48 8e 9b ba 54 7f c7 8b 9f 40 29 15
-[  19.532] ← CERTIFY_REQ from 127.0.0.1:58748 term_id=-6755226637466346603 (172B)
-[  19.535]   [DEBUG] CERTIFY plaintext sqnum=1050952172
-[  19.535]   [RELAY] CERTIFY client_key=5f841d2a84190310... session_id=4f6e5ccc39a69c51
-[  19.541]   [RELAY] Derived session_key=09aac4409661ecda... for term_id=-6755226637466346603
-[  19.541]   [ROLE] Identified BRIDGE: term_id=-6755226637466346603 addr=127.0.0.1:58748
-[  19.542]   [RELAY] -> CERTIFY_RESP to 127.0.0.1:58748 (80B)
-[  19.580] NEW CLIENT: term_id=-4624479378966961581 from 127.0.0.1:58748 port=28800
-[  19.581]   HDR: proto=0x7e type=0xa6(INIT_INFO) len=62 opt=0x000efa8c enc=14 ack=False resp=False
-[  19.581]   HEX: 7e a6 3e 00 14 34 6b 9d 57 22 f6 85 ce ef d6 35 cf a4 21 71 8c fa 0e 00 2d 59 0d fc cd ff 7c 7e ef 07 54 de 0f 04 7b 65 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 01 00 00 00 00 0d
-[  19.581] ← INIT_INFO from 127.0.0.1:58748 term_id=-4624479378966961581
-[  19.581]   [ROLE] Identified BRIDGE: term_id=-4624479378966961581 addr=127.0.0.1:58748
-[  19.581]   [DEBUG] Using predicted sqnum=1050952173 for INIT_INFO_RESP
-[  19.581]   → INIT_INFO_RESP to 127.0.0.1:58748 (60B)
-[  19.630] NEW CLIENT: term_id=601408443491263241 from 127.0.0.1:58748 port=28800
-[  19.631]   HDR: proto=0x7e type=0xa0(SUBSCRIBE) len=48 opt=0x000ae992 enc=10 ack=False resp=False
-[  19.631]   HEX: 7e a0 30 00 d0 fd 9e 26 a1 c4 5d 2d 0a 26 23 8e 39 42 8a d9 92 e9 0a 00 f9 42 d6 67 d2 ec 56 31 d7 98 82 bf cb 5a 0c 93 4b cf 69 b8 17 a6 b7 11
-[  19.631] ← SUBSCRIBE from 127.0.0.1:58748 term_id=601408443491263241 (48B)
-[  19.631]   [DEBUG] SUBSCRIBE predicted_sqnum=1050952175 (base=1050952173)
-[  19.631]   → SUBSCRIBE_RESP to 127.0.0.1:58748 (54B) chkval=1050952175
-[  19.780] NEW CLIENT: term_id=8017233253912685021 from 127.0.0.1:58748 port=28800
-[  19.780]   HDR: proto=0x7e type=0xa4(CALLING_REQ) len=161 opt=0x000626fc enc=6 ack=False resp=False
-[  19.780]   HEX: 7e a4 a1 00 03 79 4a df a2 d1 13 ef d9 a2 f7 77 3a 57 c4 1b fc 26 06 00 46 69 78 54 ca 03 88 4b 88 28 2b 00 21 11 d5 fa 2f 52 86 e5 a0 05 25 a4 8b 45 35 18 8c 19 78 d1 55 70 8d af 8b 15 cf 5f ee b5 53 49 c5 1d 12 76 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 78 e3 3b 80 6b 7c 4c 3c 0e 74 78 c0 cb 79 98 07 9b 5d eb 56 ad 7d d6 4c c8 44 b1 04 be db e2 a8 d1 62 86 86 ec 9c 51 52 38
-[  19.781] ← CALLING_REQ from 127.0.0.1:58748 term_id=8017233253912685021 (161B)
-[  19.781]   HEX: 7e a4 a1 00 03 79 4a df a2 d1 13 ef d9 a2 f7 77 3a 57 c4 1b fc 26 06 00 46 69 78 54 ca 03 88 4b 88 28 2b 00 21 11 d5 fa 2f 52 86 e5 a0 05 25 a4 8b 45 35 18 8c 19 78 d1 55 70 8d af 8b 15 cf 5f ee b5 53 49 c5 1d 12 76 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 78 e3 3b 80 6b 7c 4c 3c 0e 74 78 c0 cb 79 98 07 9b 5d eb 56 ad 7d d6 4c c8 44 b1 04 be db e2 a8 d1 62 86 86 ec 9c 51 52 38
-[  19.781]   [CALLING] Target offline (dest=0) — queuing + wakeup
-[  19.781]   [WAKEUP] No chime connected — cannot trigger local wakeup
-[  19.781]   [WAKEUP] Falling back to cloud wakeup (DMS HTTP)
-[  19.781]   [MTP] Built CALLING_ACK: doorbell=192.168.1.81:8899 chkval=2698607978
-[  19.781]   [MTP] Built MTP_RES_RESP: link_id=25 relay=192.168.1.245:23000 doorbell_udp=192.168.1.245:23000 chkval=2698607978 (76B)
-[  19.782]   [MTP] Sending CALLING_ACK + MTP_RES_RESP to bridge 127.0.0.1:58748
-[  20.281] ← CALLING_REQ from 127.0.0.1:58748 term_id=8017233253912685021 (161B)
-[  20.282]   HEX: 7e a4 a1 00 03 79 4a df a2 d1 13 ef d9 a2 f7 77 3a 57 c4 1b fc 26 06 10 46 69 78 54 ca 03 88 4b 88 28 2b 00 21 11 d5 fa 2f 52 86 e5 a0 05 25 a4 8b 45 35 18 8c 19 78 d1 55 70 8d af 8b 15 cf 5f ee b5 53 49 c5 1d 12 76 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 78 e3 3b 80 6b 7c 4c 3c 0e 74 78 c0 cb 79 98 07 9b 5d eb 56 ad 7d d6 4c c8 44 b1 04 be db e2 a8 d1 62 86 86 ec 9c 51 52 38
-[  20.283]   [CALLING] Target offline (dest=0) — queuing + wakeup
-[  20.283]   [WAKEUP] No chime connected — cannot trigger local wakeup
-[  20.283]   [WAKEUP] Falling back to cloud wakeup (DMS HTTP)
-[  20.284]   [MTP] Built CALLING_ACK: doorbell=192.168.1.81:8899 chkval=2698607978
-[  20.285]   [MTP] Built MTP_RES_RESP: link_id=26 relay=192.168.1.245:23000 doorbell_udp=192.168.1.245:23000 chkval=2698607978 (76B)
-[  20.285]   [MTP] Sending CALLING_ACK + MTP_RES_RESP to bridge 127.0.0.1:58748
-[  20.483] ← SUBSCRIBE from 127.0.0.1:58748 term_id=740149742957335897 (48B)
-[  20.483]   [DEBUG] SUBSCRIBE predicted_sqnum=1050952177 (base=1050952175)
-[  20.484]   → SUBSCRIBE_RESP to 127.0.0.1:58748 (54B) chkval=1050952177
-[  20.881] ← CALLING_REQ from 127.0.0.1:58748 term_id=8017233253912685021 (161B)
-[  20.882]   HEX: 7e a4 a1 00 03 79 4a df a2 d1 13 ef d9 a2 f7 77 3a 57 c4 1b fc 26 06 20 46 69 78 54 ca 03 88 4b 88 28 2b 00 21 11 d5 fa 2f 52 86 e5 a0 05 25 a4 8b 45 35 18 8c 19 78 d1 55 70 8d af 8b 15 cf 5f ee b5 53 49 c5 1d 12 76 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 78 e3 3b 80 6b 7c 4c 3c 0e 74 78 c0 cb 79 98 07 9b 5d eb 56 ad 7d d6 4c c8 44 b1 04 be db e2 a8 d1 62 86 86 ec 9c 51 52 38
-[  20.882]   [CALLING] Target offline (dest=0) — queuing + wakeup
-[  20.882]   [WAKEUP] No chime connected — cannot trigger local wakeup
-[  20.882]   [WAKEUP] Falling back to cloud wakeup (DMS HTTP)
-[  20.883]   [MTP] Built CALLING_ACK: doorbell=192.168.1.81:8899 chkval=2698607978
-[  20.884]   [MTP] Built MTP_RES_RESP: link_id=27 relay=192.168.1.245:23000 doorbell_udp=192.168.1.245:23000 chkval=2698607978 (76B)
-[  20.884]   [MTP] Sending CALLING_ACK + MTP_RES_RESP to bridge 127.0.0.1:58748
-[  21.483] ← SUBSCRIBE from 127.0.0.1:58748 term_id=601408443491263241 (48B)
-[  21.484]   [DEBUG] SUBSCRIBE predicted_sqnum=1050952179 (base=1050952177)
-[  21.484]   → SUBSCRIBE_RESP to 127.0.0.1:58748 (54B) chkval=1050952179
-[  21.485] ← CALLING_REQ from 127.0.0.1:58748 term_id=8017233253912685021 (161B)
-[  21.486]   HEX: 7e a4 a1 00 03 79 4a df a2 d1 13 ef d9 a2 f7 77 3a 57 c4 1b fc 26 06 30 46 69 78 54 ca 03 88 4b 88 28 2b 00 21 11 d5 fa 2f 52 86 e5 a0 05 25 a4 8b 45 35 18 8c 19 78 d1 55 70 8d af 8b 15 cf 5f ee b5 53 49 c5 1d 12 76 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 78 e3 3b 80 6b 7c 4c 3c 0e 74 78 c0 cb 79 98 07 9b 5d eb 56 ad 7d d6 4c c8 44 b1 04 be db e2 a8 d1 62 86 86 ec 9c 51 52 38
-[  21.486]   [CALLING] Target offline (dest=0) — queuing + wakeup
-[  21.486]   [WAKEUP] No chime connected — cannot trigger local wakeup
-[  21.487]   [WAKEUP] Falling back to cloud wakeup (DMS HTTP)
-[  21.488]   [MTP] Built CALLING_ACK: doorbell=192.168.1.81:8899 chkval=2698607978
-[  21.488]   [MTP] Built MTP_RES_RESP: link_id=28 relay=192.168.1.245:23000 doorbell_udp=192.168.1.245:23000 chkval=2698607978 (76B)
-[  21.489]   [MTP] Sending CALLING_ACK + MTP_RES_RESP to bridge 127.0.0.1:58748
-[  22.083] ← CALLING_REQ from 127.0.0.1:58748 term_id=8017233253912685021 (161B)
-[  22.084]   HEX: 7e a4 a1 00 03 79 4a df a2 d1 13 ef d9 a2 f7 77 3a 57 c4 1b fc 26 06 40 46 69 78 54 ca 03 88 4b 88 28 2b 00 21 11 d5 fa 2f 52 86 e5 a0 05 25 a4 8b 45 35 18 8c 19 78 d1 55 70 8d af 8b 15 cf 5f ee b5 53 49 c5 1d 12 76 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 78 e3 3b 80 6b 7c 4c 3c 0e 74 78 c0 cb 79 98 07 9b 5d eb 56 ad 7d d6 4c c8 44 b1 04 be db e2 a8 d1 62 86 86 ec 9c 51 52 38
-[  22.085]   [CALLING] Target offline (dest=0) — queuing + wakeup
-[  22.085]   [WAKEUP] No chime connected — cannot trigger local wakeup
-[  22.085]   [WAKEUP] Falling back to cloud wakeup (DMS HTTP)
-[  22.086]   [MTP] Built CALLING_ACK: doorbell=192.168.1.81:8899 chkval=2698607978
-[  22.087]   [MTP] Built MTP_RES_RESP: link_id=29 relay=192.168.1.245:23000 doorbell_udp=192.168.1.245:23000 chkval=2698607978 (76B)
-[  22.087]   [MTP] Sending CALLING_ACK + MTP_RES_RESP to bridge 127.0.0.1:58748
-[  22.581] NEW CLIENT: term_id=770846421005870422 from 127.0.0.1:58748 port=51701
-[  22.582]   HDR: proto=0x7f type=0x15(LIST_REQ) len=40 opt=0x00010000 enc=1 ack=False resp=False
-[  22.582]   HEX: 7f 15 28 00 bc 5b ff 83 2a 8c fe 32 bc 96 f0 d4 c2 12 f9 8c 00 00 01 00 b4 03 bc b0 4c 02 f4 14 1b 54 3c 61 0e 1b ce 3b
-[  22.582] ← LIST_REQ from 127.0.0.1:58748 term_id=770846421005870422 (40B)
-[  22.582] → LIST_RESP to 127.0.0.1:58748 (local, servers: 127.0.0.1, 68B)
-[  22.584] NEW CLIENT: term_id=-3072467698623288647 from 127.0.0.1:58748 port=28800
-[  22.584]   HDR: proto=0x7f type=0x01(DETECT_REQ) len=68 opt=0x00010000 enc=1 ack=False resp=False
-[  22.584]   HEX: 7f 01 44 00 0c 25 ac ba 2b 0d 70 ac 0c e8 a3 ed c3 93 77 12 00 00 01 00 17 2b 9e 60 d4 07 88 85 fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee 00 00 00 00
-[  22.584] ← DETECT_REQ from 127.0.0.1:58748:28800 client_tid=-3072467698623288647 (68B)
-[  22.584] → DETECT_RESP to 127.0.0.1:58748 server_tid=-3195816737827617183 (56B)
-[  22.682] ← CALLING_REQ from 127.0.0.1:58748 term_id=8017233253912685021 (161B)
-[  22.682]   HEX: 7e a4 a1 00 03 79 4a df a2 d1 13 ef d9 a2 f7 77 3a 57 c4 1b fc 26 06 50 46 69 78 54 ca 03 88 4b 88 28 2b 00 21 11 d5 fa 2f 52 86 e5 a0 05 25 a4 8b 45 35 18 8c 19 78 d1 55 70 8d af 8b 15 cf 5f ee b5 53 49 c5 1d 12 76 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 78 e3 3b 80 6b 7c 4c 3c 0e 74 78 c0 cb 79 98 07 9b 5d eb 56 ad 7d d6 4c c8 44 b1 04 be db e2 a8 d1 62 86 86 ec 9c 51 52 38
-[  22.682]   [CALLING] Target offline (dest=0) — queuing + wakeup
-[  22.682]   [WAKEUP] No chime connected — cannot trigger local wakeup
-[  22.682]   [WAKEUP] Falling back to cloud wakeup (DMS HTTP)
-[  22.682]   [MTP] Built CALLING_ACK: doorbell=192.168.1.81:8899 chkval=2698607978
-[  22.682]   [MTP] Built MTP_RES_RESP: link_id=30 relay=192.168.1.245:23000 doorbell_udp=192.168.1.245:23000 chkval=2698607978 (76B)
-[  22.683]   [MTP] Sending CALLING_ACK + MTP_RES_RESP to bridge 127.0.0.1:58748
-[  23.281] ← CALLING_REQ from 127.0.0.1:58748 term_id=8017233253912685021 (161B)
-[  23.283]   HEX: 7e a4 a1 00 03 79 4a df a2 d1 13 ef d9 a2 f7 77 3a 57 c4 1b fc 26 06 60 46 69 78 54 ca 03 88 4b 88 28 2b 00 21 11 d5 fa 2f 52 86 e5 a0 05 25 a4 8b 45 35 18 8c 19 78 d1 55 70 8d af 8b 15 cf 5f ee b5 53 49 c5 1d 12 76 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 78 e3 3b 80 6b 7c 4c 3c 0e 74 78 c0 cb 79 98 07 9b 5d eb 56 ad 7d d6 4c c8 44 b1 04 be db e2 a8 d1 62 86 86 ec 9c 51 52 38
-[  23.283]   [CALLING] Target offline (dest=0) — queuing + wakeup
-[  23.284]   [WAKEUP] No chime connected — cannot trigger local wakeup
-[  23.284]   [WAKEUP] Falling back to cloud wakeup (DMS HTTP)
-[  23.285]   [MTP] Built CALLING_ACK: doorbell=192.168.1.81:8899 chkval=2698607978
-[  23.286]   [MTP] Built MTP_RES_RESP: link_id=31 relay=192.168.1.245:23000 doorbell_udp=192.168.1.245:23000 chkval=2698607978 (76B)
-[  23.286]   [MTP] Sending CALLING_ACK + MTP_RES_RESP to bridge 127.0.0.1:58748
-[  23.479] ← SUBSCRIBE from 127.0.0.1:58748 term_id=601408443491263241 (48B)
-[  23.480]   [DEBUG] SUBSCRIBE predicted_sqnum=1050952181 (base=1050952179)
-[  23.480]   → SUBSCRIBE_RESP to 127.0.0.1:58748 (54B) chkval=1050952181
-[  23.584] NEW CLIENT: term_id=7684692705137910353 from 127.0.0.1:58748 port=28800
-[  23.584]   HDR: proto=0x7f type=0x01(DETECT_REQ) len=68 opt=0x00010000 enc=1 ack=False resp=False
-[  23.584]   HEX: 7f 01 44 00 30 46 4c 0f 5c 67 f7 0c 30 8b 43 58 b4 f9 f0 b2 00 00 01 00 5b 4c 77 b0 7a 7a 46 23 fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee 00 00 00 00
-[  23.585] ← DETECT_REQ from 127.0.0.1:58748:28800 client_tid=7684692705137910353 (68B)
-[  23.585] → DETECT_RESP to 127.0.0.1:58748 server_tid=-3195816737827617183 (56B)
-[  23.884] ← CALLING_REQ from 127.0.0.1:58748 term_id=8017233253912685021 (161B)
-[  23.885]   HEX: 7e a4 a1 00 03 79 4a df a2 d1 13 ef d9 a2 f7 77 3a 57 c4 1b fc 26 06 70 46 69 78 54 ca 03 88 4b 88 28 2b 00 21 11 d5 fa 2f 52 86 e5 a0 05 25 a4 8b 45 35 18 8c 19 78 d1 55 70 8d af 8b 15 cf 5f ee b5 53 49 c5 1d 12 76 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 78 e3 3b 80 6b 7c 4c 3c 0e 74 78 c0 cb 79 98 07 9b 5d eb 56 ad 7d d6 4c c8 44 b1 04 be db e2 a8 d1 62 86 86 ec 9c 51 52 38
-[  23.886]   [CALLING] Target offline (dest=0) — queuing + wakeup
-[  23.887]   [WAKEUP] No chime connected — cannot trigger local wakeup
-[  23.887]   [WAKEUP] Falling back to cloud wakeup (DMS HTTP)
-[  23.888]   [MTP] Built CALLING_ACK: doorbell=192.168.1.81:8899 chkval=2698607978
-[  23.888]   [MTP] Built MTP_RES_RESP: link_id=32 relay=192.168.1.245:23000 doorbell_udp=192.168.1.245:23000 chkval=2698607978 (76B)
-[  23.888]   [MTP] Sending CALLING_ACK + MTP_RES_RESP to bridge 127.0.0.1:58748
-[  24.482] ← CALLING_REQ from 127.0.0.1:58748 term_id=8017233253912685021 (161B)
-[  24.483]   HEX: 7e a4 a1 00 03 79 4a df a2 d1 13 ef d9 a2 f7 77 3a 57 c4 1b fc 26 06 80 46 69 78 54 ca 03 88 4b 88 28 2b 00 21 11 d5 fa 2f 52 86 e5 a0 05 25 a4 8b 45 35 18 8c 19 78 d1 55 70 8d af 8b 15 cf 5f ee b5 53 49 c5 1d 12 76 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 78 e3 3b 80 6b 7c 4c 3c 0e 74 78 c0 cb 79 98 07 9b 5d eb 56 ad 7d d6 4c c8 44 b1 04 be db e2 a8 d1 62 86 86 ec 9c 51 52 38
-[  24.483]   [CALLING] Target offline (dest=0) — queuing + wakeup
-[  24.483]   [WAKEUP] No chime connected — cannot trigger local wakeup
-[  24.484]   [WAKEUP] Falling back to cloud wakeup (DMS HTTP)
-[  24.484]   [MTP] Built CALLING_ACK: doorbell=192.168.1.81:8899 chkval=2698607978
-[  24.485]   [MTP] Built MTP_RES_RESP: link_id=33 relay=192.168.1.245:23000 doorbell_udp=192.168.1.245:23000 chkval=2698607978 (76B)
-[  24.485]   [MTP] Sending CALLING_ACK + MTP_RES_RESP to bridge 127.0.0.1:58748
-[  24.584] NEW CLIENT: term_id=8795172575909376914 from 127.0.0.1:58748 port=28800
-[  24.585]   HDR: proto=0x7f type=0x01(DETECT_REQ) len=68 opt=0x00010000 enc=1 ack=False resp=False
-[  24.586]   HEX: 7f 01 44 00 ed 6f c2 28 7b 33 f8 02 ed a2 cd 7f 93 ad ff bc 00 00 01 00 f8 f1 ea fc c1 cf c6 10 fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee 00 00 00 00
-[  24.586] ← DETECT_REQ from 127.0.0.1:58748:28800 client_tid=8795172575909376914 (68B)
-[  24.587] → DETECT_RESP to 127.0.0.1:58748 server_tid=-3195816737827617183 (56B)
-[  25.082] ← CALLING_REQ from 127.0.0.1:58748 term_id=8017233253912685021 (161B)
-[  25.083]   HEX: 7e a4 a1 00 03 79 4a df a2 d1 13 ef d9 a2 f7 77 3a 57 c4 1b fc 26 06 90 46 69 78 54 ca 03 88 4b 88 28 2b 00 21 11 d5 fa 2f 52 86 e5 a0 05 25 a4 8b 45 35 18 8c 19 78 d1 55 70 8d af 8b 15 cf 5f ee b5 53 49 c5 1d 12 76 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 55 70 8d af 8b 15 cf 5f 78 e3 3b 80 6b 7c 4c 3c 0e 74 78 c0 cb 79 98 07 9b 5d eb 56 ad 7d d6 4c c8 44 b1 04 be db e2 a8 d1 62 86 86 ec 9c 51 52 38
-[  25.084]   [CALLING] Target offline (dest=0) — queuing + wakeup
-[  25.084]   [WAKEUP] No chime connected — cannot trigger local wakeup
-[  25.084]   [WAKEUP] Falling back to cloud wakeup (DMS HTTP)
-[  25.085]   [MTP] Built CALLING_ACK: doorbell=192.168.1.81:8899 chkval=2698607978
-[  25.086]   [MTP] Built MTP_RES_RESP: link_id=34 relay=192.168.1.245:23000 doorbell_udp=192.168.1.245:23000 chkval=2698607978 (76B)
-[  25.086]   [MTP] Sending CALLING_ACK + MTP_RES_RESP to bridge 127.0.0.1:58748
-[  25.483] ← SUBSCRIBE from 127.0.0.1:58748 term_id=601408443491263241 (48B)
-[  25.484]   [DEBUG] SUBSCRIBE predicted_sqnum=1050952183 (base=1050952181)
-[  25.485]   → SUBSCRIBE_RESP to 127.0.0.1:58748 (54B) chkval=1050952183
-[  25.734] NEW CLIENT: term_id=-7206587907664504889 from 127.0.0.1:58748 port=28800
-[  25.735]   HDR: proto=0x7e type=0xbc(0xBC) len=56 opt=0x0006e006 enc=6 ack=False resp=False
-[  25.735]   HEX: 7e bc 38 00 ce 13 f9 89 02 7e 4f fc 14 c8 44 21 9a f8 98 08 06 e0 06 00 59 69 34 1f 93 23 1f bd 0d 71 02 30 cc 0e c7 1c 15 be 4f 0a 90 c6 db 3e 55 70 8d af 8b 15 cf 5f
-[  25.736] ← 0xBC from 127.0.0.1:58748:28800 term_id=-7206587907664504889 (56B) opt=0x0006e006 enc=6
-[  25.736]   HEX: 7e bc 38 00 ce 13 f9 89 02 7e 4f fc 14 c8 44 21 9a f8 98 08 06 e0 06 00 59 69 34 1f 93 23 1f bd 0d 71 02 30 cc 0e c7 1c 15 be 4f 0a 90 c6 db 3e 55 70 8d af 8b 15 cf 5f
-[  25.737]   ! NO PEER to route 0xBC (term_id=-7206587907664504889, clients=[-5783601125351474452, -7661813344423986543, 4423740938965436208, 2512005781278870585, 740149742957335897, 322909207332635881, -8510020609255156259, 2643335389345100336, -4389352904686552668, -9152420568492357812, 8623247590573170235, 7932109562083218878, -7125088450168673459, -721204968138122137, 4608793640746909508, -6755226637466346603, -4624479378966961581, 601408443491263241, 8017233253912685021, 770846421005870422, -3072467698623288647, 7684692705137910353, 8795172575909376914, -7206587907664504889])
-[  25.738] NEW CLIENT: term_id=1467192735723309108 from 127.0.0.1:58748 port=28800
-[  25.739]   HDR: proto=0x7e type=0xd8(0xD8) len=54 opt=0x0006624a enc=6 ack=False resp=False
-[  25.739]   HEX: 7e d8 36 00 c4 0b 56 d5 fb 74 4e 70 1e d0 eb 7d 63 f2 99 84 4a 62 06 00 88 28 2b 00 21 11 d5 fa 2f 52 86 e5 a0 05 25 a4 b1 d3 97 77 4e 4d b6 72 00 00 05 00 00 00
-[  25.740] ← 0xD8 from 127.0.0.1:58748:28800 term_id=1467192735723309108 (54B) opt=0x0006624a enc=6
-[  25.740]   HEX: 7e d8 36 00 c4 0b 56 d5 fb 74 4e 70 1e d0 eb 7d 63 f2 99 84 4a 62 06 00 88 28 2b 00 21 11 d5 fa 2f 52 86 e5 a0 05 25 a4 b1 d3 97 77 4e 4d b6 72 00 00 05 00 00 00
-[  25.741]   ! NO PEER to route 0xD8 (term_id=1467192735723309108, clients=[-5783601125351474452, -7661813344423986543, 4423740938965436208, 2512005781278870585, 740149742957335897, 322909207332635881, -8510020609255156259, 2643335389345100336, -4389352904686552668, -9152420568492357812, 8623247590573170235, 7932109562083218878, -7125088450168673459, -721204968138122137, 4608793640746909508, -6755226637466346603, -4624479378966961581, 601408443491263241, 8017233253912685021, 770846421005870422, -3072467698623288647, 7684692705137910353, 8795172575909376914, -7206587907664504889, 1467192735723309108])
-[  30.025] --- STATUS: 25 clients ---
-[  30.026]   term_id=-5783601125351474452 addr=127.0.0.1:52657 role=unknown cert=False in=1 out=0 last_seen=28s ago
-[  30.026]   term_id=-7661813344423986543 addr=127.0.0.1:52657 role=unknown cert=False in=1 out=0 last_seen=28s ago
-[  30.027]   term_id=4423740938965436208 addr=127.0.0.1:52657 role=bridge cert=True in=1 out=0 last_seen=27s ago
-[  30.027]   term_id=2512005781278870585 addr=127.0.0.1:52657 role=bridge cert=True in=1 out=0 last_seen=27s ago
-[  30.027]   term_id=740149742957335897 addr=127.0.0.1:58748 role=unknown cert=False in=10 out=0 last_seen=10s ago
-[  30.028]   term_id=322909207332635881 addr=127.0.0.1:58748 role=unknown cert=False in=27 out=0 last_seen=12s ago
-[  30.028]   term_id=-8510020609255156259 addr=127.0.0.1:52657 role=unknown cert=False in=1 out=0 last_seen=27s ago
-[  30.028]   term_id=2643335389345100336 addr=127.0.0.1:52657 role=unknown cert=False in=1 out=0 last_seen=26s ago
-[  30.029]   term_id=-4389352904686552668 addr=127.0.0.1:52657 role=unknown cert=False in=1 out=0 last_seen=25s ago
-[  30.029]   term_id=-9152420568492357812 addr=127.0.0.1:58748 role=unknown cert=False in=14 out=0 last_seen=17s ago
-[  30.029]   term_id=8623247590573170235 addr=127.0.0.1:52657 role=unknown cert=False in=1 out=0 last_seen=23s ago
-[  30.030]   term_id=7932109562083218878 addr=127.0.0.1:52657 role=unknown cert=False in=1 out=0 last_seen=21s ago
-[  30.030]   term_id=-7125088450168673459 addr=127.0.0.1:58748 role=unknown cert=False in=10 out=0 last_seen=11s ago
-[  30.031]   term_id=-721204968138122137 addr=127.0.0.1:58748 role=unknown cert=False in=1 out=0 last_seen=16s ago
-[  30.031]   term_id=4608793640746909508 addr=127.0.0.1:58748 role=unknown cert=False in=1 out=0 last_seen=11s ago
-[  30.032]   term_id=-6755226637466346603 addr=127.0.0.1:58748 role=bridge cert=True in=1 out=0 last_seen=10s ago
-[  30.032]   term_id=-4624479378966961581 addr=127.0.0.1:58748 role=bridge cert=True in=1 out=0 last_seen=10s ago
-[  30.033]   term_id=601408443491263241 addr=127.0.0.1:58748 role=unknown cert=False in=4 out=0 last_seen=5s ago
-[  30.033]   term_id=8017233253912685021 addr=127.0.0.1:58748 role=unknown cert=False in=10 out=0 last_seen=5s ago
-[  30.033]   term_id=770846421005870422 addr=127.0.0.1:58748 role=unknown cert=False in=1 out=0 last_seen=7s ago
-[  30.034]   term_id=-3072467698623288647 addr=127.0.0.1:58748 role=unknown cert=False in=1 out=0 last_seen=7s ago
-[  30.034]   term_id=7684692705137910353 addr=127.0.0.1:58748 role=unknown cert=False in=1 out=0 last_seen=6s ago
-[  30.035]   term_id=8795172575909376914 addr=127.0.0.1:58748 role=unknown cert=False in=1 out=0 last_seen=5s ago
-[  30.035]   term_id=-7206587907664504889 addr=127.0.0.1:58748 role=unknown cert=False in=1 out=0 last_seen=4s ago
-[  30.035]   term_id=1467192735723309108 addr=127.0.0.1:58748 role=unknown cert=False in=1 out=0 last_seen=4s ago
+[   0.001]   Listening on UDP :8000
+[   0.001]   Listening on UDP :51701 (list)
+[   0.001] 
+[   0.002] Ready — waiting for connections...
+[   0.002] ============================================================
+[   0.003] [KEEPALIVE] Loop started (interval=25s, max_misses=3)
+[   0.004]   [MTP] Listening on TCP :23000 (MTP relay)
+[   7.618] NEW CLIENT: term_id=-5783601125351474452 from 127.0.0.1:43805 port=51701
+[   7.621]   HDR: proto=0x7f type=0x15(LIST_REQ) len=40 opt=0x00010000 enc=1 ack=False resp=False
+[   7.621]   HEX: 7f 15 28 00 40 b2 1c ed c2 af 2c e4 40 7f 13 ba 2a 31 2b 5a 00 00 01 00 b4 03 bc b0 4c 02 f4 14 1b 54 3c 61 0e 1b ce 3b
+[   7.625] ← LIST_REQ from 127.0.0.1:43805 term_id=-5783601125351474452 (40B)
+[   7.628] → LIST_RESP to 127.0.0.1:43805 (local, servers: 127.0.0.1, 68B)
+[   7.631] NEW CLIENT: term_id=8582114378401601852 from 127.0.0.1:43805 port=28800
+[   7.631]   HDR: proto=0x7f type=0x01(DETECT_REQ) len=68 opt=0x00010000 enc=1 ack=False resp=False
+[   7.632]   HEX: 7f 01 44 00 e5 4a 11 70 5e df 0c 8b e5 87 1e 27 b6 41 0b 35 00 00 01 00 b6 14 21 33 35 ad 16 2d fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee 00 00 00 00
+[   7.632] ← DETECT_REQ from 127.0.0.1:43805:28800 client_tid=8582114378401601852 (68B)
+[   7.632] → DETECT_RESP to 127.0.0.1:43805 server_tid=-3195816737827617183 (56B)
+[   7.667] NEW CLIENT: term_id=8667459919827044481 from 127.0.0.1:43805 port=28800
+[   7.667]   HDR: proto=0x7f type=0x0c(CERTIFY) len=164 opt=0x014d305c enc=13 ack=False resp=False
+[   7.667]   HEX: 7f 0c a4 00 8a 51 12 f1 f8 b1 05 2a 8a 9c 1d a6 10 2f 02 94 5c 30 4d 01 29 94 ad 3d 33 e0 fe 7c 7a 57 7f 62 4b cc 20 df 69 f1 f4 10 9c 61 0c 71 42 15 07 31 c5 59 22 e5 ed dd 10 c3 cb 00 b0 8a 08 04 00 00 74 d7 a6 07 00 00 00 00 00 00 00 00 00 00 00 00 01 01 6b e4 72 f3 f5 47 96 b9 b5 f7 1f b3 d6 7c f4 0c 50 2d 94 13 2f f8 95 ba fd 28 ea 32 a9 ea f3 ae b5 d7 77 82 fd a4 c2 4d b8 29 46 8c 2d 91 8c c7 7d 6c 5c dd e8 a1 1b 9e f0 2d d3 07 e6 63 9c 41 50 1a 87 f8 e4 1f ed d7 48 22 d8 1a 71 fc
+[   7.667] ← CERTIFY_REQ from 127.0.0.1:43805 term_id=8667459919827044481 (164B)
+[   7.667]   [DEBUG] CERTIFY plaintext sqnum=227601402
+[   7.667]   [DEBUG] Raw payload (first 48B): 2994ad3d33e0fe7c7a577f624bcc20df69f1f4109c610c7142150731c55922e5eddd10c3cb00b08a0804000074d7a607 encrypt_mode=1
+[   7.667]   [DEBUG] Per-frame key: 7f0ca4005c304d00
+[   7.667]   [DEBUG] Decrypted payload (first 48B): 01000000c495f4ea80b767e38f1a81c6288929b352e7791e5d608423fb3803123a9c62d74921dca50b1f8c5f9caa6fe3
+[   7.668]   [DEBUG] hash_checksum=0xeaf495c4 enc_key=80b767e38f1a81c6288929b352e7791e5d608423fb3803123a9c62d74921dca5
+[   7.668]   [RELAY] Certify key: e7bcaca9a5fa7a8c83a9a5362b5458c0
+[   7.668]   [RELAY] Session key VERIFIED! hash=0xeaf495c4
+[   7.668]   [RELAY] CERTIFY session_key=ef628fe4813a75c3... session_id=01000000c495f4ea
+[   7.669]   [RELAY] Cached REAL session_key=ef628fe4813a75c3... for term_id=8667459919827044481
+[   7.670]   [ROLE] Identified BRIDGE: term_id=8667459919827044481 addr=127.0.0.1:43805
+[   7.670]   [RELAY] -> CERTIFY_RESP to 127.0.0.1:43805 (80B)
+[   7.717] NEW CLIENT: term_id=-3857518620610282815 from 127.0.0.1:43805 port=28800
+[   7.717]   HDR: proto=0x7e type=0xa6(INIT_INFO) len=62 opt=0x000ed2fe enc=14 ack=False resp=False
+[   7.718]   HEX: 7e a6 3e 00 45 84 07 91 90 ca 2c bc 05 0e 22 1b 2c 78 4a 8c fe d2 0e 00 0b d6 c8 32 92 dc c8 82 70 28 2b 2c d4 51 91 0f 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 01 00 00 00 00 0d
+[   7.718] ← INIT_INFO from 127.0.0.1:43805 term_id=-3857518620610282815
+[   7.718]   [ROLE] Identified BRIDGE: term_id=-3857518620610282815 addr=127.0.0.1:43805
+[   7.718]   [DEBUG] Using predicted sqnum=227601403 for INIT_INFO_RESP
+[   7.718]   → INIT_INFO_RESP to 127.0.0.1:43805 (60B)
+[   7.767] NEW CLIENT: term_id=-2846480229750905863 from 127.0.0.1:43805 port=28800
+[   7.767]   HDR: proto=0x7e type=0xa0(SUBSCRIBE) len=48 opt=0x000a477e enc=10 ack=False resp=False
+[   7.767]   HEX: 7e a0 30 00 10 ee 22 af 7f 90 22 15 50 64 07 25 c3 22 44 25 7e 47 0a 00 0a 59 ba 96 32 55 e8 d0 6b c0 8d 44 cb be 99 c0 d8 2f 3e f0 62 3a 63 87
+[   7.767] ← SUBSCRIBE from 127.0.0.1:43805 term_id=-2846480229750905863 (48B)
+[   7.767]   [DEBUG] SUBSCRIBE predicted_sqnum=227601405 (base=227601403)
+[   7.768]   → SUBSCRIBE_RESP to 127.0.0.1:43805 (54B) chkval=227601405
+[   7.817] NEW CLIENT: term_id=791681027062638505 from 127.0.0.1:43805 port=28800
+[   7.817]   HDR: proto=0x7e type=0xb0(SESSION_CTL) len=108 opt=0x000ed9e4 enc=14 ack=False resp=False
+[   7.818]   HEX: 7e b0 6c 00 d7 9a f7 87 77 a7 6c 5a 97 10 d2 0d cb 15 0a 6a e4 d9 0e 00 a7 4b b6 be 2e 3a c3 7d 4d 7c 45 32 fa e4 26 01 e8 8e b1 9a 33 c6 40 cd b1 b8 a5 fb 91 06 c8 34 a0 9f 07 2f 33 cc 7a e5 b1 4a 6e da 42 e2 cf 06 ae e4 77 2b bd ca 0f e9 c8 60 bf 74 73 b2 99 c7 2d b4 f5 c1 1b 69 36 0d 38 8a b1 9a fc 96 17 0d 5c b6 69 28
+[   7.818] ← SESSION_CTL from 127.0.0.1:43805:28800 term_id=791681027062638505 (108B) opt=0x000ed9e4 enc=14
+[   7.818]   HEX: 7e b0 6c 00 d7 9a f7 87 77 a7 6c 5a 97 10 d2 0d cb 15 0a 6a e4 d9 0e 00 a7 4b b6 be 2e 3a c3 7d 4d 7c 45 32 fa e4 26 01 e8 8e b1 9a 33 c6 40 cd b1 b8 a5 fb 91 06 c8 34 a0 9f 07 2f 33 cc 7a e5 b1 4a 6e da 42 e2 cf 06 ae e4 77 2b bd ca 0f e9 c8 60 bf 74 73 b2 99 c7 2d b4 f5 c1 1b 69 36 0d 38 8a b1 9a fc 96 17 0d 5c b6 69 28
+[   7.818]   ! NO PEER to route SESSION_CTL (term_id=791681027062638505, clients=[-5783601125351474452, 8582114378401601852, 8667459919827044481, -3857518620610282815, -2846480229750905863, 791681027062638505])
+[   8.218] ← SESSION_CTL from 127.0.0.1:43805:28800 term_id=791681027062638505 (108B) opt=0x100ed9e4 enc=14
+[   8.218]   HEX: 7e b0 6c 00 d7 9a f7 87 77 a7 6c 5a 97 10 d2 0d cb 15 0a 6a e4 d9 0e 10 a7 4b b6 be 2e 3a c3 7d 4d 7c 45 32 fa e4 26 01 e8 8e b1 9a 33 c6 40 cd b1 b8 a5 fb 91 06 c8 34 a0 9f 07 2f 33 cc 7a e5 b1 4a 6e da 42 e2 cf 06 ae e4 77 2b bd ca 0f e9 c8 60 bf 74 73 b2 99 c7 2d b4 f5 c1 1b 69 36 0d 38 8a b1 9a fc 96 17 0d 5c b6 69 28
+[   8.219]   ! NO PEER to route SESSION_CTL (term_id=791681027062638505, clients=[-5783601125351474452, 8582114378401601852, 8667459919827044481, -3857518620610282815, -2846480229750905863, 791681027062638505])
+[   8.632] NEW CLIENT: term_id=944066791368522163 from 127.0.0.1:43805 port=28800
+[   8.633]   HDR: proto=0x7f type=0x01(DETECT_REQ) len=68 opt=0x00010000 enc=1 ack=False resp=False
+[   8.634]   HEX: 7f 01 44 00 00 b0 eb 0f 8b c0 c6 eb 00 7d e4 58 63 5e c1 55 00 00 01 00 b3 58 d8 01 c1 e8 c5 4c fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee 00 00 00 00
+[   8.634] ← DETECT_REQ from 127.0.0.1:43805:28800 client_tid=944066791368522163 (68B)
+[   8.635] → DETECT_RESP to 127.0.0.1:43805 server_tid=-3195816737827617183 (56B)
+[   8.819] ← SESSION_CTL from 127.0.0.1:43805:28800 term_id=791681027062638505 (108B) opt=0x200ed9e4 enc=14
+[   8.820]   HEX: 7e b0 6c 00 d7 9a f7 87 77 a7 6c 5a 97 10 d2 0d cb 15 0a 6a e4 d9 0e 20 a7 4b b6 be 2e 3a c3 7d 4d 7c 45 32 fa e4 26 01 e8 8e b1 9a 33 c6 40 cd b1 b8 a5 fb 91 06 c8 34 a0 9f 07 2f 33 cc 7a e5 b1 4a 6e da 42 e2 cf 06 ae e4 77 2b bd ca 0f e9 c8 60 bf 74 73 b2 99 c7 2d b4 f5 c1 1b 69 36 0d 38 8a b1 9a fc 96 17 0d 5c b6 69 28
+[   8.821]   ! NO PEER to route SESSION_CTL (term_id=791681027062638505, clients=[-5783601125351474452, 8582114378401601852, 8667459919827044481, -3857518620610282815, -2846480229750905863, 791681027062638505, 944066791368522163])
+[   9.418] ← SESSION_CTL from 127.0.0.1:43805:28800 term_id=791681027062638505 (108B) opt=0x300ed9e4 enc=14
+[   9.419]   HEX: 7e b0 6c 00 d7 9a f7 87 77 a7 6c 5a 97 10 d2 0d cb 15 0a 6a e4 d9 0e 30 a7 4b b6 be 2e 3a c3 7d 4d 7c 45 32 fa e4 26 01 e8 8e b1 9a 33 c6 40 cd b1 b8 a5 fb 91 06 c8 34 a0 9f 07 2f 33 cc 7a e5 b1 4a 6e da 42 e2 cf 06 ae e4 77 2b bd ca 0f e9 c8 60 bf 74 73 b2 99 c7 2d b4 f5 c1 1b 69 36 0d 38 8a b1 9a fc 96 17 0d 5c b6 69 28
+[   9.420]   ! NO PEER to route SESSION_CTL (term_id=791681027062638505, clients=[-5783601125351474452, 8582114378401601852, 8667459919827044481, -3857518620610282815, -2846480229750905863, 791681027062638505, 944066791368522163])
+[   9.618] ← SUBSCRIBE from 127.0.0.1:43805 term_id=-2846480229750905863 (48B)
+[   9.619]   [DEBUG] SUBSCRIBE predicted_sqnum=227601407 (base=227601405)
+[   9.620]   → SUBSCRIBE_RESP to 127.0.0.1:43805 (54B) chkval=227601407
+[   9.633] NEW CLIENT: term_id=2141306497033684867 from 127.0.0.1:43805 port=28800
+[   9.633]   HDR: proto=0x7f type=0x01(DETECT_REQ) len=68 opt=0x00010000 enc=1 ack=False resp=False
+[   9.634]   HEX: 7f 01 44 00 bb 90 ab a3 3f 1d 2e 3f bb 5d a4 f4 d7 83 29 81 00 00 01 00 f9 40 bb 22 0d 5b f8 dd fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee 00 00 00 00
+[   9.634] ← DETECT_REQ from 127.0.0.1:43805:28800 client_tid=2141306497033684867 (68B)
+[   9.635] → DETECT_RESP to 127.0.0.1:43805 server_tid=-3195816737827617183 (56B)
+[  10.019] ← SESSION_CTL from 127.0.0.1:43805:28800 term_id=791681027062638505 (108B) opt=0x400ed9e4 enc=14
+[  10.020]   HEX: 7e b0 6c 00 d7 9a f7 87 77 a7 6c 5a 97 10 d2 0d cb 15 0a 6a e4 d9 0e 40 a7 4b b6 be 2e 3a c3 7d 4d 7c 45 32 fa e4 26 01 e8 8e b1 9a 33 c6 40 cd b1 b8 a5 fb 91 06 c8 34 a0 9f 07 2f 33 cc 7a e5 b1 4a 6e da 42 e2 cf 06 ae e4 77 2b bd ca 0f e9 c8 60 bf 74 73 b2 99 c7 2d b4 f5 c1 1b 69 36 0d 38 8a b1 9a fc 96 17 0d 5c b6 69 28
+[  10.021]   ! NO PEER to route SESSION_CTL (term_id=791681027062638505, clients=[-5783601125351474452, 8582114378401601852, 8667459919827044481, -3857518620610282815, -2846480229750905863, 791681027062638505, 944066791368522163, 2141306497033684867])
+[  10.619] ← SESSION_CTL from 127.0.0.1:43805:28800 term_id=791681027062638505 (108B) opt=0x500ed9e4 enc=14
+[  10.620]   HEX: 7e b0 6c 00 d7 9a f7 87 77 a7 6c 5a 97 10 d2 0d cb 15 0a 6a e4 d9 0e 50 a7 4b b6 be 2e 3a c3 7d 4d 7c 45 32 fa e4 26 01 e8 8e b1 9a 33 c6 40 cd b1 b8 a5 fb 91 06 c8 34 a0 9f 07 2f 33 cc 7a e5 b1 4a 6e da 42 e2 cf 06 ae e4 77 2b bd ca 0f e9 c8 60 bf 74 73 b2 99 c7 2d b4 f5 c1 1b 69 36 0d 38 8a b1 9a fc 96 17 0d 5c b6 69 28
+[  10.621]   ! NO PEER to route SESSION_CTL (term_id=791681027062638505, clients=[-5783601125351474452, 8582114378401601852, 8667459919827044481, -3857518620610282815, -2846480229750905863, 791681027062638505, 944066791368522163, 2141306497033684867])
+[  10.633] NEW CLIENT: term_id=-3357802286401206486 from 127.0.0.1:43805 port=28800
+[  10.633]   HDR: proto=0x7f type=0x01(DETECT_REQ) len=68 opt=0x00010000 enc=1 ack=False resp=False
+[  10.633]   HEX: 7f 01 44 00 08 ac e0 78 8b d2 9e c3 08 61 ef 2f 63 4c 99 7d 00 00 01 00 5f 13 7f 33 aa 3c 19 b5 fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee 00 00 00 00
+[  10.633] ← DETECT_REQ from 127.0.0.1:43805:28800 client_tid=-3357802286401206486 (68B)
+[  10.634] → DETECT_RESP to 127.0.0.1:43805 server_tid=-3195816737827617183 (56B)
+[  10.868] NEW CLIENT: term_id=-44885303651907592 from 127.0.0.1:43805 port=28800
+[  10.869]   HDR: proto=0x7e type=0xa4(CALLING_REQ) len=161 opt=0x0006d0ec enc=6 ack=False resp=False
+[  10.870]   HEX: 7e a4 a1 00 82 19 4e 5e d9 d2 fe 1f c2 93 6b d4 65 60 98 2f ec d0 06 00 a8 9a 6c dc b3 5f 82 6d 29 83 3a 70 21 0a 64 3c 66 1e d0 e0 18 c7 16 be 55 97 a3 6e 7a bf 24 f8 76 f4 d5 4a 0f 10 ae 64 90 25 c3 0c 9e 1d 5e cb 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 be cd 3f b6 c1 80 bd de 57 5e cc 31 0a cc 98 37 76 80 0e f0 b4 0a bb fd bd d5 a4 6b d0 e4 f2 db 26 6e b6 12 4d 3c 26 8a 38
+[  10.870] ← CALLING_REQ from 127.0.0.1:43805 term_id=-44885303651907592 (161B)
+[  10.871]   HEX: 7e a4 a1 00 82 19 4e 5e d9 d2 fe 1f c2 93 6b d4 65 60 98 2f ec d0 06 00 a8 9a 6c dc b3 5f 82 6d 29 83 3a 70 21 0a 64 3c 66 1e d0 e0 18 c7 16 be 55 97 a3 6e 7a bf 24 f8 76 f4 d5 4a 0f 10 ae 64 90 25 c3 0c 9e 1d 5e cb 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 be cd 3f b6 c1 80 bd de 57 5e cc 31 0a cc 98 37 76 80 0e f0 b4 0a bb fd bd d5 a4 6b d0 e4 f2 db 26 6e b6 12 4d 3c 26 8a 38
+[  10.874]   [CALLING] Decrypted dest_term_id=34719987339889665
+[  10.875]   [MTP] CALLING req_sqnum=227601410 (from session-decrypt)
+[  10.876]   [MTP] Built session-encrypted CALLING_RESP: doorbell=192.168.1.81:8899 req_sqnum=227601410 frame_size=40
+[  10.876]   [MTP] Built MTP_RES_RESP: link_id=1 relay=192.168.1.245:23000 doorbell_udp=192.168.1.245:23000 chkval=2790934295 (76B)
+[  10.877]   [MTP] Sending CALLING_ACK + MTP_RES_RESP to bridge 127.0.0.1:43805
+[  11.020] ← CALLING_REQ from 127.0.0.1:43805 term_id=-44885303651907592 (161B)
+[  11.021]   HEX: 7e a4 a1 00 82 19 4e 5e d9 d2 fe 1f c2 93 6b d4 65 60 98 2f ec d0 06 10 a8 9a 6c dc b3 5f 82 6d 29 83 3a 70 21 0a 64 3c 66 1e d0 e0 18 c7 16 be 55 97 a3 6e 7a bf 24 f8 76 f4 d5 4a 0f 10 ae 64 90 25 c3 0c 9e 1d 5e cb 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 be cd 3f b6 c1 80 bd de 57 5e cc 31 0a cc 98 37 76 80 0e f0 b4 0a bb fd bd d5 a4 6b d0 e4 f2 db 26 6e b6 12 4d 3c 26 8a 38
+[  11.024]   [CALLING] Decrypted dest_term_id=34719987339889665
+[  11.025]   [MTP] CALLING req_sqnum=227601410 (from session-decrypt)
+[  11.026]   [MTP] Built session-encrypted CALLING_RESP: doorbell=192.168.1.81:8899 req_sqnum=227601410 frame_size=40
+[  11.026]   [MTP] Built MTP_RES_RESP: link_id=2 relay=192.168.1.245:23000 doorbell_udp=192.168.1.245:23000 chkval=2790934295 (76B)
+[  11.027]   [MTP] Sending CALLING_ACK + MTP_RES_RESP to bridge 127.0.0.1:43805
+[  11.218] ← SESSION_CTL from 127.0.0.1:43805:28800 term_id=791681027062638505 (108B) opt=0x600ed9e4 enc=14
+[  11.219]   HEX: 7e b0 6c 00 d7 9a f7 87 77 a7 6c 5a 97 10 d2 0d cb 15 0a 6a e4 d9 0e 60 a7 4b b6 be 2e 3a c3 7d 4d 7c 45 32 fa e4 26 01 e8 8e b1 9a 33 c6 40 cd b1 b8 a5 fb 91 06 c8 34 a0 9f 07 2f 33 cc 7a e5 b1 4a 6e da 42 e2 cf 06 ae e4 77 2b bd ca 0f e9 c8 60 bf 74 73 b2 99 c7 2d b4 f5 c1 1b 69 36 0d 38 8a b1 9a fc 96 17 0d 5c b6 69 28
+[  11.220]   ! NO PEER to route SESSION_CTL (term_id=791681027062638505, clients=[-5783601125351474452, 8582114378401601852, 8667459919827044481, -3857518620610282815, -2846480229750905863, 791681027062638505, 944066791368522163, 2141306497033684867, -3357802286401206486, -44885303651907592])
+[  11.619] ← SUBSCRIBE from 127.0.0.1:43805 term_id=-2846480229750905863 (48B)
+[  11.620]   [DEBUG] SUBSCRIBE predicted_sqnum=227601409 (base=227601407)
+[  11.621]   → SUBSCRIBE_RESP to 127.0.0.1:43805 (54B) chkval=227601409
+[  11.622] ← CALLING_REQ from 127.0.0.1:43805 term_id=-44885303651907592 (161B)
+[  11.622]   HEX: 7e a4 a1 00 82 19 4e 5e d9 d2 fe 1f c2 93 6b d4 65 60 98 2f ec d0 06 20 a8 9a 6c dc b3 5f 82 6d 29 83 3a 70 21 0a 64 3c 66 1e d0 e0 18 c7 16 be 55 97 a3 6e 7a bf 24 f8 76 f4 d5 4a 0f 10 ae 64 90 25 c3 0c 9e 1d 5e cb 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 be cd 3f b6 c1 80 bd de 57 5e cc 31 0a cc 98 37 76 80 0e f0 b4 0a bb fd bd d5 a4 6b d0 e4 f2 db 26 6e b6 12 4d 3c 26 8a 38
+[  11.625]   [CALLING] Decrypted dest_term_id=34719987339889665
+[  11.626]   [MTP] CALLING req_sqnum=227601410 (from session-decrypt)
+[  11.627]   [MTP] Built session-encrypted CALLING_RESP: doorbell=192.168.1.81:8899 req_sqnum=227601410 frame_size=40
+[  11.627]   [MTP] Built MTP_RES_RESP: link_id=3 relay=192.168.1.245:23000 doorbell_udp=192.168.1.245:23000 chkval=2790934295 (76B)
+[  11.627]   [MTP] Sending CALLING_ACK + MTP_RES_RESP to bridge 127.0.0.1:43805
+[  11.818] ← SESSION_CTL from 127.0.0.1:43805:28800 term_id=791681027062638505 (108B) opt=0x700ed9e4 enc=14
+[  11.819]   HEX: 7e b0 6c 00 d7 9a f7 87 77 a7 6c 5a 97 10 d2 0d cb 15 0a 6a e4 d9 0e 70 a7 4b b6 be 2e 3a c3 7d 4d 7c 45 32 fa e4 26 01 e8 8e b1 9a 33 c6 40 cd b1 b8 a5 fb 91 06 c8 34 a0 9f 07 2f 33 cc 7a e5 b1 4a 6e da 42 e2 cf 06 ae e4 77 2b bd ca 0f e9 c8 60 bf 74 73 b2 99 c7 2d b4 f5 c1 1b 69 36 0d 38 8a b1 9a fc 96 17 0d 5c b6 69 28
+[  11.820]   ! NO PEER to route SESSION_CTL (term_id=791681027062638505, clients=[-5783601125351474452, 8582114378401601852, 8667459919827044481, -3857518620610282815, -2846480229750905863, 791681027062638505, 944066791368522163, 2141306497033684867, -3357802286401206486, -44885303651907592])
+[  12.219] ← CALLING_REQ from 127.0.0.1:43805 term_id=-44885303651907592 (161B)
+[  12.220]   HEX: 7e a4 a1 00 82 19 4e 5e d9 d2 fe 1f c2 93 6b d4 65 60 98 2f ec d0 06 30 a8 9a 6c dc b3 5f 82 6d 29 83 3a 70 21 0a 64 3c 66 1e d0 e0 18 c7 16 be 55 97 a3 6e 7a bf 24 f8 76 f4 d5 4a 0f 10 ae 64 90 25 c3 0c 9e 1d 5e cb 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 be cd 3f b6 c1 80 bd de 57 5e cc 31 0a cc 98 37 76 80 0e f0 b4 0a bb fd bd d5 a4 6b d0 e4 f2 db 26 6e b6 12 4d 3c 26 8a 38
+[  12.223]   [CALLING] Decrypted dest_term_id=34719987339889665
+[  12.224]   [MTP] CALLING req_sqnum=227601410 (from session-decrypt)
+[  12.225]   [MTP] Built session-encrypted CALLING_RESP: doorbell=192.168.1.81:8899 req_sqnum=227601410 frame_size=40
+[  12.225]   [MTP] Built MTP_RES_RESP: link_id=4 relay=192.168.1.245:23000 doorbell_udp=192.168.1.245:23000 chkval=2790934295 (76B)
+[  12.225]   [MTP] Sending CALLING_ACK + MTP_RES_RESP to bridge 127.0.0.1:43805
+[  12.419] ← SESSION_CTL from 127.0.0.1:43805:28800 term_id=791681027062638505 (108B) opt=0x800ed9e4 enc=14
+[  12.420]   HEX: 7e b0 6c 00 d7 9a f7 87 77 a7 6c 5a 97 10 d2 0d cb 15 0a 6a e4 d9 0e 80 a7 4b b6 be 2e 3a c3 7d 4d 7c 45 32 fa e4 26 01 e8 8e b1 9a 33 c6 40 cd b1 b8 a5 fb 91 06 c8 34 a0 9f 07 2f 33 cc 7a e5 b1 4a 6e da 42 e2 cf 06 ae e4 77 2b bd ca 0f e9 c8 60 bf 74 73 b2 99 c7 2d b4 f5 c1 1b 69 36 0d 38 8a b1 9a fc 96 17 0d 5c b6 69 28
+[  12.421]   ! NO PEER to route SESSION_CTL (term_id=791681027062638505, clients=[-5783601125351474452, 8582114378401601852, 8667459919827044481, -3857518620610282815, -2846480229750905863, 791681027062638505, 944066791368522163, 2141306497033684867, -3357802286401206486, -44885303651907592])
+[  12.635] NEW CLIENT: term_id=-8766449106174924804 from 127.0.0.1:43805 port=28800
+[  12.635]   HDR: proto=0x7f type=0x01(DETECT_REQ) len=68 opt=0x00010000 enc=1 ack=False resp=False
+[  12.636]   HEX: 7f 01 44 00 23 47 f7 73 43 c3 88 57 23 8a f8 24 ab 5d 8f e9 00 00 01 00 65 06 93 5c f3 e1 85 26 fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee 00 00 00 00
+[  12.636] ← DETECT_REQ from 127.0.0.1:43805:28800 client_tid=-8766449106174924804 (68B)
+[  12.637] → DETECT_RESP to 127.0.0.1:43805 server_tid=-3195816737827617183 (56B)
+[  12.819] ← CALLING_REQ from 127.0.0.1:43805 term_id=-44885303651907592 (161B)
+[  12.820]   HEX: 7e a4 a1 00 82 19 4e 5e d9 d2 fe 1f c2 93 6b d4 65 60 98 2f ec d0 06 40 a8 9a 6c dc b3 5f 82 6d 29 83 3a 70 21 0a 64 3c 66 1e d0 e0 18 c7 16 be 55 97 a3 6e 7a bf 24 f8 76 f4 d5 4a 0f 10 ae 64 90 25 c3 0c 9e 1d 5e cb 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 be cd 3f b6 c1 80 bd de 57 5e cc 31 0a cc 98 37 76 80 0e f0 b4 0a bb fd bd d5 a4 6b d0 e4 f2 db 26 6e b6 12 4d 3c 26 8a 38
+[  12.823]   [CALLING] Decrypted dest_term_id=34719987339889665
+[  12.824]   [MTP] CALLING req_sqnum=227601410 (from session-decrypt)
+[  12.824]   [MTP] Built session-encrypted CALLING_RESP: doorbell=192.168.1.81:8899 req_sqnum=227601410 frame_size=40
+[  12.825]   [MTP] Built MTP_RES_RESP: link_id=5 relay=192.168.1.245:23000 doorbell_udp=192.168.1.245:23000 chkval=2790934295 (76B)
+[  12.825]   [MTP] Sending CALLING_ACK + MTP_RES_RESP to bridge 127.0.0.1:43805
+[  13.019] ← SESSION_CTL from 127.0.0.1:43805:28800 term_id=791681027062638505 (108B) opt=0x900ed9e4 enc=14
+[  13.020]   HEX: 7e b0 6c 00 d7 9a f7 87 77 a7 6c 5a 97 10 d2 0d cb 15 0a 6a e4 d9 0e 90 a7 4b b6 be 2e 3a c3 7d 4d 7c 45 32 fa e4 26 01 e8 8e b1 9a 33 c6 40 cd b1 b8 a5 fb 91 06 c8 34 a0 9f 07 2f 33 cc 7a e5 b1 4a 6e da 42 e2 cf 06 ae e4 77 2b bd ca 0f e9 c8 60 bf 74 73 b2 99 c7 2d b4 f5 c1 1b 69 36 0d 38 8a b1 9a fc 96 17 0d 5c b6 69 28
+[  13.021]   ! NO PEER to route SESSION_CTL (term_id=791681027062638505, clients=[-5783601125351474452, 8582114378401601852, 8667459919827044481, -3857518620610282815, -2846480229750905863, 791681027062638505, 944066791368522163, 2141306497033684867, -3357802286401206486, -44885303651907592, -8766449106174924804])
+[  13.417] ← CALLING_REQ from 127.0.0.1:43805 term_id=-44885303651907592 (161B)
+[  13.417]   HEX: 7e a4 a1 00 82 19 4e 5e d9 d2 fe 1f c2 93 6b d4 65 60 98 2f ec d0 06 50 a8 9a 6c dc b3 5f 82 6d 29 83 3a 70 21 0a 64 3c 66 1e d0 e0 18 c7 16 be 55 97 a3 6e 7a bf 24 f8 76 f4 d5 4a 0f 10 ae 64 90 25 c3 0c 9e 1d 5e cb 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 be cd 3f b6 c1 80 bd de 57 5e cc 31 0a cc 98 37 76 80 0e f0 b4 0a bb fd bd d5 a4 6b d0 e4 f2 db 26 6e b6 12 4d 3c 26 8a 38
+[  13.418]   [CALLING] Decrypted dest_term_id=34719987339889665
+[  13.418]   [MTP] CALLING req_sqnum=227601410 (from session-decrypt)
+[  13.418]   [MTP] Built session-encrypted CALLING_RESP: doorbell=192.168.1.81:8899 req_sqnum=227601410 frame_size=40
+[  13.418]   [MTP] Built MTP_RES_RESP: link_id=6 relay=192.168.1.245:23000 doorbell_udp=192.168.1.245:23000 chkval=2790934295 (76B)
+[  13.418]   [MTP] Sending CALLING_ACK + MTP_RES_RESP to bridge 127.0.0.1:43805
+[  13.619] ← SUBSCRIBE from 127.0.0.1:43805 term_id=-2846480229750905863 (48B)
+[  13.619]   [DEBUG] SUBSCRIBE predicted_sqnum=227601411 (base=227601409)
+[  13.620]   → SUBSCRIBE_RESP to 127.0.0.1:43805 (54B) chkval=227601411
+[  13.620] ← SESSION_CTL from 127.0.0.1:43805:28800 term_id=791681027062638505 (108B) opt=0xa00ed9e4 enc=14
+[  13.620]   HEX: 7e b0 6c 00 d7 9a f7 87 77 a7 6c 5a 97 10 d2 0d cb 15 0a 6a e4 d9 0e a0 a7 4b b6 be 2e 3a c3 7d 4d 7c 45 32 fa e4 26 01 e8 8e b1 9a 33 c6 40 cd b1 b8 a5 fb 91 06 c8 34 a0 9f 07 2f 33 cc 7a e5 b1 4a 6e da 42 e2 cf 06 ae e4 77 2b bd ca 0f e9 c8 60 bf 74 73 b2 99 c7 2d b4 f5 c1 1b 69 36 0d 38 8a b1 9a fc 96 17 0d 5c b6 69 28
+[  13.621]   ! NO PEER to route SESSION_CTL (term_id=791681027062638505, clients=[-5783601125351474452, 8582114378401601852, 8667459919827044481, -3857518620610282815, -2846480229750905863, 791681027062638505, 944066791368522163, 2141306497033684867, -3357802286401206486, -44885303651907592, -8766449106174924804])
+[  14.019] ← CALLING_REQ from 127.0.0.1:43805 term_id=-44885303651907592 (161B)
+[  14.020]   HEX: 7e a4 a1 00 82 19 4e 5e d9 d2 fe 1f c2 93 6b d4 65 60 98 2f ec d0 06 60 a8 9a 6c dc b3 5f 82 6d 29 83 3a 70 21 0a 64 3c 66 1e d0 e0 18 c7 16 be 55 97 a3 6e 7a bf 24 f8 76 f4 d5 4a 0f 10 ae 64 90 25 c3 0c 9e 1d 5e cb 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 be cd 3f b6 c1 80 bd de 57 5e cc 31 0a cc 98 37 76 80 0e f0 b4 0a bb fd bd d5 a4 6b d0 e4 f2 db 26 6e b6 12 4d 3c 26 8a 38
+[  14.024]   [CALLING] Decrypted dest_term_id=34719987339889665
+[  14.025]   [MTP] CALLING req_sqnum=227601410 (from session-decrypt)
+[  14.026]   [MTP] Built session-encrypted CALLING_RESP: doorbell=192.168.1.81:8899 req_sqnum=227601410 frame_size=40
+[  14.027]   [MTP] Built MTP_RES_RESP: link_id=7 relay=192.168.1.245:23000 doorbell_udp=192.168.1.245:23000 chkval=2790934295 (76B)
+[  14.027]   [MTP] Sending CALLING_ACK + MTP_RES_RESP to bridge 127.0.0.1:43805
+[  14.220] ← SESSION_CTL from 127.0.0.1:43805:28800 term_id=791681027062638505 (108B) opt=0xb00ed9e4 enc=14
+[  14.221]   HEX: 7e b0 6c 00 d7 9a f7 87 77 a7 6c 5a 97 10 d2 0d cb 15 0a 6a e4 d9 0e b0 a7 4b b6 be 2e 3a c3 7d 4d 7c 45 32 fa e4 26 01 e8 8e b1 9a 33 c6 40 cd b1 b8 a5 fb 91 06 c8 34 a0 9f 07 2f 33 cc 7a e5 b1 4a 6e da 42 e2 cf 06 ae e4 77 2b bd ca 0f e9 c8 60 bf 74 73 b2 99 c7 2d b4 f5 c1 1b 69 36 0d 38 8a b1 9a fc 96 17 0d 5c b6 69 28
+[  14.222]   ! NO PEER to route SESSION_CTL (term_id=791681027062638505, clients=[-5783601125351474452, 8582114378401601852, 8667459919827044481, -3857518620610282815, -2846480229750905863, 791681027062638505, 944066791368522163, 2141306497033684867, -3357802286401206486, -44885303651907592, -8766449106174924804])
+[  14.619] ← CALLING_REQ from 127.0.0.1:43805 term_id=-44885303651907592 (161B)
+[  14.620]   HEX: 7e a4 a1 00 82 19 4e 5e d9 d2 fe 1f c2 93 6b d4 65 60 98 2f ec d0 06 70 a8 9a 6c dc b3 5f 82 6d 29 83 3a 70 21 0a 64 3c 66 1e d0 e0 18 c7 16 be 55 97 a3 6e 7a bf 24 f8 76 f4 d5 4a 0f 10 ae 64 90 25 c3 0c 9e 1d 5e cb 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 be cd 3f b6 c1 80 bd de 57 5e cc 31 0a cc 98 37 76 80 0e f0 b4 0a bb fd bd d5 a4 6b d0 e4 f2 db 26 6e b6 12 4d 3c 26 8a 38
+[  14.623]   [CALLING] Decrypted dest_term_id=34719987339889665
+[  14.623]   [MTP] CALLING req_sqnum=227601410 (from session-decrypt)
+[  14.624]   [MTP] Built session-encrypted CALLING_RESP: doorbell=192.168.1.81:8899 req_sqnum=227601410 frame_size=40
+[  14.625]   [MTP] Built MTP_RES_RESP: link_id=8 relay=192.168.1.245:23000 doorbell_udp=192.168.1.245:23000 chkval=2790934295 (76B)
+[  14.625]   [MTP] Sending CALLING_ACK + MTP_RES_RESP to bridge 127.0.0.1:43805
+[  14.635] NEW CLIENT: term_id=7082019100197859699 from 127.0.0.1:43805 port=28800
+[  14.636]   HDR: proto=0x7f type=0x01(DETECT_REQ) len=68 opt=0x00010000 enc=1 ack=False resp=False
+[  14.636]   HEX: 7f 01 44 00 51 1d 22 0b d8 eb 19 18 51 d0 2d 5c 30 75 1e a6 00 00 01 00 35 05 2c af c7 a2 28 1f fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee 00 00 00 00
+[  14.637] ← DETECT_REQ from 127.0.0.1:43805:28800 client_tid=7082019100197859699 (68B)
+[  14.637] → DETECT_RESP to 127.0.0.1:43805 server_tid=-3195816737827617183 (56B)
+[  14.819] ← SESSION_CTL from 127.0.0.1:43805:28800 term_id=791681027062638505 (108B) opt=0xc00ed9e4 enc=14
+[  14.820]   HEX: 7e b0 6c 00 d7 9a f7 87 77 a7 6c 5a 97 10 d2 0d cb 15 0a 6a e4 d9 0e c0 a7 4b b6 be 2e 3a c3 7d 4d 7c 45 32 fa e4 26 01 e8 8e b1 9a 33 c6 40 cd b1 b8 a5 fb 91 06 c8 34 a0 9f 07 2f 33 cc 7a e5 b1 4a 6e da 42 e2 cf 06 ae e4 77 2b bd ca 0f e9 c8 60 bf 74 73 b2 99 c7 2d b4 f5 c1 1b 69 36 0d 38 8a b1 9a fc 96 17 0d 5c b6 69 28
+[  14.820]   ! NO PEER to route SESSION_CTL (term_id=791681027062638505, clients=[-5783601125351474452, 8582114378401601852, 8667459919827044481, -3857518620610282815, -2846480229750905863, 791681027062638505, 944066791368522163, 2141306497033684867, -3357802286401206486, -44885303651907592, -8766449106174924804, 7082019100197859699])
+[  15.218] ← CALLING_REQ from 127.0.0.1:43805 term_id=-44885303651907592 (161B)
+[  15.219]   HEX: 7e a4 a1 00 82 19 4e 5e d9 d2 fe 1f c2 93 6b d4 65 60 98 2f ec d0 06 80 a8 9a 6c dc b3 5f 82 6d 29 83 3a 70 21 0a 64 3c 66 1e d0 e0 18 c7 16 be 55 97 a3 6e 7a bf 24 f8 76 f4 d5 4a 0f 10 ae 64 90 25 c3 0c 9e 1d 5e cb 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 be cd 3f b6 c1 80 bd de 57 5e cc 31 0a cc 98 37 76 80 0e f0 b4 0a bb fd bd d5 a4 6b d0 e4 f2 db 26 6e b6 12 4d 3c 26 8a 38
+[  15.223]   [CALLING] Decrypted dest_term_id=34719987339889665
+[  15.223]   [MTP] CALLING req_sqnum=227601410 (from session-decrypt)
+[  15.224]   [MTP] Built session-encrypted CALLING_RESP: doorbell=192.168.1.81:8899 req_sqnum=227601410 frame_size=40
+[  15.225]   [MTP] Built MTP_RES_RESP: link_id=9 relay=192.168.1.245:23000 doorbell_udp=192.168.1.245:23000 chkval=2790934295 (76B)
+[  15.225]   [MTP] Sending CALLING_ACK + MTP_RES_RESP to bridge 127.0.0.1:43805
+[  15.419] ← SESSION_CTL from 127.0.0.1:43805:28800 term_id=791681027062638505 (108B) opt=0xd00ed9e4 enc=14
+[  15.420]   HEX: 7e b0 6c 00 d7 9a f7 87 77 a7 6c 5a 97 10 d2 0d cb 15 0a 6a e4 d9 0e d0 a7 4b b6 be 2e 3a c3 7d 4d 7c 45 32 fa e4 26 01 e8 8e b1 9a 33 c6 40 cd b1 b8 a5 fb 91 06 c8 34 a0 9f 07 2f 33 cc 7a e5 b1 4a 6e da 42 e2 cf 06 ae e4 77 2b bd ca 0f e9 c8 60 bf 74 73 b2 99 c7 2d b4 f5 c1 1b 69 36 0d 38 8a b1 9a fc 96 17 0d 5c b6 69 28
+[  15.421]   ! NO PEER to route SESSION_CTL (term_id=791681027062638505, clients=[-5783601125351474452, 8582114378401601852, 8667459919827044481, -3857518620610282815, -2846480229750905863, 791681027062638505, 944066791368522163, 2141306497033684867, -3357802286401206486, -44885303651907592, -8766449106174924804, 7082019100197859699])
+[  15.618] ← SUBSCRIBE from 127.0.0.1:43805 term_id=-2846480229750905863 (48B)
+[  15.619]   [DEBUG] SUBSCRIBE predicted_sqnum=227601413 (base=227601411)
+[  15.620]   → SUBSCRIBE_RESP to 127.0.0.1:43805 (54B) chkval=227601413
+[  15.818] ← CALLING_REQ from 127.0.0.1:38051 term_id=-44885303651907592 (161B)
+[  15.819]   HEX: 7e a4 a1 00 82 19 4e 5e d9 d2 fe 1f c2 93 6b d4 65 60 98 2f ec d0 06 90 a8 9a 6c dc b3 5f 82 6d 29 83 3a 70 21 0a 64 3c 66 1e d0 e0 18 c7 16 be 55 97 a3 6e 7a bf 24 f8 76 f4 d5 4a 0f 10 ae 64 90 25 c3 0c 9e 1d 5e cb 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 be cd 3f b6 c1 80 bd de 57 5e cc 31 0a cc 98 37 76 80 0e f0 b4 0a bb fd bd d5 a4 6b d0 e4 f2 db 26 6e b6 12 4d 3c 26 8a 38
+[  15.823]   [CALLING] Decrypted dest_term_id=34719987339889665
+[  15.824]   [MTP] CALLING req_sqnum=227601410 (from session-decrypt)
+[  15.824]   [MTP] Built session-encrypted CALLING_RESP: doorbell=192.168.1.81:8899 req_sqnum=227601410 frame_size=40
+[  15.825]   [MTP] Built MTP_RES_RESP: link_id=10 relay=192.168.1.245:23000 doorbell_udp=192.168.1.245:23000 chkval=2790934295 (76B)
+[  15.826]   [MTP] Sending CALLING_ACK + MTP_RES_RESP to bridge 127.0.0.1:38051
+[  16.019] ← SESSION_CTL from 127.0.0.1:38051:28800 term_id=791681027062638505 (108B) opt=0xe00ed9e4 enc=14
+[  16.020]   HEX: 7e b0 6c 00 d7 9a f7 87 77 a7 6c 5a 97 10 d2 0d cb 15 0a 6a e4 d9 0e e0 a7 4b b6 be 2e 3a c3 7d 4d 7c 45 32 fa e4 26 01 e8 8e b1 9a 33 c6 40 cd b1 b8 a5 fb 91 06 c8 34 a0 9f 07 2f 33 cc 7a e5 b1 4a 6e da 42 e2 cf 06 ae e4 77 2b bd ca 0f e9 c8 60 bf 74 73 b2 99 c7 2d b4 f5 c1 1b 69 36 0d 38 8a b1 9a fc 96 17 0d 5c b6 69 28
+[  16.021]   ! NO PEER to route SESSION_CTL (term_id=791681027062638505, clients=[-5783601125351474452, 8582114378401601852, 8667459919827044481, -3857518620610282815, -2846480229750905863, 791681027062638505, 944066791368522163, 2141306497033684867, -3357802286401206486, -44885303651907592, -8766449106174924804, 7082019100197859699])
+[  16.419] ← CALLING_REQ from 127.0.0.1:38051 term_id=-44885303651907592 (161B)
+[  16.420]   HEX: 7e a4 a1 00 82 19 4e 5e d9 d2 fe 1f c2 93 6b d4 65 60 98 2f ec d0 06 a0 a8 9a 6c dc b3 5f 82 6d 29 83 3a 70 21 0a 64 3c 66 1e d0 e0 18 c7 16 be 55 97 a3 6e 7a bf 24 f8 76 f4 d5 4a 0f 10 ae 64 90 25 c3 0c 9e 1d 5e cb 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 be cd 3f b6 c1 80 bd de 57 5e cc 31 0a cc 98 37 76 80 0e f0 b4 0a bb fd bd d5 a4 6b d0 e4 f2 db 26 6e b6 12 4d 3c 26 8a 38
+[  16.423]   [CALLING] Decrypted dest_term_id=34719987339889665
+[  16.424]   [MTP] CALLING req_sqnum=227601410 (from session-decrypt)
+[  16.425]   [MTP] Built session-encrypted CALLING_RESP: doorbell=192.168.1.81:8899 req_sqnum=227601410 frame_size=40
+[  16.425]   [MTP] Built MTP_RES_RESP: link_id=11 relay=192.168.1.245:23000 doorbell_udp=192.168.1.245:23000 chkval=2790934295 (76B)
+[  16.426]   [MTP] Sending CALLING_ACK + MTP_RES_RESP to bridge 127.0.0.1:38051
+[  16.619] ← SESSION_CTL from 127.0.0.1:38051:28800 term_id=791681027062638505 (108B) opt=0xf00ed9e4 enc=14
+[  16.620]   HEX: 7e b0 6c 00 d7 9a f7 87 77 a7 6c 5a 97 10 d2 0d cb 15 0a 6a e4 d9 0e f0 a7 4b b6 be 2e 3a c3 7d 4d 7c 45 32 fa e4 26 01 e8 8e b1 9a 33 c6 40 cd b1 b8 a5 fb 91 06 c8 34 a0 9f 07 2f 33 cc 7a e5 b1 4a 6e da 42 e2 cf 06 ae e4 77 2b bd ca 0f e9 c8 60 bf 74 73 b2 99 c7 2d b4 f5 c1 1b 69 36 0d 38 8a b1 9a fc 96 17 0d 5c b6 69 28
+[  16.621]   ! NO PEER to route SESSION_CTL (term_id=791681027062638505, clients=[-5783601125351474452, 8582114378401601852, 8667459919827044481, -3857518620610282815, -2846480229750905863, 791681027062638505, 944066791368522163, 2141306497033684867, -3357802286401206486, -44885303651907592, -8766449106174924804, 7082019100197859699])
+[  17.019] ← CALLING_REQ from 127.0.0.1:38051 term_id=-44885303651907592 (161B)
+[  17.020]   HEX: 7e a4 a1 00 82 19 4e 5e d9 d2 fe 1f c2 93 6b d4 65 60 98 2f ec d0 06 b0 a8 9a 6c dc b3 5f 82 6d 29 83 3a 70 21 0a 64 3c 66 1e d0 e0 18 c7 16 be 55 97 a3 6e 7a bf 24 f8 76 f4 d5 4a 0f 10 ae 64 90 25 c3 0c 9e 1d 5e cb 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 be cd 3f b6 c1 80 bd de 57 5e cc 31 0a cc 98 37 76 80 0e f0 b4 0a bb fd bd d5 a4 6b d0 e4 f2 db 26 6e b6 12 4d 3c 26 8a 38
+[  17.024]   [CALLING] Decrypted dest_term_id=34719987339889665
+[  17.024]   [MTP] CALLING req_sqnum=227601410 (from session-decrypt)
+[  17.025]   [MTP] Built session-encrypted CALLING_RESP: doorbell=192.168.1.81:8899 req_sqnum=227601410 frame_size=40
+[  17.025]   [MTP] Built MTP_RES_RESP: link_id=12 relay=192.168.1.245:23000 doorbell_udp=192.168.1.245:23000 chkval=2790934295 (76B)
+[  17.026]   [MTP] Sending CALLING_ACK + MTP_RES_RESP to bridge 127.0.0.1:38051
+[  17.219] ← SESSION_CTL from 127.0.0.1:38051:28800 term_id=791681027062638505 (108B) opt=0x000ed9e4 enc=14
+[  17.220]   HEX: 7e b0 6c 00 d7 9a f7 87 77 a7 6c 5a 97 10 d2 0d cb 15 0a 6a e4 d9 0e 00 a7 4b b6 be 2e 3a c3 7d 4d 7c 45 32 fa e4 26 01 e8 8e b1 9a 33 c6 40 cd b1 b8 a5 fb 91 06 c8 34 a0 9f 07 2f 33 cc 7a e5 b1 4a 6e da 42 e2 cf 06 ae e4 77 2b bd ca 0f e9 c8 60 bf 74 73 b2 99 c7 2d b4 f5 c1 1b 69 36 0d 38 8a b1 9a fc 96 17 0d 5c b6 69 28
+[  17.221]   ! NO PEER to route SESSION_CTL (term_id=791681027062638505, clients=[-5783601125351474452, 8582114378401601852, 8667459919827044481, -3857518620610282815, -2846480229750905863, 791681027062638505, 944066791368522163, 2141306497033684867, -3357802286401206486, -44885303651907592, -8766449106174924804, 7082019100197859699])
+[  17.622] ← SUBSCRIBE from 127.0.0.1:38051 term_id=-2846480229750905863 (48B)
+[  17.623]   [DEBUG] SUBSCRIBE predicted_sqnum=2 (base=0)
+[  17.624]   → SUBSCRIBE_RESP to 127.0.0.1:38051 (54B) chkval=2
+[  17.625] ← CALLING_REQ from 127.0.0.1:38051 term_id=-44885303651907592 (161B)
+[  17.626]   HEX: 7e a4 a1 00 82 19 4e 5e d9 d2 fe 1f c2 93 6b d4 65 60 98 2f ec d0 06 c0 a8 9a 6c dc b3 5f 82 6d 29 83 3a 70 21 0a 64 3c 66 1e d0 e0 18 c7 16 be 55 97 a3 6e 7a bf 24 f8 76 f4 d5 4a 0f 10 ae 64 90 25 c3 0c 9e 1d 5e cb 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 be cd 3f b6 c1 80 bd de 57 5e cc 31 0a cc 98 37 76 80 0e f0 b4 0a bb fd bd d5 a4 6b d0 e4 f2 db 26 6e b6 12 4d 3c 26 8a 38
+[  17.629]   [CALLING] Decrypted dest_term_id=34719987339889665
+[  17.630]   [MTP] CALLING req_sqnum=227601410 (from session-decrypt)
+[  17.631]   [MTP] Built session-encrypted CALLING_RESP: doorbell=192.168.1.81:8899 req_sqnum=227601410 frame_size=40
+[  17.632]   [MTP] Built MTP_RES_RESP: link_id=13 relay=192.168.1.245:23000 doorbell_udp=192.168.1.245:23000 chkval=2790934295 (76B)
+[  17.632]   [MTP] Sending CALLING_ACK + MTP_RES_RESP to bridge 127.0.0.1:38051
+[  17.817] ← SESSION_CTL from 127.0.0.1:38051:28800 term_id=791681027062638505 (108B) opt=0x100ed9e4 enc=14
+[  17.817]   HEX: 7e b0 6c 00 d7 9a f7 87 77 a7 6c 5a 97 10 d2 0d cb 15 0a 6a e4 d9 0e 10 a7 4b b6 be 2e 3a c3 7d 4d 7c 45 32 fa e4 26 01 e8 8e b1 9a 33 c6 40 cd b1 b8 a5 fb 91 06 c8 34 a0 9f 07 2f 33 cc 7a e5 b1 4a 6e da 42 e2 cf 06 ae e4 77 2b bd ca 0f e9 c8 60 bf 74 73 b2 99 c7 2d b4 f5 c1 1b 69 36 0d 38 8a b1 9a fc 96 17 0d 5c b6 69 28
+[  17.818]   ! NO PEER to route SESSION_CTL (term_id=791681027062638505, clients=[-5783601125351474452, 8582114378401601852, 8667459919827044481, -3857518620610282815, -2846480229750905863, 791681027062638505, 944066791368522163, 2141306497033684867, -3357802286401206486, -44885303651907592, -8766449106174924804, 7082019100197859699])
+[  18.219] ← CALLING_REQ from 127.0.0.1:38051 term_id=-44885303651907592 (161B)
+[  18.220]   HEX: 7e a4 a1 00 82 19 4e 5e d9 d2 fe 1f c2 93 6b d4 65 60 98 2f ec d0 06 d0 a8 9a 6c dc b3 5f 82 6d 29 83 3a 70 21 0a 64 3c 66 1e d0 e0 18 c7 16 be 55 97 a3 6e 7a bf 24 f8 76 f4 d5 4a 0f 10 ae 64 90 25 c3 0c 9e 1d 5e cb 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 be cd 3f b6 c1 80 bd de 57 5e cc 31 0a cc 98 37 76 80 0e f0 b4 0a bb fd bd d5 a4 6b d0 e4 f2 db 26 6e b6 12 4d 3c 26 8a 38
+[  18.222]   [CALLING] Decrypted dest_term_id=34719987339889665
+[  18.223]   [MTP] CALLING req_sqnum=227601410 (from session-decrypt)
+[  18.224]   [MTP] Built session-encrypted CALLING_RESP: doorbell=192.168.1.81:8899 req_sqnum=227601410 frame_size=40
+[  18.224]   [MTP] Built MTP_RES_RESP: link_id=14 relay=192.168.1.245:23000 doorbell_udp=192.168.1.245:23000 chkval=2790934295 (76B)
+[  18.225]   [MTP] Sending CALLING_ACK + MTP_RES_RESP to bridge 127.0.0.1:38051
+[  18.419] ← SESSION_CTL from 127.0.0.1:38051:28800 term_id=791681027062638505 (108B) opt=0x200ed9e4 enc=14
+[  18.420]   HEX: 7e b0 6c 00 d7 9a f7 87 77 a7 6c 5a 97 10 d2 0d cb 15 0a 6a e4 d9 0e 20 a7 4b b6 be 2e 3a c3 7d 4d 7c 45 32 fa e4 26 01 e8 8e b1 9a 33 c6 40 cd b1 b8 a5 fb 91 06 c8 34 a0 9f 07 2f 33 cc 7a e5 b1 4a 6e da 42 e2 cf 06 ae e4 77 2b bd ca 0f e9 c8 60 bf 74 73 b2 99 c7 2d b4 f5 c1 1b 69 36 0d 38 8a b1 9a fc 96 17 0d 5c b6 69 28
+[  18.421]   ! NO PEER to route SESSION_CTL (term_id=791681027062638505, clients=[-5783601125351474452, 8582114378401601852, 8667459919827044481, -3857518620610282815, -2846480229750905863, 791681027062638505, 944066791368522163, 2141306497033684867, -3357802286401206486, -44885303651907592, -8766449106174924804, 7082019100197859699])
+[  18.869] NEW CLIENT: term_id=-2058968236445942388 from 127.0.0.1:38051 port=28800
+[  18.870]   HDR: proto=0x7e type=0xa4(CALLING_REQ) len=161 opt=0x00063874 enc=6 ack=False resp=False
+[  18.871]   HEX: 7e a4 a1 00 7c eb 11 b8 88 6b fc ba 3c 61 34 32 34 d9 9a 8a 74 38 06 00 5f 61 66 c8 1e 24 7e 8b 29 83 3a 70 21 0a 64 3c 66 1e d0 e0 18 c7 16 be e9 d8 87 b5 cb 5f 90 0d 76 f4 d5 4a 0f 10 ae 64 90 25 c3 0c 9e 1d 5e cb 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 15 88 70 96 01 d2 af cb 57 5e cc 31 0a cc 98 37 76 80 0e f0 b4 0a bb fd bd d5 a4 6b d0 e4 f2 db 26 6e b6 12 4d 3c 26 8a 38
+[  18.872] ← CALLING_REQ from 127.0.0.1:38051 term_id=-2058968236445942388 (161B)
+[  18.872]   HEX: 7e a4 a1 00 7c eb 11 b8 88 6b fc ba 3c 61 34 32 34 d9 9a 8a 74 38 06 00 5f 61 66 c8 1e 24 7e 8b 29 83 3a 70 21 0a 64 3c 66 1e d0 e0 18 c7 16 be e9 d8 87 b5 cb 5f 90 0d 76 f4 d5 4a 0f 10 ae 64 90 25 c3 0c 9e 1d 5e cb 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 15 88 70 96 01 d2 af cb 57 5e cc 31 0a cc 98 37 76 80 0e f0 b4 0a bb fd bd d5 a4 6b d0 e4 f2 db 26 6e b6 12 4d 3c 26 8a 38
+[  18.875]   [CALLING] Decrypted dest_term_id=70935065680415745
+[  18.876]   [MTP] CALLING req_sqnum=227601413 (from session-decrypt)
+[  18.876]   [MTP] Built session-encrypted CALLING_RESP: doorbell=192.168.1.81:8899 req_sqnum=227601413 frame_size=40
+[  18.877]   [MTP] Built MTP_RES_RESP: link_id=15 relay=192.168.1.245:23000 doorbell_udp=192.168.1.245:23000 chkval=520166578 (76B)
+[  18.877]   [MTP] Sending CALLING_ACK + MTP_RES_RESP to bridge 127.0.0.1:38051
+[  19.019] ← SESSION_CTL from 127.0.0.1:38051:28800 term_id=791681027062638505 (108B) opt=0x300ed9e4 enc=14
+[  19.019]   HEX: 7e b0 6c 00 d7 9a f7 87 77 a7 6c 5a 97 10 d2 0d cb 15 0a 6a e4 d9 0e 30 a7 4b b6 be 2e 3a c3 7d 4d 7c 45 32 fa e4 26 01 e8 8e b1 9a 33 c6 40 cd b1 b8 a5 fb 91 06 c8 34 a0 9f 07 2f 33 cc 7a e5 b1 4a 6e da 42 e2 cf 06 ae e4 77 2b bd ca 0f e9 c8 60 bf 74 73 b2 99 c7 2d b4 f5 c1 1b 69 36 0d 38 8a b1 9a fc 96 17 0d 5c b6 69 28
+[  19.021]   ! NO PEER to route SESSION_CTL (term_id=791681027062638505, clients=[-5783601125351474452, 8582114378401601852, 8667459919827044481, -3857518620610282815, -2846480229750905863, 791681027062638505, 944066791368522163, 2141306497033684867, -3357802286401206486, -44885303651907592, -8766449106174924804, 7082019100197859699, -2058968236445942388])
+[  19.420] ← CALLING_REQ from 127.0.0.1:38051 term_id=-2058968236445942388 (161B)
+[  19.421]   HEX: 7e a4 a1 00 7c eb 11 b8 88 6b fc ba 3c 61 34 32 34 d9 9a 8a 74 38 06 10 5f 61 66 c8 1e 24 7e 8b 29 83 3a 70 21 0a 64 3c 66 1e d0 e0 18 c7 16 be e9 d8 87 b5 cb 5f 90 0d 76 f4 d5 4a 0f 10 ae 64 90 25 c3 0c 9e 1d 5e cb 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 15 88 70 96 01 d2 af cb 57 5e cc 31 0a cc 98 37 76 80 0e f0 b4 0a bb fd bd d5 a4 6b d0 e4 f2 db 26 6e b6 12 4d 3c 26 8a 38
+[  19.426]   [CALLING] Decrypted dest_term_id=70935065680415745
+[  19.427]   [MTP] CALLING req_sqnum=227601413 (from session-decrypt)
+[  19.428]   [MTP] Built session-encrypted CALLING_RESP: doorbell=192.168.1.81:8899 req_sqnum=227601413 frame_size=40
+[  19.428]   [MTP] Built MTP_RES_RESP: link_id=16 relay=192.168.1.245:23000 doorbell_udp=192.168.1.245:23000 chkval=520166578 (76B)
+[  19.429]   [MTP] Sending CALLING_ACK + MTP_RES_RESP to bridge 127.0.0.1:38051
+[  19.618] ← SUBSCRIBE from 127.0.0.1:38051 term_id=-2846480229750905863 (48B)
+[  19.619]   [DEBUG] SUBSCRIBE predicted_sqnum=4 (base=2)
+[  19.619]   → SUBSCRIBE_RESP to 127.0.0.1:38051 (54B) chkval=4
+[  19.620] ← SESSION_CTL from 127.0.0.1:38051:28800 term_id=791681027062638505 (108B) opt=0x400ed9e4 enc=14
+[  19.621]   HEX: 7e b0 6c 00 d7 9a f7 87 77 a7 6c 5a 97 10 d2 0d cb 15 0a 6a e4 d9 0e 40 a7 4b b6 be 2e 3a c3 7d 4d 7c 45 32 fa e4 26 01 e8 8e b1 9a 33 c6 40 cd b1 b8 a5 fb 91 06 c8 34 a0 9f 07 2f 33 cc 7a e5 b1 4a 6e da 42 e2 cf 06 ae e4 77 2b bd ca 0f e9 c8 60 bf 74 73 b2 99 c7 2d b4 f5 c1 1b 69 36 0d 38 8a b1 9a fc 96 17 0d 5c b6 69 28
+[  19.622]   ! NO PEER to route SESSION_CTL (term_id=791681027062638505, clients=[-5783601125351474452, 8582114378401601852, 8667459919827044481, -3857518620610282815, -2846480229750905863, 791681027062638505, 944066791368522163, 2141306497033684867, -3357802286401206486, -44885303651907592, -8766449106174924804, 7082019100197859699, -2058968236445942388])
+[  19.637] NEW CLIENT: term_id=-9117987647787080273 from 127.0.0.1:38051 port=28800
+[  19.638]   HDR: proto=0x7f type=0x01(DETECT_REQ) len=68 opt=0x00010000 enc=1 ack=False resp=False
+[  19.638]   HEX: 7f 01 44 00 69 d7 51 79 5f 0d 7d 80 69 1a 5e 2e b7 93 7a 3e 00 00 01 00 99 21 a4 ba ce a0 42 40 fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee 00 00 00 00
+[  19.638] ← DETECT_REQ from 127.0.0.1:38051:28800 client_tid=-9117987647787080273 (68B)
+[  19.639] → DETECT_RESP to 127.0.0.1:38051 server_tid=-3195816737827617183 (56B)
+[  20.019] ← CALLING_REQ from 127.0.0.1:38051 term_id=-2058968236445942388 (161B)
+[  20.020]   HEX: 7e a4 a1 00 7c eb 11 b8 88 6b fc ba 3c 61 34 32 34 d9 9a 8a 74 38 06 20 5f 61 66 c8 1e 24 7e 8b 29 83 3a 70 21 0a 64 3c 66 1e d0 e0 18 c7 16 be e9 d8 87 b5 cb 5f 90 0d 76 f4 d5 4a 0f 10 ae 64 90 25 c3 0c 9e 1d 5e cb 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 15 88 70 96 01 d2 af cb 57 5e cc 31 0a cc 98 37 76 80 0e f0 b4 0a bb fd bd d5 a4 6b d0 e4 f2 db 26 6e b6 12 4d 3c 26 8a 38
+[  20.023]   [CALLING] Decrypted dest_term_id=70935065680415745
+[  20.024]   [MTP] CALLING req_sqnum=227601413 (from session-decrypt)
+[  20.025]   [MTP] Built session-encrypted CALLING_RESP: doorbell=192.168.1.81:8899 req_sqnum=227601413 frame_size=40
+[  20.026]   [MTP] Built MTP_RES_RESP: link_id=17 relay=192.168.1.245:23000 doorbell_udp=192.168.1.245:23000 chkval=520166578 (76B)
+[  20.026]   [MTP] Sending CALLING_ACK + MTP_RES_RESP to bridge 127.0.0.1:38051
+[  20.219] ← SESSION_CTL from 127.0.0.1:38051:28800 term_id=791681027062638505 (108B) opt=0x500ed9e4 enc=14
+[  20.220]   HEX: 7e b0 6c 00 d7 9a f7 87 77 a7 6c 5a 97 10 d2 0d cb 15 0a 6a e4 d9 0e 50 a7 4b b6 be 2e 3a c3 7d 4d 7c 45 32 fa e4 26 01 e8 8e b1 9a 33 c6 40 cd b1 b8 a5 fb 91 06 c8 34 a0 9f 07 2f 33 cc 7a e5 b1 4a 6e da 42 e2 cf 06 ae e4 77 2b bd ca 0f e9 c8 60 bf 74 73 b2 99 c7 2d b4 f5 c1 1b 69 36 0d 38 8a b1 9a fc 96 17 0d 5c b6 69 28
+[  20.220]   ! NO PEER to route SESSION_CTL (term_id=791681027062638505, clients=[-5783601125351474452, 8582114378401601852, 8667459919827044481, -3857518620610282815, -2846480229750905863, 791681027062638505, 944066791368522163, 2141306497033684867, -3357802286401206486, -44885303651907592, -8766449106174924804, 7082019100197859699, -2058968236445942388, -9117987647787080273])
+[  20.619] ← CALLING_REQ from 127.0.0.1:38051 term_id=-2058968236445942388 (161B)
+[  20.620]   HEX: 7e a4 a1 00 7c eb 11 b8 88 6b fc ba 3c 61 34 32 34 d9 9a 8a 74 38 06 30 5f 61 66 c8 1e 24 7e 8b 29 83 3a 70 21 0a 64 3c 66 1e d0 e0 18 c7 16 be e9 d8 87 b5 cb 5f 90 0d 76 f4 d5 4a 0f 10 ae 64 90 25 c3 0c 9e 1d 5e cb 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 15 88 70 96 01 d2 af cb 57 5e cc 31 0a cc 98 37 76 80 0e f0 b4 0a bb fd bd d5 a4 6b d0 e4 f2 db 26 6e b6 12 4d 3c 26 8a 38
+[  20.623]   [CALLING] Decrypted dest_term_id=70935065680415745
+[  20.624]   [MTP] CALLING req_sqnum=227601413 (from session-decrypt)
+[  20.624]   [MTP] Built session-encrypted CALLING_RESP: doorbell=192.168.1.81:8899 req_sqnum=227601413 frame_size=40
+[  20.625]   [MTP] Built MTP_RES_RESP: link_id=18 relay=192.168.1.245:23000 doorbell_udp=192.168.1.245:23000 chkval=520166578 (76B)
+[  20.625]   [MTP] Sending CALLING_ACK + MTP_RES_RESP to bridge 127.0.0.1:38051
+[  20.819] ← SESSION_CTL from 127.0.0.1:38051:28800 term_id=791681027062638505 (108B) opt=0x600ed9e4 enc=14
+[  20.820]   HEX: 7e b0 6c 00 d7 9a f7 87 77 a7 6c 5a 97 10 d2 0d cb 15 0a 6a e4 d9 0e 60 a7 4b b6 be 2e 3a c3 7d 4d 7c 45 32 fa e4 26 01 e8 8e b1 9a 33 c6 40 cd b1 b8 a5 fb 91 06 c8 34 a0 9f 07 2f 33 cc 7a e5 b1 4a 6e da 42 e2 cf 06 ae e4 77 2b bd ca 0f e9 c8 60 bf 74 73 b2 99 c7 2d b4 f5 c1 1b 69 36 0d 38 8a b1 9a fc 96 17 0d 5c b6 69 28
+[  20.820]   ! NO PEER to route SESSION_CTL (term_id=791681027062638505, clients=[-5783601125351474452, 8582114378401601852, 8667459919827044481, -3857518620610282815, -2846480229750905863, 791681027062638505, 944066791368522163, 2141306497033684867, -3357802286401206486, -44885303651907592, -8766449106174924804, 7082019100197859699, -2058968236445942388, -9117987647787080273])
+[  21.218] ← CALLING_REQ from 127.0.0.1:38051 term_id=-2058968236445942388 (161B)
+[  21.220]   HEX: 7e a4 a1 00 7c eb 11 b8 88 6b fc ba 3c 61 34 32 34 d9 9a 8a 74 38 06 40 5f 61 66 c8 1e 24 7e 8b 29 83 3a 70 21 0a 64 3c 66 1e d0 e0 18 c7 16 be e9 d8 87 b5 cb 5f 90 0d 76 f4 d5 4a 0f 10 ae 64 90 25 c3 0c 9e 1d 5e cb 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 15 88 70 96 01 d2 af cb 57 5e cc 31 0a cc 98 37 76 80 0e f0 b4 0a bb fd bd d5 a4 6b d0 e4 f2 db 26 6e b6 12 4d 3c 26 8a 38
+[  21.223]   [CALLING] Decrypted dest_term_id=70935065680415745
+[  21.224]   [MTP] CALLING req_sqnum=227601413 (from session-decrypt)
+[  21.225]   [MTP] Built session-encrypted CALLING_RESP: doorbell=192.168.1.81:8899 req_sqnum=227601413 frame_size=40
+[  21.225]   [MTP] Built MTP_RES_RESP: link_id=19 relay=192.168.1.245:23000 doorbell_udp=192.168.1.245:23000 chkval=520166578 (76B)
+[  21.226]   [MTP] Sending CALLING_ACK + MTP_RES_RESP to bridge 127.0.0.1:38051
+[  21.419] ← SESSION_CTL from 127.0.0.1:38051:28800 term_id=791681027062638505 (108B) opt=0x700ed9e4 enc=14
+[  21.420]   HEX: 7e b0 6c 00 d7 9a f7 87 77 a7 6c 5a 97 10 d2 0d cb 15 0a 6a e4 d9 0e 70 a7 4b b6 be 2e 3a c3 7d 4d 7c 45 32 fa e4 26 01 e8 8e b1 9a 33 c6 40 cd b1 b8 a5 fb 91 06 c8 34 a0 9f 07 2f 33 cc 7a e5 b1 4a 6e da 42 e2 cf 06 ae e4 77 2b bd ca 0f e9 c8 60 bf 74 73 b2 99 c7 2d b4 f5 c1 1b 69 36 0d 38 8a b1 9a fc 96 17 0d 5c b6 69 28
+[  21.421]   ! NO PEER to route SESSION_CTL (term_id=791681027062638505, clients=[-5783601125351474452, 8582114378401601852, 8667459919827044481, -3857518620610282815, -2846480229750905863, 791681027062638505, 944066791368522163, 2141306497033684867, -3357802286401206486, -44885303651907592, -8766449106174924804, 7082019100197859699, -2058968236445942388, -9117987647787080273])
+[  21.618] ← SUBSCRIBE from 127.0.0.1:38051 term_id=-2846480229750905863 (48B)
+[  21.619]   [DEBUG] SUBSCRIBE predicted_sqnum=6 (base=4)
+[  21.620]   → SUBSCRIBE_RESP to 127.0.0.1:38051 (54B) chkval=6
+[  21.819] ← CALLING_REQ from 127.0.0.1:38051 term_id=-2058968236445942388 (161B)
+[  21.820]   HEX: 7e a4 a1 00 7c eb 11 b8 88 6b fc ba 3c 61 34 32 34 d9 9a 8a 74 38 06 50 5f 61 66 c8 1e 24 7e 8b 29 83 3a 70 21 0a 64 3c 66 1e d0 e0 18 c7 16 be e9 d8 87 b5 cb 5f 90 0d 76 f4 d5 4a 0f 10 ae 64 90 25 c3 0c 9e 1d 5e cb 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 15 88 70 96 01 d2 af cb 57 5e cc 31 0a cc 98 37 76 80 0e f0 b4 0a bb fd bd d5 a4 6b d0 e4 f2 db 26 6e b6 12 4d 3c 26 8a 38
+[  21.823]   [CALLING] Decrypted dest_term_id=70935065680415745
+[  21.824]   [MTP] CALLING req_sqnum=227601413 (from session-decrypt)
+[  21.824]   [MTP] Built session-encrypted CALLING_RESP: doorbell=192.168.1.81:8899 req_sqnum=227601413 frame_size=40
+[  21.825]   [MTP] Built MTP_RES_RESP: link_id=20 relay=192.168.1.245:23000 doorbell_udp=192.168.1.245:23000 chkval=520166578 (76B)
+[  21.825]   [MTP] Sending CALLING_ACK + MTP_RES_RESP to bridge 127.0.0.1:38051
+[  22.019] ← SESSION_CTL from 127.0.0.1:38051:28800 term_id=791681027062638505 (108B) opt=0x800ed9e4 enc=14
+[  22.019]   HEX: 7e b0 6c 00 d7 9a f7 87 77 a7 6c 5a 97 10 d2 0d cb 15 0a 6a e4 d9 0e 80 a7 4b b6 be 2e 3a c3 7d 4d 7c 45 32 fa e4 26 01 e8 8e b1 9a 33 c6 40 cd b1 b8 a5 fb 91 06 c8 34 a0 9f 07 2f 33 cc 7a e5 b1 4a 6e da 42 e2 cf 06 ae e4 77 2b bd ca 0f e9 c8 60 bf 74 73 b2 99 c7 2d b4 f5 c1 1b 69 36 0d 38 8a b1 9a fc 96 17 0d 5c b6 69 28
+[  22.020]   ! NO PEER to route SESSION_CTL (term_id=791681027062638505, clients=[-5783601125351474452, 8582114378401601852, 8667459919827044481, -3857518620610282815, -2846480229750905863, 791681027062638505, 944066791368522163, 2141306497033684867, -3357802286401206486, -44885303651907592, -8766449106174924804, 7082019100197859699, -2058968236445942388, -9117987647787080273])
+[  22.418] ← CALLING_REQ from 127.0.0.1:38051 term_id=-2058968236445942388 (161B)
+[  22.419]   HEX: 7e a4 a1 00 7c eb 11 b8 88 6b fc ba 3c 61 34 32 34 d9 9a 8a 74 38 06 60 5f 61 66 c8 1e 24 7e 8b 29 83 3a 70 21 0a 64 3c 66 1e d0 e0 18 c7 16 be e9 d8 87 b5 cb 5f 90 0d 76 f4 d5 4a 0f 10 ae 64 90 25 c3 0c 9e 1d 5e cb 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 15 88 70 96 01 d2 af cb 57 5e cc 31 0a cc 98 37 76 80 0e f0 b4 0a bb fd bd d5 a4 6b d0 e4 f2 db 26 6e b6 12 4d 3c 26 8a 38
+[  22.422]   [CALLING] Decrypted dest_term_id=70935065680415745
+[  22.423]   [MTP] CALLING req_sqnum=227601413 (from session-decrypt)
+[  22.424]   [MTP] Built session-encrypted CALLING_RESP: doorbell=192.168.1.81:8899 req_sqnum=227601413 frame_size=40
+[  22.425]   [MTP] Built MTP_RES_RESP: link_id=21 relay=192.168.1.245:23000 doorbell_udp=192.168.1.245:23000 chkval=520166578 (76B)
+[  22.426]   [MTP] Sending CALLING_ACK + MTP_RES_RESP to bridge 127.0.0.1:38051
+[  22.619] ← SESSION_CTL from 127.0.0.1:38051:28800 term_id=791681027062638505 (108B) opt=0x900ed9e4 enc=14
+[  22.620]   HEX: 7e b0 6c 00 d7 9a f7 87 77 a7 6c 5a 97 10 d2 0d cb 15 0a 6a e4 d9 0e 90 a7 4b b6 be 2e 3a c3 7d 4d 7c 45 32 fa e4 26 01 e8 8e b1 9a 33 c6 40 cd b1 b8 a5 fb 91 06 c8 34 a0 9f 07 2f 33 cc 7a e5 b1 4a 6e da 42 e2 cf 06 ae e4 77 2b bd ca 0f e9 c8 60 bf 74 73 b2 99 c7 2d b4 f5 c1 1b 69 36 0d 38 8a b1 9a fc 96 17 0d 5c b6 69 28
+[  22.621]   ! NO PEER to route SESSION_CTL (term_id=791681027062638505, clients=[-5783601125351474452, 8582114378401601852, 8667459919827044481, -3857518620610282815, -2846480229750905863, 791681027062638505, 944066791368522163, 2141306497033684867, -3357802286401206486, -44885303651907592, -8766449106174924804, 7082019100197859699, -2058968236445942388, -9117987647787080273])
+[  23.019] ← CALLING_REQ from 127.0.0.1:38051 term_id=-2058968236445942388 (161B)
+[  23.021]   HEX: 7e a4 a1 00 7c eb 11 b8 88 6b fc ba 3c 61 34 32 34 d9 9a 8a 74 38 06 70 5f 61 66 c8 1e 24 7e 8b 29 83 3a 70 21 0a 64 3c 66 1e d0 e0 18 c7 16 be e9 d8 87 b5 cb 5f 90 0d 76 f4 d5 4a 0f 10 ae 64 90 25 c3 0c 9e 1d 5e cb 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 15 88 70 96 01 d2 af cb 57 5e cc 31 0a cc 98 37 76 80 0e f0 b4 0a bb fd bd d5 a4 6b d0 e4 f2 db 26 6e b6 12 4d 3c 26 8a 38
+[  23.024]   [CALLING] Decrypted dest_term_id=70935065680415745
+[  23.025]   [MTP] CALLING req_sqnum=227601413 (from session-decrypt)
+[  23.026]   [MTP] Built session-encrypted CALLING_RESP: doorbell=192.168.1.81:8899 req_sqnum=227601413 frame_size=40
+[  23.028]   [MTP] Built MTP_RES_RESP: link_id=22 relay=192.168.1.245:23000 doorbell_udp=192.168.1.245:23000 chkval=520166578 (76B)
+[  23.028]   [MTP] Sending CALLING_ACK + MTP_RES_RESP to bridge 127.0.0.1:38051
+[  23.219] ← SESSION_CTL from 127.0.0.1:38051:28800 term_id=791681027062638505 (108B) opt=0xa00ed9e4 enc=14
+[  23.220]   HEX: 7e b0 6c 00 d7 9a f7 87 77 a7 6c 5a 97 10 d2 0d cb 15 0a 6a e4 d9 0e a0 a7 4b b6 be 2e 3a c3 7d 4d 7c 45 32 fa e4 26 01 e8 8e b1 9a 33 c6 40 cd b1 b8 a5 fb 91 06 c8 34 a0 9f 07 2f 33 cc 7a e5 b1 4a 6e da 42 e2 cf 06 ae e4 77 2b bd ca 0f e9 c8 60 bf 74 73 b2 99 c7 2d b4 f5 c1 1b 69 36 0d 38 8a b1 9a fc 96 17 0d 5c b6 69 28
+[  23.221]   ! NO PEER to route SESSION_CTL (term_id=791681027062638505, clients=[-5783601125351474452, 8582114378401601852, 8667459919827044481, -3857518620610282815, -2846480229750905863, 791681027062638505, 944066791368522163, 2141306497033684867, -3357802286401206486, -44885303651907592, -8766449106174924804, 7082019100197859699, -2058968236445942388, -9117987647787080273])
+[  23.619] ← SUBSCRIBE from 127.0.0.1:38051 term_id=-2846480229750905863 (48B)
+[  23.620]   [DEBUG] SUBSCRIBE predicted_sqnum=8 (base=6)
+[  23.621]   → SUBSCRIBE_RESP to 127.0.0.1:38051 (54B) chkval=8
+[  23.622] ← CALLING_REQ from 127.0.0.1:38051 term_id=-2058968236445942388 (161B)
+[  23.623]   HEX: 7e a4 a1 00 7c eb 11 b8 88 6b fc ba 3c 61 34 32 34 d9 9a 8a 74 38 06 80 5f 61 66 c8 1e 24 7e 8b 29 83 3a 70 21 0a 64 3c 66 1e d0 e0 18 c7 16 be e9 d8 87 b5 cb 5f 90 0d 76 f4 d5 4a 0f 10 ae 64 90 25 c3 0c 9e 1d 5e cb 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 15 88 70 96 01 d2 af cb 57 5e cc 31 0a cc 98 37 76 80 0e f0 b4 0a bb fd bd d5 a4 6b d0 e4 f2 db 26 6e b6 12 4d 3c 26 8a 38
+[  23.627]   [CALLING] Decrypted dest_term_id=70935065680415745
+[  23.628]   [MTP] CALLING req_sqnum=227601413 (from session-decrypt)
+[  23.629]   [MTP] Built session-encrypted CALLING_RESP: doorbell=192.168.1.81:8899 req_sqnum=227601413 frame_size=40
+[  23.630]   [MTP] Built MTP_RES_RESP: link_id=23 relay=192.168.1.245:23000 doorbell_udp=192.168.1.245:23000 chkval=520166578 (76B)
+[  23.630]   [MTP] Sending CALLING_ACK + MTP_RES_RESP to bridge 127.0.0.1:38051
+[  24.218] ← CALLING_REQ from 127.0.0.1:38051 term_id=-2058968236445942388 (161B)
+[  24.219]   HEX: 7e a4 a1 00 7c eb 11 b8 88 6b fc ba 3c 61 34 32 34 d9 9a 8a 74 38 06 90 5f 61 66 c8 1e 24 7e 8b 29 83 3a 70 21 0a 64 3c 66 1e d0 e0 18 c7 16 be e9 d8 87 b5 cb 5f 90 0d 76 f4 d5 4a 0f 10 ae 64 90 25 c3 0c 9e 1d 5e cb 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 15 88 70 96 01 d2 af cb 57 5e cc 31 0a cc 98 37 76 80 0e f0 b4 0a bb fd bd d5 a4 6b d0 e4 f2 db 26 6e b6 12 4d 3c 26 8a 38
+[  24.223]   [CALLING] Decrypted dest_term_id=70935065680415745
+[  24.224]   [MTP] CALLING req_sqnum=227601413 (from session-decrypt)
+[  24.224]   [MTP] Built session-encrypted CALLING_RESP: doorbell=192.168.1.81:8899 req_sqnum=227601413 frame_size=40
+[  24.225]   [MTP] Built MTP_RES_RESP: link_id=24 relay=192.168.1.245:23000 doorbell_udp=192.168.1.245:23000 chkval=520166578 (76B)
+[  24.225]   [MTP] Sending CALLING_ACK + MTP_RES_RESP to bridge 127.0.0.1:38051
+[  24.640] NEW CLIENT: term_id=5872028228529587817 from 127.0.0.1:38051 port=28800
+[  24.641]   HDR: proto=0x7f type=0x01(DETECT_REQ) len=68 opt=0x00010000 enc=1 ack=False resp=False
+[  24.641]   HEX: 7f 01 44 00 02 8c a8 c6 d8 b4 4c 47 02 41 a7 91 30 2a 4b f9 00 00 01 00 13 ff f6 ad d1 08 ca 19 fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee 00 00 00 00
+[  24.642] ← DETECT_REQ from 127.0.0.1:38051:28800 client_tid=5872028228529587817 (68B)
+[  24.642] → DETECT_RESP to 127.0.0.1:38051 server_tid=-3195816737827617183 (56B)
+[  24.669] NEW CLIENT: term_id=78455064272296264 from 127.0.0.1:38051 port=28800
+[  24.669]   HDR: proto=0x7f type=0x0c(CERTIFY) len=172 opt=0x014d640a enc=13 ack=False resp=False
+[  24.670]   HEX: 7f 0c ac 00 6c ad 9c d6 34 07 61 74 6c 60 93 81 dc 99 66 ca 0a 64 4d 01 e7 a2 e3 0b c8 52 99 d5 57 2f 84 40 fa 87 fe e9 9e 41 5a 9f 19 ab 54 60 83 e4 2f 8a b6 e7 e3 9a e2 01 4b 30 c6 af b3 b2 2b 99 f3 b5 50 ed d2 40 c4 95 f4 ea e6 19 a7 07 00 00 00 00 00 00 00 00 00 00 00 00 01 01 b1 f1 35 e9 60 ce b3 bf 66 ff 6a fb d5 b7 49 a6 5f 84 03 ab 50 89 1d b5 c0 8b 2a 1e 6b c7 8f bc e8 3c 9d b5 ff 51 5c d1 ef b6 8f f7 2f 09 a5 63 99 40 18 00 58 bc 0b e8 19 e2 17 40 a1 0c 16 89 ae c1 4e 0e e0 09 da 9f 78 fb 56 61 58 dd
+[  24.671] ← CERTIFY_REQ from 127.0.0.1:38051 term_id=78455064272296264 (172B)
+[  24.671]   [DEBUG] CERTIFY plaintext sqnum=227601416
+[  24.671]   [DEBUG] Raw payload (first 48B): e7a2e30bc85299d5572f8440fa87fee99e415a9f19ab546083e42f8ab6e7e39ae2014b30c6afb3b22b99f3b550edd240 encrypt_mode=1
+[  24.672]   [DEBUG] Per-frame key: 7f0cac000a644d00
+[  24.673]   [DEBUG] Decrypted payload (first 48B): 05000000c495f4ea80b767e38f1a81c6288929b352e7791e5d608423fb3803123a9c62d74921dca50804000001000000
+[  24.673]   [DEBUG] hash_checksum=0xeaf495c4 enc_key=80b767e38f1a81c6288929b352e7791e5d608423fb3803123a9c62d74921dca5
+[  24.674]   [RELAY] Certify key: e7bcaca9a5fa7a8c83a9a5362b5458c0
+[  24.675]   [RELAY] Session key VERIFIED! hash=0xeaf495c4
+[  24.675]   [RELAY] CERTIFY session_key=ef628fe4813a75c3... session_id=05000000c495f4ea
+[  24.682]   [RELAY] Cached REAL session_key=ef628fe4813a75c3... for term_id=78455064272296264
+[  24.683]   [ROLE] Identified BRIDGE: term_id=78455064272296264 addr=127.0.0.1:38051
+[  24.684]   [RELAY] -> CERTIFY_RESP to 127.0.0.1:38051 (80B)
+[  24.719] NEW CLIENT: term_id=2287518956581021311 from 127.0.0.1:38051 port=28800
+[  24.719]   HDR: proto=0x7e type=0xa6(INIT_INFO) len=62 opt=0x000ec374 enc=14 ack=False resp=False
+[  24.719]   HEX: 7e a6 3e 00 5d 15 7d e7 48 e9 79 cd 3d da fb 80 4e 8d 79 51 74 c3 0e 00 0b d6 c8 32 92 dc c8 82 70 28 2b 2c d4 51 91 0f 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 01 00 00 00 00 0d
+[  24.720] ← INIT_INFO from 127.0.0.1:38051 term_id=2287518956581021311
+[  24.720]   [ROLE] Identified BRIDGE: term_id=2287518956581021311 addr=127.0.0.1:38051
+[  24.720]   [DEBUG] Using predicted sqnum=227601417 for INIT_INFO_RESP
+[  24.720]   → INIT_INFO_RESP to 127.0.0.1:38051 (60B)
+[  24.767] NEW CLIENT: term_id=-951624097772718090 from 127.0.0.1:38051 port=28800
+[  24.767]   HDR: proto=0x7e type=0xa0(SUBSCRIBE) len=48 opt=0x000a776e enc=10 ack=False resp=False
+[  24.767]   HEX: 7e a0 30 00 26 d9 72 fd 9d 1e a2 79 46 16 f4 9a 9b 7a a2 e5 6e 77 0a 00 62 c6 ce f7 dd ed de 69 6b c0 8d 44 cb be 99 c0 d3 15 8f 2a b9 24 48 c0
+[  24.767] ← SUBSCRIBE from 127.0.0.1:38051 term_id=-951624097772718090 (48B)
+[  24.768]   [DEBUG] SUBSCRIBE predicted_sqnum=227601419 (base=227601417)
+[  24.768]   → SUBSCRIBE_RESP to 127.0.0.1:38051 (54B) chkval=227601419
+[  24.869] NEW CLIENT: term_id=4283706444827153855 from 127.0.0.1:38051 port=28800
+[  24.869]   HDR: proto=0x7e type=0xa4(CALLING_REQ) len=161 opt=0x0006162a enc=6 ack=False resp=False
+[  24.869]   HEX: 7e a4 a1 00 6b b0 20 bf 42 ac 6e 4c 0b 7f a6 d8 44 c8 6e d0 2a 16 06 00 31 76 38 ea 29 bc 94 b4 29 83 3a 70 21 0a 64 3c 66 1e d0 e0 18 c7 16 be e9 d8 87 b5 cb 5f 90 0d 76 f4 d5 4a 0f 10 ae 64 90 25 c3 0c 9e 1d 5e cb 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 38 d1 bd d6 25 44 1c 38 57 5e cc 31 0a cc 98 37 76 80 0e f0 b4 0a bb fd bd d5 a4 6b d0 e4 f2 db 26 6e b6 12 4d 3c 26 8a 38
+[  24.869] ← CALLING_REQ from 127.0.0.1:38051 term_id=4283706444827153855 (161B)
+[  24.869]   HEX: 7e a4 a1 00 6b b0 20 bf 42 ac 6e 4c 0b 7f a6 d8 44 c8 6e d0 2a 16 06 00 31 76 38 ea 29 bc 94 b4 29 83 3a 70 21 0a 64 3c 66 1e d0 e0 18 c7 16 be e9 d8 87 b5 cb 5f 90 0d 76 f4 d5 4a 0f 10 ae 64 90 25 c3 0c 9e 1d 5e cb 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 38 d1 bd d6 25 44 1c 38 57 5e cc 31 0a cc 98 37 76 80 0e f0 b4 0a bb fd bd d5 a4 6b d0 e4 f2 db 26 6e b6 12 4d 3c 26 8a 38
+[  24.870]   [CALLING] Decrypted dest_term_id=52710488651336705
+[  24.870]   [MTP] CALLING req_sqnum=227601419 (from session-decrypt)
+[  24.870]   [MTP] Built session-encrypted CALLING_RESP: doorbell=192.168.1.81:8899 req_sqnum=227601419 frame_size=40
+[  24.870]   [MTP] Built MTP_RES_RESP: link_id=25 relay=192.168.1.245:23000 doorbell_udp=192.168.1.245:23000 chkval=2384280639 (76B)
+[  24.870]   [MTP] Sending CALLING_ACK + MTP_RES_RESP to bridge 127.0.0.1:38051
+[  25.419] ← CALLING_REQ from 127.0.0.1:38051 term_id=4283706444827153855 (161B)
+[  25.420]   HEX: 7e a4 a1 00 6b b0 20 bf 42 ac 6e 4c 0b 7f a6 d8 44 c8 6e d0 2a 16 06 10 31 76 38 ea 29 bc 94 b4 29 83 3a 70 21 0a 64 3c 66 1e d0 e0 18 c7 16 be e9 d8 87 b5 cb 5f 90 0d 76 f4 d5 4a 0f 10 ae 64 90 25 c3 0c 9e 1d 5e cb 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 38 d1 bd d6 25 44 1c 38 57 5e cc 31 0a cc 98 37 76 80 0e f0 b4 0a bb fd bd d5 a4 6b d0 e4 f2 db 26 6e b6 12 4d 3c 26 8a 38
+[  25.423]   [CALLING] Decrypted dest_term_id=52710488651336705
+[  25.423]   [MTP] CALLING req_sqnum=227601419 (from session-decrypt)
+[  25.424]   [MTP] Built session-encrypted CALLING_RESP: doorbell=192.168.1.81:8899 req_sqnum=227601419 frame_size=40
+[  25.425]   [MTP] Built MTP_RES_RESP: link_id=26 relay=192.168.1.245:23000 doorbell_udp=192.168.1.245:23000 chkval=2384280639 (76B)
+[  25.425]   [MTP] Sending CALLING_ACK + MTP_RES_RESP to bridge 127.0.0.1:38051
+[  25.619] ← SUBSCRIBE from 127.0.0.1:38051 term_id=-2846480229750905863 (48B)
+[  25.620]   [DEBUG] SUBSCRIBE predicted_sqnum=227601421 (base=227601419)
+[  25.621]   → SUBSCRIBE_RESP to 127.0.0.1:38051 (54B) chkval=227601421
+[  26.019] ← CALLING_REQ from 127.0.0.1:38051 term_id=4283706444827153855 (161B)
+[  26.021]   HEX: 7e a4 a1 00 6b b0 20 bf 42 ac 6e 4c 0b 7f a6 d8 44 c8 6e d0 2a 16 06 20 31 76 38 ea 29 bc 94 b4 29 83 3a 70 21 0a 64 3c 66 1e d0 e0 18 c7 16 be e9 d8 87 b5 cb 5f 90 0d 76 f4 d5 4a 0f 10 ae 64 90 25 c3 0c 9e 1d 5e cb 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 38 d1 bd d6 25 44 1c 38 57 5e cc 31 0a cc 98 37 76 80 0e f0 b4 0a bb fd bd d5 a4 6b d0 e4 f2 db 26 6e b6 12 4d 3c 26 8a 38
+[  26.024]   [CALLING] Decrypted dest_term_id=52710488651336705
+[  26.025]   [MTP] CALLING req_sqnum=227601419 (from session-decrypt)
+[  26.025]   [MTP] Built session-encrypted CALLING_RESP: doorbell=192.168.1.81:8899 req_sqnum=227601419 frame_size=40
+[  26.026]   [MTP] Built MTP_RES_RESP: link_id=27 relay=192.168.1.245:23000 doorbell_udp=192.168.1.245:23000 chkval=2384280639 (76B)
+[  26.026]   [MTP] Sending CALLING_ACK + MTP_RES_RESP to bridge 127.0.0.1:38051
+[  26.619] ← SUBSCRIBE from 127.0.0.1:38051 term_id=-951624097772718090 (48B)
+[  26.620]   [DEBUG] SUBSCRIBE predicted_sqnum=227601423 (base=227601421)
+[  26.621]   → SUBSCRIBE_RESP to 127.0.0.1:38051 (54B) chkval=227601423
+[  26.622] ← CALLING_REQ from 127.0.0.1:38051 term_id=4283706444827153855 (161B)
+[  26.623]   HEX: 7e a4 a1 00 6b b0 20 bf 42 ac 6e 4c 0b 7f a6 d8 44 c8 6e d0 2a 16 06 30 31 76 38 ea 29 bc 94 b4 29 83 3a 70 21 0a 64 3c 66 1e d0 e0 18 c7 16 be e9 d8 87 b5 cb 5f 90 0d 76 f4 d5 4a 0f 10 ae 64 90 25 c3 0c 9e 1d 5e cb 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 38 d1 bd d6 25 44 1c 38 57 5e cc 31 0a cc 98 37 76 80 0e f0 b4 0a bb fd bd d5 a4 6b d0 e4 f2 db 26 6e b6 12 4d 3c 26 8a 38
+[  26.627]   [CALLING] Decrypted dest_term_id=52710488651336705
+[  26.628]   [MTP] CALLING req_sqnum=227601419 (from session-decrypt)
+[  26.628]   [MTP] Built session-encrypted CALLING_RESP: doorbell=192.168.1.81:8899 req_sqnum=227601419 frame_size=40
+[  26.629]   [MTP] Built MTP_RES_RESP: link_id=28 relay=192.168.1.245:23000 doorbell_udp=192.168.1.245:23000 chkval=2384280639 (76B)
+[  26.629]   [MTP] Sending CALLING_ACK + MTP_RES_RESP to bridge 127.0.0.1:38051
+[  27.220] ← CALLING_REQ from 127.0.0.1:38051 term_id=4283706444827153855 (161B)
+[  27.221]   HEX: 7e a4 a1 00 6b b0 20 bf 42 ac 6e 4c 0b 7f a6 d8 44 c8 6e d0 2a 16 06 40 31 76 38 ea 29 bc 94 b4 29 83 3a 70 21 0a 64 3c 66 1e d0 e0 18 c7 16 be e9 d8 87 b5 cb 5f 90 0d 76 f4 d5 4a 0f 10 ae 64 90 25 c3 0c 9e 1d 5e cb 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 38 d1 bd d6 25 44 1c 38 57 5e cc 31 0a cc 98 37 76 80 0e f0 b4 0a bb fd bd d5 a4 6b d0 e4 f2 db 26 6e b6 12 4d 3c 26 8a 38
+[  27.224]   [CALLING] Decrypted dest_term_id=52710488651336705
+[  27.225]   [MTP] CALLING req_sqnum=227601419 (from session-decrypt)
+[  27.225]   [MTP] Built session-encrypted CALLING_RESP: doorbell=192.168.1.81:8899 req_sqnum=227601419 frame_size=40
+[  27.226]   [MTP] Built MTP_RES_RESP: link_id=29 relay=192.168.1.245:23000 doorbell_udp=192.168.1.245:23000 chkval=2384280639 (76B)
+[  27.226]   [MTP] Sending CALLING_ACK + MTP_RES_RESP to bridge 127.0.0.1:38051
+[  27.717] NEW CLIENT: term_id=5243108013461616125 from 127.0.0.1:38051 port=51701
+[  27.719]   HDR: proto=0x7f type=0x15(LIST_REQ) len=40 opt=0x00010000 enc=1 ack=False resp=False
+[  27.719]   HEX: 7f 15 28 00 86 c3 64 c0 41 4d b7 f5 86 0e 6b 97 a9 d3 b0 4b 00 00 01 00 b4 03 bc b0 4c 02 f4 14 1b 54 3c 61 0e 1b ce 3b
+[  27.719] ← LIST_REQ from 127.0.0.1:38051 term_id=5243108013461616125 (40B)
+[  27.719] → LIST_RESP to 127.0.0.1:38051 (local, servers: 127.0.0.1, 68B)
+[  27.721] NEW CLIENT: term_id=291296090552179922 from 127.0.0.1:38051 port=28800
+[  27.721]   HDR: proto=0x7f type=0x01(DETECT_REQ) len=68 opt=0x00010000 enc=1 ack=False resp=False
+[  27.721]   HEX: 7f 01 44 00 28 1e de ce be 96 d4 35 28 d3 d1 99 56 08 d3 8b 00 00 01 00 ce d5 de 38 24 51 08 61 fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee 00 00 00 00
+[  27.721] ← DETECT_REQ from 127.0.0.1:38051:28800 client_tid=291296090552179922 (68B)
+[  27.721] → DETECT_RESP to 127.0.0.1:38051 server_tid=-3195816737827617183 (56B)
+[  27.818] ← CALLING_REQ from 127.0.0.1:38051 term_id=4283706444827153855 (161B)
+[  27.818]   HEX: 7e a4 a1 00 6b b0 20 bf 42 ac 6e 4c 0b 7f a6 d8 44 c8 6e d0 2a 16 06 50 31 76 38 ea 29 bc 94 b4 29 83 3a 70 21 0a 64 3c 66 1e d0 e0 18 c7 16 be e9 d8 87 b5 cb 5f 90 0d 76 f4 d5 4a 0f 10 ae 64 90 25 c3 0c 9e 1d 5e cb 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 38 d1 bd d6 25 44 1c 38 57 5e cc 31 0a cc 98 37 76 80 0e f0 b4 0a bb fd bd d5 a4 6b d0 e4 f2 db 26 6e b6 12 4d 3c 26 8a 38
+[  27.819]   [CALLING] Decrypted dest_term_id=52710488651336705
+[  27.819]   [MTP] CALLING req_sqnum=227601419 (from session-decrypt)
+[  27.820]   [MTP] Built session-encrypted CALLING_RESP: doorbell=192.168.1.81:8899 req_sqnum=227601419 frame_size=40
+[  27.820]   [MTP] Built MTP_RES_RESP: link_id=30 relay=192.168.1.245:23000 doorbell_udp=192.168.1.245:23000 chkval=2384280639 (76B)
+[  27.820]   [MTP] Sending CALLING_ACK + MTP_RES_RESP to bridge 127.0.0.1:38051
+[  28.418] ← CALLING_REQ from 127.0.0.1:38051 term_id=4283706444827153855 (161B)
+[  28.419]   HEX: 7e a4 a1 00 6b b0 20 bf 42 ac 6e 4c 0b 7f a6 d8 44 c8 6e d0 2a 16 06 60 31 76 38 ea 29 bc 94 b4 29 83 3a 70 21 0a 64 3c 66 1e d0 e0 18 c7 16 be e9 d8 87 b5 cb 5f 90 0d 76 f4 d5 4a 0f 10 ae 64 90 25 c3 0c 9e 1d 5e cb 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 38 d1 bd d6 25 44 1c 38 57 5e cc 31 0a cc 98 37 76 80 0e f0 b4 0a bb fd bd d5 a4 6b d0 e4 f2 db 26 6e b6 12 4d 3c 26 8a 38
+[  28.422]   [CALLING] Decrypted dest_term_id=52710488651336705
+[  28.423]   [MTP] CALLING req_sqnum=227601419 (from session-decrypt)
+[  28.424]   [MTP] Built session-encrypted CALLING_RESP: doorbell=192.168.1.81:8899 req_sqnum=227601419 frame_size=40
+[  28.424]   [MTP] Built MTP_RES_RESP: link_id=31 relay=192.168.1.245:23000 doorbell_udp=192.168.1.245:23000 chkval=2384280639 (76B)
+[  28.425]   [MTP] Sending CALLING_ACK + MTP_RES_RESP to bridge 127.0.0.1:38051
+[  28.620] ← SUBSCRIBE from 127.0.0.1:38051 term_id=-951624097772718090 (48B)
+[  28.621]   [DEBUG] SUBSCRIBE predicted_sqnum=227601425 (base=227601423)
+[  28.621]   → SUBSCRIBE_RESP to 127.0.0.1:38051 (54B) chkval=227601425
+[  28.722] NEW CLIENT: term_id=2758883699541393949 from 127.0.0.1:38051 port=28800
+[  28.723]   HDR: proto=0x7f type=0x01(DETECT_REQ) len=68 opt=0x00010000 enc=1 ack=False resp=False
+[  28.724]   HEX: 7f 01 44 00 fd b0 4f 23 c2 78 0c 08 fd 7d 40 74 2a e6 0b b6 00 00 01 00 15 dd e8 73 71 a1 d8 54 fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee 00 00 00 00
+[  28.724] ← DETECT_REQ from 127.0.0.1:38051:28800 client_tid=2758883699541393949 (68B)
+[  28.725] → DETECT_RESP to 127.0.0.1:38051 server_tid=-3195816737827617183 (56B)
+[  29.019] ← CALLING_REQ from 127.0.0.1:38051 term_id=4283706444827153855 (161B)
+[  29.019]   HEX: 7e a4 a1 00 6b b0 20 bf 42 ac 6e 4c 0b 7f a6 d8 44 c8 6e d0 2a 16 06 70 31 76 38 ea 29 bc 94 b4 29 83 3a 70 21 0a 64 3c 66 1e d0 e0 18 c7 16 be e9 d8 87 b5 cb 5f 90 0d 76 f4 d5 4a 0f 10 ae 64 90 25 c3 0c 9e 1d 5e cb 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 38 d1 bd d6 25 44 1c 38 57 5e cc 31 0a cc 98 37 76 80 0e f0 b4 0a bb fd bd d5 a4 6b d0 e4 f2 db 26 6e b6 12 4d 3c 26 8a 38
+[  29.020]   [CALLING] Decrypted dest_term_id=52710488651336705
+[  29.021]   [MTP] CALLING req_sqnum=227601419 (from session-decrypt)
+[  29.021]   [MTP] Built session-encrypted CALLING_RESP: doorbell=192.168.1.81:8899 req_sqnum=227601419 frame_size=40
+[  29.021]   [MTP] Built MTP_RES_RESP: link_id=32 relay=192.168.1.245:23000 doorbell_udp=192.168.1.245:23000 chkval=2384280639 (76B)
+[  29.021]   [MTP] Sending CALLING_ACK + MTP_RES_RESP to bridge 127.0.0.1:38051
+[  29.619] ← CALLING_REQ from 127.0.0.1:38051 term_id=4283706444827153855 (161B)
+[  29.620]   HEX: 7e a4 a1 00 6b b0 20 bf 42 ac 6e 4c 0b 7f a6 d8 44 c8 6e d0 2a 16 06 80 31 76 38 ea 29 bc 94 b4 29 83 3a 70 21 0a 64 3c 66 1e d0 e0 18 c7 16 be e9 d8 87 b5 cb 5f 90 0d 76 f4 d5 4a 0f 10 ae 64 90 25 c3 0c 9e 1d 5e cb 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 38 d1 bd d6 25 44 1c 38 57 5e cc 31 0a cc 98 37 76 80 0e f0 b4 0a bb fd bd d5 a4 6b d0 e4 f2 db 26 6e b6 12 4d 3c 26 8a 38
+[  29.624]   [CALLING] Decrypted dest_term_id=52710488651336705
+[  29.624]   [MTP] CALLING req_sqnum=227601419 (from session-decrypt)
+[  29.625]   [MTP] Built session-encrypted CALLING_RESP: doorbell=192.168.1.81:8899 req_sqnum=227601419 frame_size=40
+[  29.626]   [MTP] Built MTP_RES_RESP: link_id=33 relay=192.168.1.245:23000 doorbell_udp=192.168.1.245:23000 chkval=2384280639 (76B)
+[  29.626]   [MTP] Sending CALLING_ACK + MTP_RES_RESP to bridge 127.0.0.1:38051
+[  29.722] NEW CLIENT: term_id=8023790239478728678 from 127.0.0.1:38051 port=28800
+[  29.722]   HDR: proto=0x7f type=0x01(DETECT_REQ) len=68 opt=0x00010000 enc=1 ack=False resp=False
+[  29.723]   HEX: 7f 01 44 00 92 37 14 1c fd a9 8c ad 92 fa 1b 4b 15 37 8b 13 00 00 01 00 79 ee cc 2f bf da 62 d9 fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee 00 00 00 00
+[  29.723] ← DETECT_REQ from 127.0.0.1:38051:28800 client_tid=8023790239478728678 (68B)
+[  29.724] → DETECT_RESP to 127.0.0.1:38051 server_tid=-3195816737827617183 (56B)
+[  30.005] --- STATUS: 23 clients ---
+[  30.005]   term_id=-5783601125351474452 addr=127.0.0.1:43805 role=unknown cert=False in=1 out=0 last_seen=22s ago
+[  30.006]   term_id=8582114378401601852 addr=127.0.0.1:43805 role=unknown cert=False in=1 out=0 last_seen=22s ago
+[  30.007]   term_id=8667459919827044481 addr=127.0.0.1:43805 role=bridge cert=True in=1 out=0 last_seen=22s ago
+[  30.007]   term_id=-3857518620610282815 addr=127.0.0.1:43805 role=bridge cert=True in=1 out=0 last_seen=22s ago
+[  30.008]   term_id=-2846480229750905863 addr=127.0.0.1:38051 role=unknown cert=False in=10 out=0 last_seen=4s ago
+[  30.008]   term_id=791681027062638505 addr=127.0.0.1:38051 role=unknown cert=False in=27 out=0 last_seen=7s ago
+[  30.009]   term_id=944066791368522163 addr=127.0.0.1:43805 role=unknown cert=False in=1 out=0 last_seen=21s ago
+[  30.009]   term_id=2141306497033684867 addr=127.0.0.1:43805 role=unknown cert=False in=1 out=0 last_seen=20s ago
+[  30.010]   term_id=-3357802286401206486 addr=127.0.0.1:43805 role=unknown cert=False in=1 out=0 last_seen=19s ago
+[  30.010]   term_id=-44885303651907592 addr=127.0.0.1:38051 role=unknown cert=False in=14 out=0 last_seen=12s ago
+[  30.011]   term_id=-8766449106174924804 addr=127.0.0.1:43805 role=unknown cert=False in=1 out=0 last_seen=17s ago
+[  30.011]   term_id=7082019100197859699 addr=127.0.0.1:43805 role=unknown cert=False in=1 out=0 last_seen=15s ago
+[  30.012]   term_id=-2058968236445942388 addr=127.0.0.1:38051 role=unknown cert=False in=10 out=0 last_seen=6s ago
+[  30.012]   term_id=-9117987647787080273 addr=127.0.0.1:38051 role=unknown cert=False in=1 out=0 last_seen=10s ago
+[  30.013]   term_id=5872028228529587817 addr=127.0.0.1:38051 role=unknown cert=False in=1 out=0 last_seen=5s ago
+[  30.013]   term_id=78455064272296264 addr=127.0.0.1:38051 role=bridge cert=True in=1 out=0 last_seen=5s ago
+[  30.013]   term_id=2287518956581021311 addr=127.0.0.1:38051 role=bridge cert=True in=1 out=0 last_seen=5s ago
+[  30.014]   term_id=-951624097772718090 addr=127.0.0.1:38051 role=unknown cert=False in=3 out=0 last_seen=1s ago
+[  30.014]   term_id=4283706444827153855 addr=127.0.0.1:38051 role=unknown cert=False in=9 out=0 last_seen=0s ago
+[  30.014]   term_id=5243108013461616125 addr=127.0.0.1:38051 role=unknown cert=False in=1 out=0 last_seen=2s ago
+[  30.014]   term_id=291296090552179922 addr=127.0.0.1:38051 role=unknown cert=False in=1 out=0 last_seen=2s ago
+[  30.015]   term_id=2758883699541393949 addr=127.0.0.1:38051 role=unknown cert=False in=1 out=0 last_seen=1s ago
+[  30.015]   term_id=8023790239478728678 addr=127.0.0.1:38051 role=unknown cert=False in=1 out=0 last_seen=0s ago
+[  30.219] ← CALLING_REQ from 127.0.0.1:38051 term_id=4283706444827153855 (161B)
+[  30.220]   HEX: 7e a4 a1 00 6b b0 20 bf 42 ac 6e 4c 0b 7f a6 d8 44 c8 6e d0 2a 16 06 90 31 76 38 ea 29 bc 94 b4 29 83 3a 70 21 0a 64 3c 66 1e d0 e0 18 c7 16 be e9 d8 87 b5 cb 5f 90 0d 76 f4 d5 4a 0f 10 ae 64 90 25 c3 0c 9e 1d 5e cb 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 76 f4 d5 4a 0f 10 ae 64 38 d1 bd d6 25 44 1c 38 57 5e cc 31 0a cc 98 37 76 80 0e f0 b4 0a bb fd bd d5 a4 6b d0 e4 f2 db 26 6e b6 12 4d 3c 26 8a 38
+[  30.224]   [CALLING] Decrypted dest_term_id=52710488651336705
+[  30.225]   [MTP] CALLING req_sqnum=227601419 (from session-decrypt)
+[  30.226]   [MTP] Built session-encrypted CALLING_RESP: doorbell=192.168.1.81:8899 req_sqnum=227601419 frame_size=40
+[  30.226]   [MTP] Built MTP_RES_RESP: link_id=34 relay=192.168.1.245:23000 doorbell_udp=192.168.1.245:23000 chkval=2384280639 (76B)
+[  30.227]   [MTP] Sending CALLING_ACK + MTP_RES_RESP to bridge 127.0.0.1:38051
+[  30.619] ← SUBSCRIBE from 127.0.0.1:38051 term_id=-951624097772718090 (48B)
+[  30.620]   [DEBUG] SUBSCRIBE predicted_sqnum=227601427 (base=227601425)
+[  30.620]   → SUBSCRIBE_RESP to 127.0.0.1:38051 (54B) chkval=227601427
+[  30.868] NEW CLIENT: term_id=1633003044378887651 from 127.0.0.1:38051 port=28800
+[  30.869]   HDR: proto=0x7e type=0xbc(0xBC) len=56 opt=0x00065e9c enc=6 ack=False resp=False
+[  30.869]   HEX: 7e bc 38 00 04 18 7d 46 8f 08 37 79 64 d7 fb 21 89 6c 37 e5 9c 5e 06 00 6a c7 d5 86 68 82 94 85 84 e5 a2 33 28 84 fc f9 ba 5b b9 fe 1c 23 93 a5 76 f4 d5 4a 0f 10 ae 64
+[  30.869] ← 0xBC from 127.0.0.1:38051:28800 term_id=1633003044378887651 (56B) opt=0x00065e9c enc=6
+[  30.870]   HEX: 7e bc 38 00 04 18 7d 46 8f 08 37 79 64 d7 fb 21 89 6c 37 e5 9c 5e 06 00 6a c7 d5 86 68 82 94 85 84 e5 a2 33 28 84 fc f9 ba 5b b9 fe 1c 23 93 a5 76 f4 d5 4a 0f 10 ae 64
+[  30.871]   ! NO PEER to route 0xBC (term_id=1633003044378887651, clients=[-5783601125351474452, 8582114378401601852, 8667459919827044481, -3857518620610282815, -2846480229750905863, 791681027062638505, 944066791368522163, 2141306497033684867, -3357802286401206486, -44885303651907592, -8766449106174924804, 7082019100197859699, -2058968236445942388, -9117987647787080273, 5872028228529587817, 78455064272296264, 2287518956581021311, -951624097772718090, 4283706444827153855, 5243108013461616125, 291296090552179922, 2758883699541393949, 8023790239478728678, 1633003044378887651])
+[  30.872] NEW CLIENT: term_id=5560050540624620791 from 127.0.0.1:38051 port=28800
+[  30.872]   HDR: proto=0x7e type=0xd8(0xD8) len=54 opt=0x00068dba enc=6 ack=False resp=False
+[  30.873]   HEX: 7e d8 36 00 5f 1d 8f 31 02 3d c0 05 3f d2 09 56 04 59 c0 99 ba 8d 06 00 29 83 3a 70 21 0a 64 3c 66 1e d0 e0 18 c7 16 be 6d 15 8f d0 26 81 61 cb 00 00 06 00 00 00
+[  30.873] ← 0xD8 from 127.0.0.1:38051:28800 term_id=5560050540624620791 (54B) opt=0x00068dba enc=6
+[  30.874]   HEX: 7e d8 36 00 5f 1d 8f 31 02 3d c0 05 3f d2 09 56 04 59 c0 99 ba 8d 06 00 29 83 3a 70 21 0a 64 3c 66 1e d0 e0 18 c7 16 be 6d 15 8f d0 26 81 61 cb 00 00 06 00 00 00
+[  30.874]   ! NO PEER to route 0xD8 (term_id=5560050540624620791, clients=[-5783601125351474452, 8582114378401601852, 8667459919827044481, -3857518620610282815, -2846480229750905863, 791681027062638505, 944066791368522163, 2141306497033684867, -3357802286401206486, -44885303651907592, -8766449106174924804, 7082019100197859699, -2058968236445942388, -9117987647787080273, 5872028228529587817, 78455064272296264, 2287518956581021311, -951624097772718090, 4283706444827153855, 5243108013461616125, 291296090552179922, 2758883699541393949, 8023790239478728678, 1633003044378887651, 5560050540624620791])
