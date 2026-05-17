@@ -379,3 +379,1683 @@
 [  60.025]   term_id=2584131736300306410 addr=127.0.0.1:46227 role=unknown cert=False in=2 out=0 last_seen=30s ago
 [  60.025]   term_id=-1106312554595023122 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=30s ago
 [  60.025]   term_id=5549262997913207762 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=30s ago
+[  90.027] --- STATUS: 29 clients ---
+[  90.028]   term_id=-2697608252815436935 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=87s ago
+[  90.029]   term_id=6269279792593288696 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=87s ago
+[  90.029]   term_id=3205819932592849908 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=87s ago
+[  90.030]   term_id=2665540717097937809 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=87s ago
+[  90.030]   term_id=-8318375484768109668 addr=127.0.0.1:60010 role=unknown cert=False in=10 out=0 last_seen=69s ago
+[  90.031]   term_id=1199322554568244946 addr=127.0.0.1:60010 role=unknown cert=False in=27 out=0 last_seen=72s ago
+[  90.031]   term_id=8864947552701480748 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=86s ago
+[  90.032]   term_id=17784951862937349 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=85s ago
+[  90.032]   term_id=2912693109592377539 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=84s ago
+[  90.032]   term_id=-2943590555654490829 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=84s ago
+[  90.033]   term_id=-7245578751572442948 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=82s ago
+[  90.034]   term_id=-8018054872861384096 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=80s ago
+[  90.034]   term_id=-8669080603391965318 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=75s ago
+[  90.034]   term_id=8398741980459494025 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=73s ago
+[  90.035]   term_id=-1766903539415178180 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=70s ago
+[  90.035]   term_id=-432725705265349445 addr=127.0.0.1:58464 role=unknown cert=False in=1 out=0 last_seen=70s ago
+[  90.035]   term_id=-9176274227757260244 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=70s ago
+[  90.036]   term_id=3502876675831395208 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=70s ago
+[  90.036]   term_id=-9111819769464301950 addr=127.0.0.1:46227 role=unknown cert=False in=6 out=0 last_seen=60s ago
+[  90.036]   term_id=8672162328631983287 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=67s ago
+[  90.037]   term_id=-6446605484256805696 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=67s ago
+[  90.037]   term_id=4772143221040174605 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=66s ago
+[  90.037]   term_id=-255931157523027149 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=65s ago
+[  90.038]   term_id=-5749754115196054330 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=63s ago
+[  90.038]   term_id=-8163804615229913763 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=61s ago
+[  90.038]   term_id=-4926259496856446159 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=61s ago
+[  90.039]   term_id=2584131736300306410 addr=127.0.0.1:46227 role=unknown cert=False in=2 out=0 last_seen=60s ago
+[  90.039]   term_id=-1106312554595023122 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=60s ago
+[  90.039]   term_id=5549262997913207762 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=60s ago
+[ 120.044] --- STATUS: 29 clients ---
+[ 120.044]   term_id=-2697608252815436935 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=117s ago
+[ 120.044]   term_id=6269279792593288696 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=117s ago
+[ 120.045]   term_id=3205819932592849908 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=117s ago
+[ 120.045]   term_id=2665540717097937809 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=117s ago
+[ 120.045]   term_id=-8318375484768109668 addr=127.0.0.1:60010 role=unknown cert=False in=10 out=0 last_seen=99s ago
+[ 120.045]   term_id=1199322554568244946 addr=127.0.0.1:60010 role=unknown cert=False in=27 out=0 last_seen=102s ago
+[ 120.045]   term_id=8864947552701480748 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=116s ago
+[ 120.045]   term_id=17784951862937349 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=115s ago
+[ 120.045]   term_id=2912693109592377539 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=114s ago
+[ 120.045]   term_id=-2943590555654490829 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=114s ago
+[ 120.045]   term_id=-7245578751572442948 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=112s ago
+[ 120.045]   term_id=-8018054872861384096 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=110s ago
+[ 120.045]   term_id=-8669080603391965318 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=105s ago
+[ 120.045]   term_id=8398741980459494025 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=103s ago
+[ 120.045]   term_id=-1766903539415178180 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=100s ago
+[ 120.045]   term_id=-432725705265349445 addr=127.0.0.1:58464 role=unknown cert=False in=1 out=0 last_seen=100s ago
+[ 120.045]   term_id=-9176274227757260244 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=100s ago
+[ 120.046]   term_id=3502876675831395208 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=100s ago
+[ 120.046]   term_id=-9111819769464301950 addr=127.0.0.1:46227 role=unknown cert=False in=6 out=0 last_seen=90s ago
+[ 120.046]   term_id=8672162328631983287 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=97s ago
+[ 120.046]   term_id=-6446605484256805696 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=97s ago
+[ 120.046]   term_id=4772143221040174605 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=96s ago
+[ 120.046]   term_id=-255931157523027149 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=95s ago
+[ 120.046]   term_id=-5749754115196054330 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=93s ago
+[ 120.046]   term_id=-8163804615229913763 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=91s ago
+[ 120.046]   term_id=-4926259496856446159 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=91s ago
+[ 120.046]   term_id=2584131736300306410 addr=127.0.0.1:46227 role=unknown cert=False in=2 out=0 last_seen=90s ago
+[ 120.046]   term_id=-1106312554595023122 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=90s ago
+[ 120.046]   term_id=5549262997913207762 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=90s ago
+[ 150.051] --- STATUS: 29 clients ---
+[ 150.052]   term_id=-2697608252815436935 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=147s ago
+[ 150.052]   term_id=6269279792593288696 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=147s ago
+[ 150.053]   term_id=3205819932592849908 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=147s ago
+[ 150.054]   term_id=2665540717097937809 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=147s ago
+[ 150.054]   term_id=-8318375484768109668 addr=127.0.0.1:60010 role=unknown cert=False in=10 out=0 last_seen=129s ago
+[ 150.055]   term_id=1199322554568244946 addr=127.0.0.1:60010 role=unknown cert=False in=27 out=0 last_seen=132s ago
+[ 150.055]   term_id=8864947552701480748 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=146s ago
+[ 150.056]   term_id=17784951862937349 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=145s ago
+[ 150.056]   term_id=2912693109592377539 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=144s ago
+[ 150.057]   term_id=-2943590555654490829 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=144s ago
+[ 150.058]   term_id=-7245578751572442948 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=142s ago
+[ 150.058]   term_id=-8018054872861384096 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=140s ago
+[ 150.058]   term_id=-8669080603391965318 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=135s ago
+[ 150.059]   term_id=8398741980459494025 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=133s ago
+[ 150.059]   term_id=-1766903539415178180 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=130s ago
+[ 150.059]   term_id=-432725705265349445 addr=127.0.0.1:58464 role=unknown cert=False in=1 out=0 last_seen=130s ago
+[ 150.060]   term_id=-9176274227757260244 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=130s ago
+[ 150.060]   term_id=3502876675831395208 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=130s ago
+[ 150.060]   term_id=-9111819769464301950 addr=127.0.0.1:46227 role=unknown cert=False in=6 out=0 last_seen=120s ago
+[ 150.061]   term_id=8672162328631983287 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=127s ago
+[ 150.061]   term_id=-6446605484256805696 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=127s ago
+[ 150.061]   term_id=4772143221040174605 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=126s ago
+[ 150.061]   term_id=-255931157523027149 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=125s ago
+[ 150.062]   term_id=-5749754115196054330 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=123s ago
+[ 150.062]   term_id=-8163804615229913763 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=121s ago
+[ 150.062]   term_id=-4926259496856446159 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=121s ago
+[ 150.063]   term_id=2584131736300306410 addr=127.0.0.1:46227 role=unknown cert=False in=2 out=0 last_seen=120s ago
+[ 150.063]   term_id=-1106312554595023122 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=120s ago
+[ 150.064]   term_id=5549262997913207762 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=120s ago
+[ 180.069] --- STATUS: 29 clients ---
+[ 180.071]   term_id=-2697608252815436935 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=177s ago
+[ 180.071]   term_id=6269279792593288696 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=177s ago
+[ 180.072]   term_id=3205819932592849908 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=177s ago
+[ 180.072]   term_id=2665540717097937809 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=177s ago
+[ 180.072]   term_id=-8318375484768109668 addr=127.0.0.1:60010 role=unknown cert=False in=10 out=0 last_seen=159s ago
+[ 180.073]   term_id=1199322554568244946 addr=127.0.0.1:60010 role=unknown cert=False in=27 out=0 last_seen=162s ago
+[ 180.073]   term_id=8864947552701480748 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=176s ago
+[ 180.074]   term_id=17784951862937349 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=175s ago
+[ 180.074]   term_id=2912693109592377539 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=174s ago
+[ 180.075]   term_id=-2943590555654490829 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=174s ago
+[ 180.075]   term_id=-7245578751572442948 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=172s ago
+[ 180.076]   term_id=-8018054872861384096 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=170s ago
+[ 180.076]   term_id=-8669080603391965318 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=165s ago
+[ 180.077]   term_id=8398741980459494025 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=163s ago
+[ 180.077]   term_id=-1766903539415178180 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=160s ago
+[ 180.078]   term_id=-432725705265349445 addr=127.0.0.1:58464 role=unknown cert=False in=1 out=0 last_seen=160s ago
+[ 180.078]   term_id=-9176274227757260244 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=160s ago
+[ 180.079]   term_id=3502876675831395208 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=160s ago
+[ 180.080]   term_id=-9111819769464301950 addr=127.0.0.1:46227 role=unknown cert=False in=6 out=0 last_seen=150s ago
+[ 180.080]   term_id=8672162328631983287 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=157s ago
+[ 180.080]   term_id=-6446605484256805696 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=157s ago
+[ 180.080]   term_id=4772143221040174605 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=156s ago
+[ 180.081]   term_id=-255931157523027149 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=155s ago
+[ 180.081]   term_id=-5749754115196054330 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=153s ago
+[ 180.081]   term_id=-8163804615229913763 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=151s ago
+[ 180.082]   term_id=-4926259496856446159 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=151s ago
+[ 180.082]   term_id=2584131736300306410 addr=127.0.0.1:46227 role=unknown cert=False in=2 out=0 last_seen=150s ago
+[ 180.082]   term_id=-1106312554595023122 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=150s ago
+[ 180.083]   term_id=5549262997913207762 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=150s ago
+[ 210.089] --- STATUS: 29 clients ---
+[ 210.091]   term_id=-2697608252815436935 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=207s ago
+[ 210.092]   term_id=6269279792593288696 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=207s ago
+[ 210.093]   term_id=3205819932592849908 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=207s ago
+[ 210.094]   term_id=2665540717097937809 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=207s ago
+[ 210.094]   term_id=-8318375484768109668 addr=127.0.0.1:60010 role=unknown cert=False in=10 out=0 last_seen=189s ago
+[ 210.095]   term_id=1199322554568244946 addr=127.0.0.1:60010 role=unknown cert=False in=27 out=0 last_seen=192s ago
+[ 210.095]   term_id=8864947552701480748 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=206s ago
+[ 210.096]   term_id=17784951862937349 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=205s ago
+[ 210.096]   term_id=2912693109592377539 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=204s ago
+[ 210.096]   term_id=-2943590555654490829 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=204s ago
+[ 210.097]   term_id=-7245578751572442948 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=202s ago
+[ 210.098]   term_id=-8018054872861384096 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=200s ago
+[ 210.098]   term_id=-8669080603391965318 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=195s ago
+[ 210.098]   term_id=8398741980459494025 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=193s ago
+[ 210.099]   term_id=-1766903539415178180 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=190s ago
+[ 210.099]   term_id=-432725705265349445 addr=127.0.0.1:58464 role=unknown cert=False in=1 out=0 last_seen=190s ago
+[ 210.099]   term_id=-9176274227757260244 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=190s ago
+[ 210.099]   term_id=3502876675831395208 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=190s ago
+[ 210.100]   term_id=-9111819769464301950 addr=127.0.0.1:46227 role=unknown cert=False in=6 out=0 last_seen=180s ago
+[ 210.100]   term_id=8672162328631983287 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=187s ago
+[ 210.100]   term_id=-6446605484256805696 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=187s ago
+[ 210.100]   term_id=4772143221040174605 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=186s ago
+[ 210.101]   term_id=-255931157523027149 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=185s ago
+[ 210.101]   term_id=-5749754115196054330 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=183s ago
+[ 210.101]   term_id=-8163804615229913763 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=181s ago
+[ 210.101]   term_id=-4926259496856446159 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=181s ago
+[ 210.102]   term_id=2584131736300306410 addr=127.0.0.1:46227 role=unknown cert=False in=2 out=0 last_seen=180s ago
+[ 210.102]   term_id=-1106312554595023122 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=180s ago
+[ 210.102]   term_id=5549262997913207762 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=180s ago
+[ 240.104] --- STATUS: 29 clients ---
+[ 240.104]   term_id=-2697608252815436935 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=237s ago
+[ 240.106]   term_id=6269279792593288696 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=237s ago
+[ 240.106]   term_id=3205819932592849908 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=237s ago
+[ 240.106]   term_id=2665540717097937809 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=237s ago
+[ 240.106]   term_id=-8318375484768109668 addr=127.0.0.1:60010 role=unknown cert=False in=10 out=0 last_seen=219s ago
+[ 240.107]   term_id=1199322554568244946 addr=127.0.0.1:60010 role=unknown cert=False in=27 out=0 last_seen=222s ago
+[ 240.107]   term_id=8864947552701480748 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=236s ago
+[ 240.107]   term_id=17784951862937349 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=235s ago
+[ 240.107]   term_id=2912693109592377539 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=234s ago
+[ 240.108]   term_id=-2943590555654490829 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=234s ago
+[ 240.108]   term_id=-7245578751572442948 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=232s ago
+[ 240.108]   term_id=-8018054872861384096 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=230s ago
+[ 240.108]   term_id=-8669080603391965318 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=225s ago
+[ 240.108]   term_id=8398741980459494025 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=223s ago
+[ 240.109]   term_id=-1766903539415178180 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=220s ago
+[ 240.109]   term_id=-432725705265349445 addr=127.0.0.1:58464 role=unknown cert=False in=1 out=0 last_seen=220s ago
+[ 240.109]   term_id=-9176274227757260244 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=220s ago
+[ 240.110]   term_id=3502876675831395208 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=220s ago
+[ 240.110]   term_id=-9111819769464301950 addr=127.0.0.1:46227 role=unknown cert=False in=6 out=0 last_seen=210s ago
+[ 240.110]   term_id=8672162328631983287 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=217s ago
+[ 240.110]   term_id=-6446605484256805696 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=217s ago
+[ 240.111]   term_id=4772143221040174605 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=216s ago
+[ 240.111]   term_id=-255931157523027149 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=215s ago
+[ 240.111]   term_id=-5749754115196054330 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=213s ago
+[ 240.111]   term_id=-8163804615229913763 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=211s ago
+[ 240.111]   term_id=-4926259496856446159 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=211s ago
+[ 240.111]   term_id=2584131736300306410 addr=127.0.0.1:46227 role=unknown cert=False in=2 out=0 last_seen=210s ago
+[ 240.112]   term_id=-1106312554595023122 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=210s ago
+[ 240.112]   term_id=5549262997913207762 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=210s ago
+[ 270.113] --- STATUS: 29 clients ---
+[ 270.114]   term_id=-2697608252815436935 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=267s ago
+[ 270.115]   term_id=6269279792593288696 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=267s ago
+[ 270.115]   term_id=3205819932592849908 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=267s ago
+[ 270.115]   term_id=2665540717097937809 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=267s ago
+[ 270.115]   term_id=-8318375484768109668 addr=127.0.0.1:60010 role=unknown cert=False in=10 out=0 last_seen=249s ago
+[ 270.115]   term_id=1199322554568244946 addr=127.0.0.1:60010 role=unknown cert=False in=27 out=0 last_seen=252s ago
+[ 270.116]   term_id=8864947552701480748 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=266s ago
+[ 270.116]   term_id=17784951862937349 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=265s ago
+[ 270.116]   term_id=2912693109592377539 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=264s ago
+[ 270.116]   term_id=-2943590555654490829 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=264s ago
+[ 270.116]   term_id=-7245578751572442948 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=262s ago
+[ 270.116]   term_id=-8018054872861384096 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=260s ago
+[ 270.116]   term_id=-8669080603391965318 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=255s ago
+[ 270.117]   term_id=8398741980459494025 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=253s ago
+[ 270.117]   term_id=-1766903539415178180 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=250s ago
+[ 270.117]   term_id=-432725705265349445 addr=127.0.0.1:58464 role=unknown cert=False in=1 out=0 last_seen=250s ago
+[ 270.117]   term_id=-9176274227757260244 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=250s ago
+[ 270.117]   term_id=3502876675831395208 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=250s ago
+[ 270.117]   term_id=-9111819769464301950 addr=127.0.0.1:46227 role=unknown cert=False in=6 out=0 last_seen=240s ago
+[ 270.117]   term_id=8672162328631983287 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=247s ago
+[ 270.118]   term_id=-6446605484256805696 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=247s ago
+[ 270.118]   term_id=4772143221040174605 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=246s ago
+[ 270.118]   term_id=-255931157523027149 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=245s ago
+[ 270.118]   term_id=-5749754115196054330 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=243s ago
+[ 270.118]   term_id=-8163804615229913763 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=241s ago
+[ 270.118]   term_id=-4926259496856446159 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=241s ago
+[ 270.118]   term_id=2584131736300306410 addr=127.0.0.1:46227 role=unknown cert=False in=2 out=0 last_seen=240s ago
+[ 270.118]   term_id=-1106312554595023122 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=240s ago
+[ 270.119]   term_id=5549262997913207762 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=240s ago
+[ 300.122] --- STATUS: 29 clients ---
+[ 300.124]   term_id=-2697608252815436935 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=297s ago
+[ 300.124]   term_id=6269279792593288696 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=297s ago
+[ 300.125]   term_id=3205819932592849908 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=297s ago
+[ 300.126]   term_id=2665540717097937809 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=297s ago
+[ 300.126]   term_id=-8318375484768109668 addr=127.0.0.1:60010 role=unknown cert=False in=10 out=0 last_seen=279s ago
+[ 300.126]   term_id=1199322554568244946 addr=127.0.0.1:60010 role=unknown cert=False in=27 out=0 last_seen=282s ago
+[ 300.126]   term_id=8864947552701480748 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=296s ago
+[ 300.126]   term_id=17784951862937349 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=295s ago
+[ 300.126]   term_id=2912693109592377539 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=294s ago
+[ 300.127]   term_id=-2943590555654490829 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=294s ago
+[ 300.127]   term_id=-7245578751572442948 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=292s ago
+[ 300.127]   term_id=-8018054872861384096 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=290s ago
+[ 300.127]   term_id=-8669080603391965318 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=285s ago
+[ 300.127]   term_id=8398741980459494025 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=283s ago
+[ 300.127]   term_id=-1766903539415178180 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=280s ago
+[ 300.127]   term_id=-432725705265349445 addr=127.0.0.1:58464 role=unknown cert=False in=1 out=0 last_seen=280s ago
+[ 300.128]   term_id=-9176274227757260244 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=280s ago
+[ 300.128]   term_id=3502876675831395208 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=280s ago
+[ 300.128]   term_id=-9111819769464301950 addr=127.0.0.1:46227 role=unknown cert=False in=6 out=0 last_seen=270s ago
+[ 300.128]   term_id=8672162328631983287 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=277s ago
+[ 300.128]   term_id=-6446605484256805696 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=277s ago
+[ 300.128]   term_id=4772143221040174605 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=276s ago
+[ 300.128]   term_id=-255931157523027149 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=275s ago
+[ 300.129]   term_id=-5749754115196054330 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=273s ago
+[ 300.129]   term_id=-8163804615229913763 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=271s ago
+[ 300.129]   term_id=-4926259496856446159 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=271s ago
+[ 300.129]   term_id=2584131736300306410 addr=127.0.0.1:46227 role=unknown cert=False in=2 out=0 last_seen=270s ago
+[ 300.129]   term_id=-1106312554595023122 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=270s ago
+[ 300.129]   term_id=5549262997913207762 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=270s ago
+[ 330.134] --- STATUS: 29 clients ---
+[ 330.135]   term_id=-2697608252815436935 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=327s ago
+[ 330.136]   term_id=6269279792593288696 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=327s ago
+[ 330.137]   term_id=3205819932592849908 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=327s ago
+[ 330.137]   term_id=2665540717097937809 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=327s ago
+[ 330.138]   term_id=-8318375484768109668 addr=127.0.0.1:60010 role=unknown cert=False in=10 out=0 last_seen=309s ago
+[ 330.138]   term_id=1199322554568244946 addr=127.0.0.1:60010 role=unknown cert=False in=27 out=0 last_seen=312s ago
+[ 330.139]   term_id=8864947552701480748 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=326s ago
+[ 330.139]   term_id=17784951862937349 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=325s ago
+[ 330.140]   term_id=2912693109592377539 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=324s ago
+[ 330.140]   term_id=-2943590555654490829 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=324s ago
+[ 330.140]   term_id=-7245578751572442948 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=322s ago
+[ 330.141]   term_id=-8018054872861384096 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=320s ago
+[ 330.141]   term_id=-8669080603391965318 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=315s ago
+[ 330.141]   term_id=8398741980459494025 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=313s ago
+[ 330.142]   term_id=-1766903539415178180 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=310s ago
+[ 330.142]   term_id=-432725705265349445 addr=127.0.0.1:58464 role=unknown cert=False in=1 out=0 last_seen=310s ago
+[ 330.142]   term_id=-9176274227757260244 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=310s ago
+[ 330.143]   term_id=3502876675831395208 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=310s ago
+[ 330.143]   term_id=-9111819769464301950 addr=127.0.0.1:46227 role=unknown cert=False in=6 out=0 last_seen=300s ago
+[ 330.144]   term_id=8672162328631983287 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=307s ago
+[ 330.144]   term_id=-6446605484256805696 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=307s ago
+[ 330.144]   term_id=4772143221040174605 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=306s ago
+[ 330.145]   term_id=-255931157523027149 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=305s ago
+[ 330.145]   term_id=-5749754115196054330 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=303s ago
+[ 330.145]   term_id=-8163804615229913763 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=301s ago
+[ 330.146]   term_id=-4926259496856446159 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=301s ago
+[ 330.146]   term_id=2584131736300306410 addr=127.0.0.1:46227 role=unknown cert=False in=2 out=0 last_seen=300s ago
+[ 330.146]   term_id=-1106312554595023122 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=300s ago
+[ 330.147]   term_id=5549262997913207762 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=300s ago
+[ 360.148] --- STATUS: 29 clients ---
+[ 360.149]   term_id=-2697608252815436935 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=357s ago
+[ 360.150]   term_id=6269279792593288696 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=357s ago
+[ 360.150]   term_id=3205819932592849908 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=357s ago
+[ 360.150]   term_id=2665540717097937809 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=357s ago
+[ 360.154]   term_id=-8318375484768109668 addr=127.0.0.1:60010 role=unknown cert=False in=10 out=0 last_seen=339s ago
+[ 360.154]   term_id=1199322554568244946 addr=127.0.0.1:60010 role=unknown cert=False in=27 out=0 last_seen=342s ago
+[ 360.155]   term_id=8864947552701480748 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=356s ago
+[ 360.155]   term_id=17784951862937349 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=355s ago
+[ 360.155]   term_id=2912693109592377539 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=354s ago
+[ 360.155]   term_id=-2943590555654490829 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=354s ago
+[ 360.156]   term_id=-7245578751572442948 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=352s ago
+[ 360.156]   term_id=-8018054872861384096 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=350s ago
+[ 360.156]   term_id=-8669080603391965318 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=345s ago
+[ 360.157]   term_id=8398741980459494025 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=343s ago
+[ 360.157]   term_id=-1766903539415178180 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=340s ago
+[ 360.157]   term_id=-432725705265349445 addr=127.0.0.1:58464 role=unknown cert=False in=1 out=0 last_seen=340s ago
+[ 360.158]   term_id=-9176274227757260244 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=340s ago
+[ 360.158]   term_id=3502876675831395208 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=340s ago
+[ 360.158]   term_id=-9111819769464301950 addr=127.0.0.1:46227 role=unknown cert=False in=6 out=0 last_seen=330s ago
+[ 360.158]   term_id=8672162328631983287 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=337s ago
+[ 360.158]   term_id=-6446605484256805696 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=337s ago
+[ 360.159]   term_id=4772143221040174605 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=336s ago
+[ 360.159]   term_id=-255931157523027149 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=335s ago
+[ 360.159]   term_id=-5749754115196054330 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=333s ago
+[ 360.159]   term_id=-8163804615229913763 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=331s ago
+[ 360.159]   term_id=-4926259496856446159 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=331s ago
+[ 360.159]   term_id=2584131736300306410 addr=127.0.0.1:46227 role=unknown cert=False in=2 out=0 last_seen=330s ago
+[ 360.160]   term_id=-1106312554595023122 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=330s ago
+[ 360.160]   term_id=5549262997913207762 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=330s ago
+[ 390.166] --- STATUS: 29 clients ---
+[ 390.167]   term_id=-2697608252815436935 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=387s ago
+[ 390.168]   term_id=6269279792593288696 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=387s ago
+[ 390.168]   term_id=3205819932592849908 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=387s ago
+[ 390.169]   term_id=2665540717097937809 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=387s ago
+[ 390.170]   term_id=-8318375484768109668 addr=127.0.0.1:60010 role=unknown cert=False in=10 out=0 last_seen=369s ago
+[ 390.170]   term_id=1199322554568244946 addr=127.0.0.1:60010 role=unknown cert=False in=27 out=0 last_seen=372s ago
+[ 390.170]   term_id=8864947552701480748 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=386s ago
+[ 390.171]   term_id=17784951862937349 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=385s ago
+[ 390.171]   term_id=2912693109592377539 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=384s ago
+[ 390.171]   term_id=-2943590555654490829 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=384s ago
+[ 390.172]   term_id=-7245578751572442948 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=382s ago
+[ 390.172]   term_id=-8018054872861384096 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=380s ago
+[ 390.172]   term_id=-8669080603391965318 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=375s ago
+[ 390.172]   term_id=8398741980459494025 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=373s ago
+[ 390.173]   term_id=-1766903539415178180 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=370s ago
+[ 390.173]   term_id=-432725705265349445 addr=127.0.0.1:58464 role=unknown cert=False in=1 out=0 last_seen=370s ago
+[ 390.173]   term_id=-9176274227757260244 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=370s ago
+[ 390.173]   term_id=3502876675831395208 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=370s ago
+[ 390.174]   term_id=-9111819769464301950 addr=127.0.0.1:46227 role=unknown cert=False in=6 out=0 last_seen=360s ago
+[ 390.174]   term_id=8672162328631983287 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=367s ago
+[ 390.174]   term_id=-6446605484256805696 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=367s ago
+[ 390.175]   term_id=4772143221040174605 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=366s ago
+[ 390.175]   term_id=-255931157523027149 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=365s ago
+[ 390.175]   term_id=-5749754115196054330 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=363s ago
+[ 390.175]   term_id=-8163804615229913763 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=361s ago
+[ 390.176]   term_id=-4926259496856446159 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=361s ago
+[ 390.176]   term_id=2584131736300306410 addr=127.0.0.1:46227 role=unknown cert=False in=2 out=0 last_seen=360s ago
+[ 390.176]   term_id=-1106312554595023122 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=360s ago
+[ 390.177]   term_id=5549262997913207762 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=360s ago
+[ 420.183] --- STATUS: 29 clients ---
+[ 420.183]   term_id=-2697608252815436935 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=417s ago
+[ 420.183]   term_id=6269279792593288696 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=417s ago
+[ 420.183]   term_id=3205819932592849908 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=417s ago
+[ 420.184]   term_id=2665540717097937809 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=417s ago
+[ 420.184]   term_id=-8318375484768109668 addr=127.0.0.1:60010 role=unknown cert=False in=10 out=0 last_seen=399s ago
+[ 420.184]   term_id=1199322554568244946 addr=127.0.0.1:60010 role=unknown cert=False in=27 out=0 last_seen=402s ago
+[ 420.184]   term_id=8864947552701480748 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=416s ago
+[ 420.184]   term_id=17784951862937349 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=415s ago
+[ 420.184]   term_id=2912693109592377539 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=414s ago
+[ 420.184]   term_id=-2943590555654490829 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=414s ago
+[ 420.184]   term_id=-7245578751572442948 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=412s ago
+[ 420.184]   term_id=-8018054872861384096 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=410s ago
+[ 420.185]   term_id=-8669080603391965318 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=405s ago
+[ 420.185]   term_id=8398741980459494025 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=403s ago
+[ 420.185]   term_id=-1766903539415178180 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=400s ago
+[ 420.185]   term_id=-432725705265349445 addr=127.0.0.1:58464 role=unknown cert=False in=1 out=0 last_seen=400s ago
+[ 420.185]   term_id=-9176274227757260244 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=400s ago
+[ 420.185]   term_id=3502876675831395208 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=400s ago
+[ 420.185]   term_id=-9111819769464301950 addr=127.0.0.1:46227 role=unknown cert=False in=6 out=0 last_seen=390s ago
+[ 420.185]   term_id=8672162328631983287 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=397s ago
+[ 420.186]   term_id=-6446605484256805696 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=397s ago
+[ 420.186]   term_id=4772143221040174605 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=396s ago
+[ 420.186]   term_id=-255931157523027149 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=395s ago
+[ 420.186]   term_id=-5749754115196054330 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=393s ago
+[ 420.186]   term_id=-8163804615229913763 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=391s ago
+[ 420.186]   term_id=-4926259496856446159 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=391s ago
+[ 420.186]   term_id=2584131736300306410 addr=127.0.0.1:46227 role=unknown cert=False in=2 out=0 last_seen=390s ago
+[ 420.187]   term_id=-1106312554595023122 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=390s ago
+[ 420.187]   term_id=5549262997913207762 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=390s ago
+[ 450.191] --- STATUS: 29 clients ---
+[ 450.191]   term_id=-2697608252815436935 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=447s ago
+[ 450.192]   term_id=6269279792593288696 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=447s ago
+[ 450.192]   term_id=3205819932592849908 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=447s ago
+[ 450.192]   term_id=2665540717097937809 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=447s ago
+[ 450.193]   term_id=-8318375484768109668 addr=127.0.0.1:60010 role=unknown cert=False in=10 out=0 last_seen=429s ago
+[ 450.193]   term_id=1199322554568244946 addr=127.0.0.1:60010 role=unknown cert=False in=27 out=0 last_seen=432s ago
+[ 450.193]   term_id=8864947552701480748 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=446s ago
+[ 450.194]   term_id=17784951862937349 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=445s ago
+[ 450.195]   term_id=2912693109592377539 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=444s ago
+[ 450.196]   term_id=-2943590555654490829 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=444s ago
+[ 450.196]   term_id=-7245578751572442948 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=442s ago
+[ 450.196]   term_id=-8018054872861384096 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=440s ago
+[ 450.197]   term_id=-8669080603391965318 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=435s ago
+[ 450.197]   term_id=8398741980459494025 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=433s ago
+[ 450.197]   term_id=-1766903539415178180 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=430s ago
+[ 450.197]   term_id=-432725705265349445 addr=127.0.0.1:58464 role=unknown cert=False in=1 out=0 last_seen=430s ago
+[ 450.198]   term_id=-9176274227757260244 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=430s ago
+[ 450.198]   term_id=3502876675831395208 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=430s ago
+[ 450.198]   term_id=-9111819769464301950 addr=127.0.0.1:46227 role=unknown cert=False in=6 out=0 last_seen=420s ago
+[ 450.198]   term_id=8672162328631983287 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=427s ago
+[ 450.199]   term_id=-6446605484256805696 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=427s ago
+[ 450.199]   term_id=4772143221040174605 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=426s ago
+[ 450.199]   term_id=-255931157523027149 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=425s ago
+[ 450.199]   term_id=-5749754115196054330 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=423s ago
+[ 450.200]   term_id=-8163804615229913763 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=421s ago
+[ 450.200]   term_id=-4926259496856446159 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=421s ago
+[ 450.200]   term_id=2584131736300306410 addr=127.0.0.1:46227 role=unknown cert=False in=2 out=0 last_seen=420s ago
+[ 450.201]   term_id=-1106312554595023122 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=420s ago
+[ 450.201]   term_id=5549262997913207762 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=420s ago
+[ 480.207] --- STATUS: 29 clients ---
+[ 480.207]   term_id=-2697608252815436935 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=477s ago
+[ 480.209]   term_id=6269279792593288696 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=477s ago
+[ 480.209]   term_id=3205819932592849908 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=477s ago
+[ 480.210]   term_id=2665540717097937809 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=477s ago
+[ 480.210]   term_id=-8318375484768109668 addr=127.0.0.1:60010 role=unknown cert=False in=10 out=0 last_seen=459s ago
+[ 480.210]   term_id=1199322554568244946 addr=127.0.0.1:60010 role=unknown cert=False in=27 out=0 last_seen=462s ago
+[ 480.210]   term_id=8864947552701480748 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=476s ago
+[ 480.210]   term_id=17784951862937349 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=475s ago
+[ 480.211]   term_id=2912693109592377539 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=474s ago
+[ 480.211]   term_id=-2943590555654490829 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=474s ago
+[ 480.211]   term_id=-7245578751572442948 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=472s ago
+[ 480.211]   term_id=-8018054872861384096 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=470s ago
+[ 480.211]   term_id=-8669080603391965318 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=465s ago
+[ 480.212]   term_id=8398741980459494025 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=463s ago
+[ 480.212]   term_id=-1766903539415178180 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=460s ago
+[ 480.212]   term_id=-432725705265349445 addr=127.0.0.1:58464 role=unknown cert=False in=1 out=0 last_seen=460s ago
+[ 480.212]   term_id=-9176274227757260244 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=460s ago
+[ 480.212]   term_id=3502876675831395208 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=460s ago
+[ 480.212]   term_id=-9111819769464301950 addr=127.0.0.1:46227 role=unknown cert=False in=6 out=0 last_seen=450s ago
+[ 480.213]   term_id=8672162328631983287 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=457s ago
+[ 480.213]   term_id=-6446605484256805696 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=457s ago
+[ 480.213]   term_id=4772143221040174605 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=456s ago
+[ 480.213]   term_id=-255931157523027149 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=455s ago
+[ 480.213]   term_id=-5749754115196054330 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=453s ago
+[ 480.213]   term_id=-8163804615229913763 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=451s ago
+[ 480.214]   term_id=-4926259496856446159 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=451s ago
+[ 480.214]   term_id=2584131736300306410 addr=127.0.0.1:46227 role=unknown cert=False in=2 out=0 last_seen=450s ago
+[ 480.214]   term_id=-1106312554595023122 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=450s ago
+[ 480.214]   term_id=5549262997913207762 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=450s ago
+[ 510.217] --- STATUS: 29 clients ---
+[ 510.217]   term_id=-2697608252815436935 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=507s ago
+[ 510.218]   term_id=6269279792593288696 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=507s ago
+[ 510.218]   term_id=3205819932592849908 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=507s ago
+[ 510.219]   term_id=2665540717097937809 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=507s ago
+[ 510.219]   term_id=-8318375484768109668 addr=127.0.0.1:60010 role=unknown cert=False in=10 out=0 last_seen=489s ago
+[ 510.219]   term_id=1199322554568244946 addr=127.0.0.1:60010 role=unknown cert=False in=27 out=0 last_seen=492s ago
+[ 510.220]   term_id=8864947552701480748 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=506s ago
+[ 510.220]   term_id=17784951862937349 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=505s ago
+[ 510.220]   term_id=2912693109592377539 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=504s ago
+[ 510.221]   term_id=-2943590555654490829 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=504s ago
+[ 510.221]   term_id=-7245578751572442948 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=502s ago
+[ 510.221]   term_id=-8018054872861384096 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=500s ago
+[ 510.221]   term_id=-8669080603391965318 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=495s ago
+[ 510.222]   term_id=8398741980459494025 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=493s ago
+[ 510.222]   term_id=-1766903539415178180 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=490s ago
+[ 510.222]   term_id=-432725705265349445 addr=127.0.0.1:58464 role=unknown cert=False in=1 out=0 last_seen=490s ago
+[ 510.223]   term_id=-9176274227757260244 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=490s ago
+[ 510.223]   term_id=3502876675831395208 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=490s ago
+[ 510.223]   term_id=-9111819769464301950 addr=127.0.0.1:46227 role=unknown cert=False in=6 out=0 last_seen=480s ago
+[ 510.224]   term_id=8672162328631983287 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=487s ago
+[ 510.224]   term_id=-6446605484256805696 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=487s ago
+[ 510.224]   term_id=4772143221040174605 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=486s ago
+[ 510.225]   term_id=-255931157523027149 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=485s ago
+[ 510.225]   term_id=-5749754115196054330 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=483s ago
+[ 510.225]   term_id=-8163804615229913763 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=481s ago
+[ 510.226]   term_id=-4926259496856446159 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=481s ago
+[ 510.226]   term_id=2584131736300306410 addr=127.0.0.1:46227 role=unknown cert=False in=2 out=0 last_seen=480s ago
+[ 510.227]   term_id=-1106312554595023122 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=480s ago
+[ 510.227]   term_id=5549262997913207762 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=480s ago
+[ 540.229] --- STATUS: 29 clients ---
+[ 540.230]   term_id=-2697608252815436935 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=537s ago
+[ 540.231]   term_id=6269279792593288696 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=537s ago
+[ 540.232]   term_id=3205819932592849908 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=537s ago
+[ 540.232]   term_id=2665540717097937809 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=537s ago
+[ 540.232]   term_id=-8318375484768109668 addr=127.0.0.1:60010 role=unknown cert=False in=10 out=0 last_seen=519s ago
+[ 540.232]   term_id=1199322554568244946 addr=127.0.0.1:60010 role=unknown cert=False in=27 out=0 last_seen=522s ago
+[ 540.232]   term_id=8864947552701480748 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=536s ago
+[ 540.233]   term_id=17784951862937349 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=535s ago
+[ 540.233]   term_id=2912693109592377539 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=534s ago
+[ 540.233]   term_id=-2943590555654490829 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=534s ago
+[ 540.233]   term_id=-7245578751572442948 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=532s ago
+[ 540.234]   term_id=-8018054872861384096 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=530s ago
+[ 540.234]   term_id=-8669080603391965318 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=525s ago
+[ 540.234]   term_id=8398741980459494025 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=523s ago
+[ 540.234]   term_id=-1766903539415178180 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=520s ago
+[ 540.235]   term_id=-432725705265349445 addr=127.0.0.1:58464 role=unknown cert=False in=1 out=0 last_seen=520s ago
+[ 540.235]   term_id=-9176274227757260244 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=520s ago
+[ 540.235]   term_id=3502876675831395208 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=520s ago
+[ 540.235]   term_id=-9111819769464301950 addr=127.0.0.1:46227 role=unknown cert=False in=6 out=0 last_seen=510s ago
+[ 540.236]   term_id=8672162328631983287 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=517s ago
+[ 540.236]   term_id=-6446605484256805696 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=517s ago
+[ 540.237]   term_id=4772143221040174605 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=516s ago
+[ 540.237]   term_id=-255931157523027149 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=515s ago
+[ 540.238]   term_id=-5749754115196054330 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=513s ago
+[ 540.238]   term_id=-8163804615229913763 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=511s ago
+[ 540.238]   term_id=-4926259496856446159 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=511s ago
+[ 540.239]   term_id=2584131736300306410 addr=127.0.0.1:46227 role=unknown cert=False in=2 out=0 last_seen=510s ago
+[ 540.239]   term_id=-1106312554595023122 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=510s ago
+[ 540.239]   term_id=5549262997913207762 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=510s ago
+[ 570.241] --- STATUS: 29 clients ---
+[ 570.241]   term_id=-2697608252815436935 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=567s ago
+[ 570.242]   term_id=6269279792593288696 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=567s ago
+[ 570.242]   term_id=3205819932592849908 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=567s ago
+[ 570.242]   term_id=2665540717097937809 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=567s ago
+[ 570.242]   term_id=-8318375484768109668 addr=127.0.0.1:60010 role=unknown cert=False in=10 out=0 last_seen=549s ago
+[ 570.243]   term_id=1199322554568244946 addr=127.0.0.1:60010 role=unknown cert=False in=27 out=0 last_seen=552s ago
+[ 570.243]   term_id=8864947552701480748 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=566s ago
+[ 570.243]   term_id=17784951862937349 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=565s ago
+[ 570.243]   term_id=2912693109592377539 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=564s ago
+[ 570.243]   term_id=-2943590555654490829 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=564s ago
+[ 570.243]   term_id=-7245578751572442948 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=562s ago
+[ 570.243]   term_id=-8018054872861384096 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=560s ago
+[ 570.243]   term_id=-8669080603391965318 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=555s ago
+[ 570.243]   term_id=8398741980459494025 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=553s ago
+[ 570.243]   term_id=-1766903539415178180 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=550s ago
+[ 570.244]   term_id=-432725705265349445 addr=127.0.0.1:58464 role=unknown cert=False in=1 out=0 last_seen=550s ago
+[ 570.244]   term_id=-9176274227757260244 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=550s ago
+[ 570.244]   term_id=3502876675831395208 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=550s ago
+[ 570.244]   term_id=-9111819769464301950 addr=127.0.0.1:46227 role=unknown cert=False in=6 out=0 last_seen=540s ago
+[ 570.244]   term_id=8672162328631983287 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=547s ago
+[ 570.244]   term_id=-6446605484256805696 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=547s ago
+[ 570.244]   term_id=4772143221040174605 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=546s ago
+[ 570.244]   term_id=-255931157523027149 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=545s ago
+[ 570.244]   term_id=-5749754115196054330 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=543s ago
+[ 570.244]   term_id=-8163804615229913763 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=541s ago
+[ 570.245]   term_id=-4926259496856446159 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=541s ago
+[ 570.245]   term_id=2584131736300306410 addr=127.0.0.1:46227 role=unknown cert=False in=2 out=0 last_seen=540s ago
+[ 570.245]   term_id=-1106312554595023122 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=540s ago
+[ 570.245]   term_id=5549262997913207762 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=540s ago
+[ 600.248] --- STATUS: 29 clients ---
+[ 600.248]   term_id=-2697608252815436935 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=597s ago
+[ 600.249]   term_id=6269279792593288696 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=597s ago
+[ 600.249]   term_id=3205819932592849908 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=597s ago
+[ 600.249]   term_id=2665540717097937809 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=597s ago
+[ 600.249]   term_id=-8318375484768109668 addr=127.0.0.1:60010 role=unknown cert=False in=10 out=0 last_seen=579s ago
+[ 600.250]   term_id=1199322554568244946 addr=127.0.0.1:60010 role=unknown cert=False in=27 out=0 last_seen=582s ago
+[ 600.250]   term_id=8864947552701480748 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=596s ago
+[ 600.250]   term_id=17784951862937349 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=595s ago
+[ 600.250]   term_id=2912693109592377539 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=594s ago
+[ 600.251]   term_id=-2943590555654490829 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=594s ago
+[ 600.251]   term_id=-7245578751572442948 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=592s ago
+[ 600.251]   term_id=-8018054872861384096 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=590s ago
+[ 600.251]   term_id=-8669080603391965318 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=585s ago
+[ 600.252]   term_id=8398741980459494025 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=583s ago
+[ 600.252]   term_id=-1766903539415178180 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=580s ago
+[ 600.252]   term_id=-432725705265349445 addr=127.0.0.1:58464 role=unknown cert=False in=1 out=0 last_seen=580s ago
+[ 600.252]   term_id=-9176274227757260244 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=580s ago
+[ 600.252]   term_id=3502876675831395208 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=580s ago
+[ 600.253]   term_id=-9111819769464301950 addr=127.0.0.1:46227 role=unknown cert=False in=6 out=0 last_seen=570s ago
+[ 600.253]   term_id=8672162328631983287 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=577s ago
+[ 600.253]   term_id=-6446605484256805696 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=577s ago
+[ 600.253]   term_id=4772143221040174605 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=576s ago
+[ 600.254]   term_id=-255931157523027149 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=575s ago
+[ 600.254]   term_id=-5749754115196054330 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=573s ago
+[ 600.254]   term_id=-8163804615229913763 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=571s ago
+[ 600.254]   term_id=-4926259496856446159 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=571s ago
+[ 600.255]   term_id=2584131736300306410 addr=127.0.0.1:46227 role=unknown cert=False in=2 out=0 last_seen=570s ago
+[ 600.255]   term_id=-1106312554595023122 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=570s ago
+[ 600.255]   term_id=5549262997913207762 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=570s ago
+[ 630.257] --- STATUS: 29 clients ---
+[ 630.259]   term_id=-2697608252815436935 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=627s ago
+[ 630.260]   term_id=6269279792593288696 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=627s ago
+[ 630.260]   term_id=3205819932592849908 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=627s ago
+[ 630.260]   term_id=2665540717097937809 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=627s ago
+[ 630.261]   term_id=-8318375484768109668 addr=127.0.0.1:60010 role=unknown cert=False in=10 out=0 last_seen=609s ago
+[ 630.261]   term_id=1199322554568244946 addr=127.0.0.1:60010 role=unknown cert=False in=27 out=0 last_seen=612s ago
+[ 630.261]   term_id=8864947552701480748 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=626s ago
+[ 630.261]   term_id=17784951862937349 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=625s ago
+[ 630.261]   term_id=2912693109592377539 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=624s ago
+[ 630.262]   term_id=-2943590555654490829 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=624s ago
+[ 630.262]   term_id=-7245578751572442948 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=622s ago
+[ 630.262]   term_id=-8018054872861384096 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=620s ago
+[ 630.262]   term_id=-8669080603391965318 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=615s ago
+[ 630.263]   term_id=8398741980459494025 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=613s ago
+[ 630.263]   term_id=-1766903539415178180 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=610s ago
+[ 630.263]   term_id=-432725705265349445 addr=127.0.0.1:58464 role=unknown cert=False in=1 out=0 last_seen=610s ago
+[ 630.263]   term_id=-9176274227757260244 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=610s ago
+[ 630.264]   term_id=3502876675831395208 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=610s ago
+[ 630.264]   term_id=-9111819769464301950 addr=127.0.0.1:46227 role=unknown cert=False in=6 out=0 last_seen=600s ago
+[ 630.264]   term_id=8672162328631983287 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=607s ago
+[ 630.264]   term_id=-6446605484256805696 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=607s ago
+[ 630.264]   term_id=4772143221040174605 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=606s ago
+[ 630.264]   term_id=-255931157523027149 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=605s ago
+[ 630.264]   term_id=-5749754115196054330 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=603s ago
+[ 630.265]   term_id=-8163804615229913763 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=601s ago
+[ 630.265]   term_id=-4926259496856446159 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=601s ago
+[ 630.265]   term_id=2584131736300306410 addr=127.0.0.1:46227 role=unknown cert=False in=2 out=0 last_seen=600s ago
+[ 630.265]   term_id=-1106312554595023122 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=600s ago
+[ 630.265]   term_id=5549262997913207762 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=600s ago
+[ 660.270] --- STATUS: 29 clients ---
+[ 660.272]   term_id=-2697608252815436935 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=657s ago
+[ 660.272]   term_id=6269279792593288696 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=657s ago
+[ 660.273]   term_id=3205819932592849908 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=657s ago
+[ 660.274]   term_id=2665540717097937809 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=657s ago
+[ 660.274]   term_id=-8318375484768109668 addr=127.0.0.1:60010 role=unknown cert=False in=10 out=0 last_seen=639s ago
+[ 660.274]   term_id=1199322554568244946 addr=127.0.0.1:60010 role=unknown cert=False in=27 out=0 last_seen=642s ago
+[ 660.275]   term_id=8864947552701480748 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=656s ago
+[ 660.275]   term_id=17784951862937349 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=655s ago
+[ 660.275]   term_id=2912693109592377539 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=654s ago
+[ 660.275]   term_id=-2943590555654490829 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=654s ago
+[ 660.276]   term_id=-7245578751572442948 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=652s ago
+[ 660.276]   term_id=-8018054872861384096 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=650s ago
+[ 660.276]   term_id=-8669080603391965318 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=645s ago
+[ 660.276]   term_id=8398741980459494025 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=643s ago
+[ 660.276]   term_id=-1766903539415178180 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=640s ago
+[ 660.277]   term_id=-432725705265349445 addr=127.0.0.1:58464 role=unknown cert=False in=1 out=0 last_seen=640s ago
+[ 660.277]   term_id=-9176274227757260244 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=640s ago
+[ 660.277]   term_id=3502876675831395208 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=640s ago
+[ 660.277]   term_id=-9111819769464301950 addr=127.0.0.1:46227 role=unknown cert=False in=6 out=0 last_seen=630s ago
+[ 660.277]   term_id=8672162328631983287 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=637s ago
+[ 660.277]   term_id=-6446605484256805696 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=637s ago
+[ 660.277]   term_id=4772143221040174605 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=636s ago
+[ 660.278]   term_id=-255931157523027149 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=635s ago
+[ 660.278]   term_id=-5749754115196054330 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=633s ago
+[ 660.278]   term_id=-8163804615229913763 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=631s ago
+[ 660.278]   term_id=-4926259496856446159 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=631s ago
+[ 660.278]   term_id=2584131736300306410 addr=127.0.0.1:46227 role=unknown cert=False in=2 out=0 last_seen=630s ago
+[ 660.278]   term_id=-1106312554595023122 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=630s ago
+[ 660.278]   term_id=5549262997913207762 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=630s ago
+[ 690.281] --- STATUS: 29 clients ---
+[ 690.282]   term_id=-2697608252815436935 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=687s ago
+[ 690.283]   term_id=6269279792593288696 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=687s ago
+[ 690.283]   term_id=3205819932592849908 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=687s ago
+[ 690.283]   term_id=2665540717097937809 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=687s ago
+[ 690.284]   term_id=-8318375484768109668 addr=127.0.0.1:60010 role=unknown cert=False in=10 out=0 last_seen=669s ago
+[ 690.284]   term_id=1199322554568244946 addr=127.0.0.1:60010 role=unknown cert=False in=27 out=0 last_seen=672s ago
+[ 690.284]   term_id=8864947552701480748 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=686s ago
+[ 690.284]   term_id=17784951862937349 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=685s ago
+[ 690.285]   term_id=2912693109592377539 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=684s ago
+[ 690.285]   term_id=-2943590555654490829 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=684s ago
+[ 690.286]   term_id=-7245578751572442948 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=682s ago
+[ 690.286]   term_id=-8018054872861384096 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=680s ago
+[ 690.286]   term_id=-8669080603391965318 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=675s ago
+[ 690.287]   term_id=8398741980459494025 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=673s ago
+[ 690.287]   term_id=-1766903539415178180 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=670s ago
+[ 690.287]   term_id=-432725705265349445 addr=127.0.0.1:58464 role=unknown cert=False in=1 out=0 last_seen=670s ago
+[ 690.287]   term_id=-9176274227757260244 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=670s ago
+[ 690.287]   term_id=3502876675831395208 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=670s ago
+[ 690.287]   term_id=-9111819769464301950 addr=127.0.0.1:46227 role=unknown cert=False in=6 out=0 last_seen=660s ago
+[ 690.288]   term_id=8672162328631983287 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=667s ago
+[ 690.288]   term_id=-6446605484256805696 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=667s ago
+[ 690.288]   term_id=4772143221040174605 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=666s ago
+[ 690.288]   term_id=-255931157523027149 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=665s ago
+[ 690.288]   term_id=-5749754115196054330 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=663s ago
+[ 690.288]   term_id=-8163804615229913763 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=661s ago
+[ 690.289]   term_id=-4926259496856446159 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=661s ago
+[ 690.289]   term_id=2584131736300306410 addr=127.0.0.1:46227 role=unknown cert=False in=2 out=0 last_seen=660s ago
+[ 690.289]   term_id=-1106312554595023122 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=660s ago
+[ 690.290]   term_id=5549262997913207762 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=660s ago
+[ 720.293] --- STATUS: 29 clients ---
+[ 720.294]   term_id=-2697608252815436935 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=717s ago
+[ 720.294]   term_id=6269279792593288696 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=717s ago
+[ 720.294]   term_id=3205819932592849908 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=717s ago
+[ 720.294]   term_id=2665540717097937809 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=717s ago
+[ 720.295]   term_id=-8318375484768109668 addr=127.0.0.1:60010 role=unknown cert=False in=10 out=0 last_seen=699s ago
+[ 720.295]   term_id=1199322554568244946 addr=127.0.0.1:60010 role=unknown cert=False in=27 out=0 last_seen=702s ago
+[ 720.295]   term_id=8864947552701480748 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=716s ago
+[ 720.295]   term_id=17784951862937349 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=715s ago
+[ 720.295]   term_id=2912693109592377539 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=714s ago
+[ 720.295]   term_id=-2943590555654490829 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=714s ago
+[ 720.295]   term_id=-7245578751572442948 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=712s ago
+[ 720.296]   term_id=-8018054872861384096 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=710s ago
+[ 720.296]   term_id=-8669080603391965318 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=705s ago
+[ 720.296]   term_id=8398741980459494025 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=703s ago
+[ 720.296]   term_id=-1766903539415178180 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=700s ago
+[ 720.296]   term_id=-432725705265349445 addr=127.0.0.1:58464 role=unknown cert=False in=1 out=0 last_seen=700s ago
+[ 720.296]   term_id=-9176274227757260244 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=700s ago
+[ 720.296]   term_id=3502876675831395208 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=700s ago
+[ 720.296]   term_id=-9111819769464301950 addr=127.0.0.1:46227 role=unknown cert=False in=6 out=0 last_seen=690s ago
+[ 720.297]   term_id=8672162328631983287 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=697s ago
+[ 720.297]   term_id=-6446605484256805696 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=697s ago
+[ 720.297]   term_id=4772143221040174605 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=696s ago
+[ 720.297]   term_id=-255931157523027149 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=695s ago
+[ 720.297]   term_id=-5749754115196054330 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=693s ago
+[ 720.297]   term_id=-8163804615229913763 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=691s ago
+[ 720.297]   term_id=-4926259496856446159 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=691s ago
+[ 720.297]   term_id=2584131736300306410 addr=127.0.0.1:46227 role=unknown cert=False in=2 out=0 last_seen=690s ago
+[ 720.298]   term_id=-1106312554595023122 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=690s ago
+[ 720.298]   term_id=5549262997913207762 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=690s ago
+[ 750.302] --- STATUS: 29 clients ---
+[ 750.303]   term_id=-2697608252815436935 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=747s ago
+[ 750.305]   term_id=6269279792593288696 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=747s ago
+[ 750.305]   term_id=3205819932592849908 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=747s ago
+[ 750.306]   term_id=2665540717097937809 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=747s ago
+[ 750.306]   term_id=-8318375484768109668 addr=127.0.0.1:60010 role=unknown cert=False in=10 out=0 last_seen=729s ago
+[ 750.307]   term_id=1199322554568244946 addr=127.0.0.1:60010 role=unknown cert=False in=27 out=0 last_seen=732s ago
+[ 750.307]   term_id=8864947552701480748 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=746s ago
+[ 750.308]   term_id=17784951862937349 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=745s ago
+[ 750.308]   term_id=2912693109592377539 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=744s ago
+[ 750.309]   term_id=-2943590555654490829 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=744s ago
+[ 750.309]   term_id=-7245578751572442948 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=742s ago
+[ 750.309]   term_id=-8018054872861384096 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=740s ago
+[ 750.310]   term_id=-8669080603391965318 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=735s ago
+[ 750.310]   term_id=8398741980459494025 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=733s ago
+[ 750.311]   term_id=-1766903539415178180 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=730s ago
+[ 750.311]   term_id=-432725705265349445 addr=127.0.0.1:58464 role=unknown cert=False in=1 out=0 last_seen=730s ago
+[ 750.311]   term_id=-9176274227757260244 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=730s ago
+[ 750.312]   term_id=3502876675831395208 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=730s ago
+[ 750.312]   term_id=-9111819769464301950 addr=127.0.0.1:46227 role=unknown cert=False in=6 out=0 last_seen=720s ago
+[ 750.312]   term_id=8672162328631983287 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=727s ago
+[ 750.313]   term_id=-6446605484256805696 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=727s ago
+[ 750.313]   term_id=4772143221040174605 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=726s ago
+[ 750.314]   term_id=-255931157523027149 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=725s ago
+[ 750.314]   term_id=-5749754115196054330 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=723s ago
+[ 750.314]   term_id=-8163804615229913763 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=721s ago
+[ 750.314]   term_id=-4926259496856446159 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=721s ago
+[ 750.314]   term_id=2584131736300306410 addr=127.0.0.1:46227 role=unknown cert=False in=2 out=0 last_seen=720s ago
+[ 750.315]   term_id=-1106312554595023122 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=720s ago
+[ 750.315]   term_id=5549262997913207762 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=720s ago
+[ 780.322] --- STATUS: 29 clients ---
+[ 780.324]   term_id=-2697608252815436935 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=777s ago
+[ 780.324]   term_id=6269279792593288696 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=777s ago
+[ 780.325]   term_id=3205819932592849908 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=777s ago
+[ 780.325]   term_id=2665540717097937809 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=777s ago
+[ 780.326]   term_id=-8318375484768109668 addr=127.0.0.1:60010 role=unknown cert=False in=10 out=0 last_seen=759s ago
+[ 780.326]   term_id=1199322554568244946 addr=127.0.0.1:60010 role=unknown cert=False in=27 out=0 last_seen=762s ago
+[ 780.327]   term_id=8864947552701480748 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=776s ago
+[ 780.327]   term_id=17784951862937349 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=775s ago
+[ 780.327]   term_id=2912693109592377539 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=774s ago
+[ 780.328]   term_id=-2943590555654490829 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=774s ago
+[ 780.328]   term_id=-7245578751572442948 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=772s ago
+[ 780.328]   term_id=-8018054872861384096 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=770s ago
+[ 780.329]   term_id=-8669080603391965318 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=765s ago
+[ 780.329]   term_id=8398741980459494025 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=763s ago
+[ 780.330]   term_id=-1766903539415178180 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=760s ago
+[ 780.330]   term_id=-432725705265349445 addr=127.0.0.1:58464 role=unknown cert=False in=1 out=0 last_seen=760s ago
+[ 780.330]   term_id=-9176274227757260244 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=760s ago
+[ 780.331]   term_id=3502876675831395208 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=760s ago
+[ 780.331]   term_id=-9111819769464301950 addr=127.0.0.1:46227 role=unknown cert=False in=6 out=0 last_seen=750s ago
+[ 780.331]   term_id=8672162328631983287 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=757s ago
+[ 780.332]   term_id=-6446605484256805696 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=757s ago
+[ 780.332]   term_id=4772143221040174605 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=756s ago
+[ 780.332]   term_id=-255931157523027149 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=755s ago
+[ 780.333]   term_id=-5749754115196054330 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=753s ago
+[ 780.333]   term_id=-8163804615229913763 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=751s ago
+[ 780.333]   term_id=-4926259496856446159 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=751s ago
+[ 780.334]   term_id=2584131736300306410 addr=127.0.0.1:46227 role=unknown cert=False in=2 out=0 last_seen=750s ago
+[ 780.334]   term_id=-1106312554595023122 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=750s ago
+[ 780.335]   term_id=5549262997913207762 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=750s ago
+[ 810.342] --- STATUS: 29 clients ---
+[ 810.343]   term_id=-2697608252815436935 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=807s ago
+[ 810.343]   term_id=6269279792593288696 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=807s ago
+[ 810.343]   term_id=3205819932592849908 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=807s ago
+[ 810.343]   term_id=2665540717097937809 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=807s ago
+[ 810.344]   term_id=-8318375484768109668 addr=127.0.0.1:60010 role=unknown cert=False in=10 out=0 last_seen=789s ago
+[ 810.344]   term_id=1199322554568244946 addr=127.0.0.1:60010 role=unknown cert=False in=27 out=0 last_seen=792s ago
+[ 810.344]   term_id=8864947552701480748 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=806s ago
+[ 810.344]   term_id=17784951862937349 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=805s ago
+[ 810.344]   term_id=2912693109592377539 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=804s ago
+[ 810.344]   term_id=-2943590555654490829 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=804s ago
+[ 810.344]   term_id=-7245578751572442948 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=802s ago
+[ 810.345]   term_id=-8018054872861384096 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=800s ago
+[ 810.345]   term_id=-8669080603391965318 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=795s ago
+[ 810.345]   term_id=8398741980459494025 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=793s ago
+[ 810.345]   term_id=-1766903539415178180 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=790s ago
+[ 810.345]   term_id=-432725705265349445 addr=127.0.0.1:58464 role=unknown cert=False in=1 out=0 last_seen=790s ago
+[ 810.345]   term_id=-9176274227757260244 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=790s ago
+[ 810.346]   term_id=3502876675831395208 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=790s ago
+[ 810.346]   term_id=-9111819769464301950 addr=127.0.0.1:46227 role=unknown cert=False in=6 out=0 last_seen=780s ago
+[ 810.346]   term_id=8672162328631983287 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=787s ago
+[ 810.346]   term_id=-6446605484256805696 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=787s ago
+[ 810.346]   term_id=4772143221040174605 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=786s ago
+[ 810.346]   term_id=-255931157523027149 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=785s ago
+[ 810.347]   term_id=-5749754115196054330 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=783s ago
+[ 810.347]   term_id=-8163804615229913763 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=781s ago
+[ 810.347]   term_id=-4926259496856446159 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=781s ago
+[ 810.347]   term_id=2584131736300306410 addr=127.0.0.1:46227 role=unknown cert=False in=2 out=0 last_seen=780s ago
+[ 810.347]   term_id=-1106312554595023122 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=780s ago
+[ 810.348]   term_id=5549262997913207762 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=780s ago
+[ 840.354] --- STATUS: 29 clients ---
+[ 840.355]   term_id=-2697608252815436935 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=837s ago
+[ 840.356]   term_id=6269279792593288696 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=837s ago
+[ 840.356]   term_id=3205819932592849908 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=837s ago
+[ 840.357]   term_id=2665540717097937809 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=837s ago
+[ 840.357]   term_id=-8318375484768109668 addr=127.0.0.1:60010 role=unknown cert=False in=10 out=0 last_seen=819s ago
+[ 840.358]   term_id=1199322554568244946 addr=127.0.0.1:60010 role=unknown cert=False in=27 out=0 last_seen=822s ago
+[ 840.358]   term_id=8864947552701480748 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=836s ago
+[ 840.358]   term_id=17784951862937349 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=835s ago
+[ 840.358]   term_id=2912693109592377539 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=834s ago
+[ 840.358]   term_id=-2943590555654490829 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=834s ago
+[ 840.358]   term_id=-7245578751572442948 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=832s ago
+[ 840.358]   term_id=-8018054872861384096 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=830s ago
+[ 840.359]   term_id=-8669080603391965318 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=825s ago
+[ 840.359]   term_id=8398741980459494025 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=823s ago
+[ 840.359]   term_id=-1766903539415178180 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=820s ago
+[ 840.359]   term_id=-432725705265349445 addr=127.0.0.1:58464 role=unknown cert=False in=1 out=0 last_seen=820s ago
+[ 840.359]   term_id=-9176274227757260244 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=820s ago
+[ 840.359]   term_id=3502876675831395208 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=820s ago
+[ 840.359]   term_id=-9111819769464301950 addr=127.0.0.1:46227 role=unknown cert=False in=6 out=0 last_seen=810s ago
+[ 840.360]   term_id=8672162328631983287 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=817s ago
+[ 840.360]   term_id=-6446605484256805696 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=817s ago
+[ 840.360]   term_id=4772143221040174605 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=816s ago
+[ 840.360]   term_id=-255931157523027149 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=815s ago
+[ 840.360]   term_id=-5749754115196054330 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=813s ago
+[ 840.360]   term_id=-8163804615229913763 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=811s ago
+[ 840.360]   term_id=-4926259496856446159 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=811s ago
+[ 840.361]   term_id=2584131736300306410 addr=127.0.0.1:46227 role=unknown cert=False in=2 out=0 last_seen=810s ago
+[ 840.361]   term_id=-1106312554595023122 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=810s ago
+[ 840.361]   term_id=5549262997913207762 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=810s ago
+[ 870.362] --- STATUS: 29 clients ---
+[ 870.363]   term_id=-2697608252815436935 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=867s ago
+[ 870.364]   term_id=6269279792593288696 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=867s ago
+[ 870.365]   term_id=3205819932592849908 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=867s ago
+[ 870.365]   term_id=2665540717097937809 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=867s ago
+[ 870.366]   term_id=-8318375484768109668 addr=127.0.0.1:60010 role=unknown cert=False in=10 out=0 last_seen=849s ago
+[ 870.366]   term_id=1199322554568244946 addr=127.0.0.1:60010 role=unknown cert=False in=27 out=0 last_seen=852s ago
+[ 870.366]   term_id=8864947552701480748 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=866s ago
+[ 870.367]   term_id=17784951862937349 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=865s ago
+[ 870.367]   term_id=2912693109592377539 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=864s ago
+[ 870.368]   term_id=-2943590555654490829 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=864s ago
+[ 870.368]   term_id=-7245578751572442948 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=862s ago
+[ 870.369]   term_id=-8018054872861384096 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=860s ago
+[ 870.369]   term_id=-8669080603391965318 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=855s ago
+[ 870.369]   term_id=8398741980459494025 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=853s ago
+[ 870.370]   term_id=-1766903539415178180 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=850s ago
+[ 870.370]   term_id=-432725705265349445 addr=127.0.0.1:58464 role=unknown cert=False in=1 out=0 last_seen=850s ago
+[ 870.370]   term_id=-9176274227757260244 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=850s ago
+[ 870.370]   term_id=3502876675831395208 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=850s ago
+[ 870.371]   term_id=-9111819769464301950 addr=127.0.0.1:46227 role=unknown cert=False in=6 out=0 last_seen=840s ago
+[ 870.371]   term_id=8672162328631983287 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=847s ago
+[ 870.371]   term_id=-6446605484256805696 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=847s ago
+[ 870.371]   term_id=4772143221040174605 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=846s ago
+[ 870.371]   term_id=-255931157523027149 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=845s ago
+[ 870.371]   term_id=-5749754115196054330 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=843s ago
+[ 870.372]   term_id=-8163804615229913763 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=841s ago
+[ 870.372]   term_id=-4926259496856446159 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=841s ago
+[ 870.372]   term_id=2584131736300306410 addr=127.0.0.1:46227 role=unknown cert=False in=2 out=0 last_seen=840s ago
+[ 870.372]   term_id=-1106312554595023122 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=840s ago
+[ 870.372]   term_id=5549262997913207762 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=840s ago
+[ 900.374] --- STATUS: 29 clients ---
+[ 900.375]   term_id=-2697608252815436935 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=897s ago
+[ 900.375]   term_id=6269279792593288696 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=897s ago
+[ 900.376]   term_id=3205819932592849908 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=897s ago
+[ 900.376]   term_id=2665540717097937809 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=897s ago
+[ 900.377]   term_id=-8318375484768109668 addr=127.0.0.1:60010 role=unknown cert=False in=10 out=0 last_seen=879s ago
+[ 900.377]   term_id=1199322554568244946 addr=127.0.0.1:60010 role=unknown cert=False in=27 out=0 last_seen=882s ago
+[ 900.377]   term_id=8864947552701480748 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=896s ago
+[ 900.377]   term_id=17784951862937349 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=895s ago
+[ 900.378]   term_id=2912693109592377539 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=894s ago
+[ 900.378]   term_id=-2943590555654490829 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=894s ago
+[ 900.378]   term_id=-7245578751572442948 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=892s ago
+[ 900.378]   term_id=-8018054872861384096 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=890s ago
+[ 900.378]   term_id=-8669080603391965318 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=885s ago
+[ 900.378]   term_id=8398741980459494025 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=883s ago
+[ 900.379]   term_id=-1766903539415178180 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=880s ago
+[ 900.379]   term_id=-432725705265349445 addr=127.0.0.1:58464 role=unknown cert=False in=1 out=0 last_seen=880s ago
+[ 900.379]   term_id=-9176274227757260244 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=880s ago
+[ 900.379]   term_id=3502876675831395208 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=880s ago
+[ 900.379]   term_id=-9111819769464301950 addr=127.0.0.1:46227 role=unknown cert=False in=6 out=0 last_seen=870s ago
+[ 900.380]   term_id=8672162328631983287 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=877s ago
+[ 900.380]   term_id=-6446605484256805696 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=877s ago
+[ 900.380]   term_id=4772143221040174605 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=876s ago
+[ 900.380]   term_id=-255931157523027149 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=875s ago
+[ 900.381]   term_id=-5749754115196054330 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=873s ago
+[ 900.381]   term_id=-8163804615229913763 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=871s ago
+[ 900.381]   term_id=-4926259496856446159 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=871s ago
+[ 900.381]   term_id=2584131736300306410 addr=127.0.0.1:46227 role=unknown cert=False in=2 out=0 last_seen=870s ago
+[ 900.381]   term_id=-1106312554595023122 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=870s ago
+[ 900.382]   term_id=5549262997913207762 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=870s ago
+[ 930.385] --- STATUS: 29 clients ---
+[ 930.387]   term_id=-2697608252815436935 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=927s ago
+[ 930.387]   term_id=6269279792593288696 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=927s ago
+[ 930.388]   term_id=3205819932592849908 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=927s ago
+[ 930.388]   term_id=2665540717097937809 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=927s ago
+[ 930.389]   term_id=-8318375484768109668 addr=127.0.0.1:60010 role=unknown cert=False in=10 out=0 last_seen=909s ago
+[ 930.389]   term_id=1199322554568244946 addr=127.0.0.1:60010 role=unknown cert=False in=27 out=0 last_seen=912s ago
+[ 930.390]   term_id=8864947552701480748 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=926s ago
+[ 930.390]   term_id=17784951862937349 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=925s ago
+[ 930.391]   term_id=2912693109592377539 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=924s ago
+[ 930.391]   term_id=-2943590555654490829 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=924s ago
+[ 930.392]   term_id=-7245578751572442948 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=922s ago
+[ 930.392]   term_id=-8018054872861384096 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=920s ago
+[ 930.392]   term_id=-8669080603391965318 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=915s ago
+[ 930.393]   term_id=8398741980459494025 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=913s ago
+[ 930.393]   term_id=-1766903539415178180 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=910s ago
+[ 930.394]   term_id=-432725705265349445 addr=127.0.0.1:58464 role=unknown cert=False in=1 out=0 last_seen=910s ago
+[ 930.394]   term_id=-9176274227757260244 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=910s ago
+[ 930.395]   term_id=3502876675831395208 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=910s ago
+[ 930.395]   term_id=-9111819769464301950 addr=127.0.0.1:46227 role=unknown cert=False in=6 out=0 last_seen=900s ago
+[ 930.396]   term_id=8672162328631983287 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=907s ago
+[ 930.396]   term_id=-6446605484256805696 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=907s ago
+[ 930.397]   term_id=4772143221040174605 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=906s ago
+[ 930.397]   term_id=-255931157523027149 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=905s ago
+[ 930.398]   term_id=-5749754115196054330 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=903s ago
+[ 930.398]   term_id=-8163804615229913763 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=901s ago
+[ 930.398]   term_id=-4926259496856446159 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=901s ago
+[ 930.399]   term_id=2584131736300306410 addr=127.0.0.1:46227 role=unknown cert=False in=2 out=0 last_seen=900s ago
+[ 930.399]   term_id=-1106312554595023122 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=900s ago
+[ 930.399]   term_id=5549262997913207762 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=900s ago
+[ 960.403] --- STATUS: 29 clients ---
+[ 960.404]   term_id=-2697608252815436935 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=957s ago
+[ 960.404]   term_id=6269279792593288696 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=957s ago
+[ 960.405]   term_id=3205819932592849908 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=957s ago
+[ 960.405]   term_id=2665540717097937809 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=957s ago
+[ 960.406]   term_id=-8318375484768109668 addr=127.0.0.1:60010 role=unknown cert=False in=10 out=0 last_seen=939s ago
+[ 960.406]   term_id=1199322554568244946 addr=127.0.0.1:60010 role=unknown cert=False in=27 out=0 last_seen=942s ago
+[ 960.406]   term_id=8864947552701480748 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=956s ago
+[ 960.407]   term_id=17784951862937349 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=955s ago
+[ 960.407]   term_id=2912693109592377539 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=954s ago
+[ 960.407]   term_id=-2943590555654490829 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=954s ago
+[ 960.408]   term_id=-7245578751572442948 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=952s ago
+[ 960.408]   term_id=-8018054872861384096 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=950s ago
+[ 960.408]   term_id=-8669080603391965318 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=945s ago
+[ 960.408]   term_id=8398741980459494025 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=943s ago
+[ 960.408]   term_id=-1766903539415178180 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=940s ago
+[ 960.408]   term_id=-432725705265349445 addr=127.0.0.1:58464 role=unknown cert=False in=1 out=0 last_seen=940s ago
+[ 960.409]   term_id=-9176274227757260244 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=940s ago
+[ 960.409]   term_id=3502876675831395208 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=940s ago
+[ 960.409]   term_id=-9111819769464301950 addr=127.0.0.1:46227 role=unknown cert=False in=6 out=0 last_seen=930s ago
+[ 960.409]   term_id=8672162328631983287 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=937s ago
+[ 960.409]   term_id=-6446605484256805696 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=937s ago
+[ 960.409]   term_id=4772143221040174605 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=936s ago
+[ 960.409]   term_id=-255931157523027149 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=935s ago
+[ 960.410]   term_id=-5749754115196054330 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=933s ago
+[ 960.410]   term_id=-8163804615229913763 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=931s ago
+[ 960.410]   term_id=-4926259496856446159 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=931s ago
+[ 960.410]   term_id=2584131736300306410 addr=127.0.0.1:46227 role=unknown cert=False in=2 out=0 last_seen=930s ago
+[ 960.410]   term_id=-1106312554595023122 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=930s ago
+[ 960.411]   term_id=5549262997913207762 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=930s ago
+[ 990.415] --- STATUS: 29 clients ---
+[ 990.416]   term_id=-2697608252815436935 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=987s ago
+[ 990.417]   term_id=6269279792593288696 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=987s ago
+[ 990.418]   term_id=3205819932592849908 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=987s ago
+[ 990.418]   term_id=2665540717097937809 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=987s ago
+[ 990.419]   term_id=-8318375484768109668 addr=127.0.0.1:60010 role=unknown cert=False in=10 out=0 last_seen=970s ago
+[ 990.419]   term_id=1199322554568244946 addr=127.0.0.1:60010 role=unknown cert=False in=27 out=0 last_seen=972s ago
+[ 990.420]   term_id=8864947552701480748 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=986s ago
+[ 990.420]   term_id=17784951862937349 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=985s ago
+[ 990.421]   term_id=2912693109592377539 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=984s ago
+[ 990.421]   term_id=-2943590555654490829 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=984s ago
+[ 990.422]   term_id=-7245578751572442948 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=982s ago
+[ 990.422]   term_id=-8018054872861384096 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=980s ago
+[ 990.423]   term_id=-8669080603391965318 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=975s ago
+[ 990.423]   term_id=8398741980459494025 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=973s ago
+[ 990.423]   term_id=-1766903539415178180 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=970s ago
+[ 990.424]   term_id=-432725705265349445 addr=127.0.0.1:58464 role=unknown cert=False in=1 out=0 last_seen=970s ago
+[ 990.424]   term_id=-9176274227757260244 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=970s ago
+[ 990.424]   term_id=3502876675831395208 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=970s ago
+[ 990.424]   term_id=-9111819769464301950 addr=127.0.0.1:46227 role=unknown cert=False in=6 out=0 last_seen=961s ago
+[ 990.424]   term_id=8672162328631983287 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=967s ago
+[ 990.425]   term_id=-6446605484256805696 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=967s ago
+[ 990.425]   term_id=4772143221040174605 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=966s ago
+[ 990.425]   term_id=-255931157523027149 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=965s ago
+[ 990.425]   term_id=-5749754115196054330 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=963s ago
+[ 990.425]   term_id=-8163804615229913763 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=961s ago
+[ 990.426]   term_id=-4926259496856446159 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=961s ago
+[ 990.426]   term_id=2584131736300306410 addr=127.0.0.1:46227 role=unknown cert=False in=2 out=0 last_seen=960s ago
+[ 990.426]   term_id=-1106312554595023122 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=960s ago
+[ 990.426]   term_id=5549262997913207762 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=960s ago
+[1020.428] --- STATUS: 29 clients ---
+[1020.429]   term_id=-2697608252815436935 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1018s ago
+[1020.431]   term_id=6269279792593288696 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1018s ago
+[1020.431]   term_id=3205819932592849908 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=1017s ago
+[1020.432]   term_id=2665540717097937809 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=1017s ago
+[1020.432]   term_id=-8318375484768109668 addr=127.0.0.1:60010 role=unknown cert=False in=10 out=0 last_seen=1000s ago
+[1020.433]   term_id=1199322554568244946 addr=127.0.0.1:60010 role=unknown cert=False in=27 out=0 last_seen=1002s ago
+[1020.433]   term_id=8864947552701480748 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1017s ago
+[1020.433]   term_id=17784951862937349 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1016s ago
+[1020.434]   term_id=2912693109592377539 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1015s ago
+[1020.434]   term_id=-2943590555654490829 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1014s ago
+[1020.434]   term_id=-7245578751572442948 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1013s ago
+[1020.435]   term_id=-8018054872861384096 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1011s ago
+[1020.435]   term_id=-8669080603391965318 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1006s ago
+[1020.436]   term_id=8398741980459494025 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1003s ago
+[1020.436]   term_id=-1766903539415178180 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1001s ago
+[1020.436]   term_id=-432725705265349445 addr=127.0.0.1:58464 role=unknown cert=False in=1 out=0 last_seen=1001s ago
+[1020.436]   term_id=-9176274227757260244 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=1000s ago
+[1020.437]   term_id=3502876675831395208 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=1000s ago
+[1020.437]   term_id=-9111819769464301950 addr=127.0.0.1:46227 role=unknown cert=False in=6 out=0 last_seen=991s ago
+[1020.437]   term_id=8672162328631983287 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=997s ago
+[1020.437]   term_id=-6446605484256805696 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=997s ago
+[1020.438]   term_id=4772143221040174605 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=996s ago
+[1020.438]   term_id=-255931157523027149 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=995s ago
+[1020.438]   term_id=-5749754115196054330 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=993s ago
+[1020.439]   term_id=-8163804615229913763 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=991s ago
+[1020.439]   term_id=-4926259496856446159 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=991s ago
+[1020.439]   term_id=2584131736300306410 addr=127.0.0.1:46227 role=unknown cert=False in=2 out=0 last_seen=990s ago
+[1020.440]   term_id=-1106312554595023122 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=990s ago
+[1020.440]   term_id=5549262997913207762 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=990s ago
+[1050.446] --- STATUS: 29 clients ---
+[1050.447]   term_id=-2697608252815436935 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1048s ago
+[1050.447]   term_id=6269279792593288696 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1048s ago
+[1050.447]   term_id=3205819932592849908 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=1047s ago
+[1050.448]   term_id=2665540717097937809 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=1047s ago
+[1050.448]   term_id=-8318375484768109668 addr=127.0.0.1:60010 role=unknown cert=False in=10 out=0 last_seen=1030s ago
+[1050.448]   term_id=1199322554568244946 addr=127.0.0.1:60010 role=unknown cert=False in=27 out=0 last_seen=1032s ago
+[1050.448]   term_id=8864947552701480748 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1047s ago
+[1050.448]   term_id=17784951862937349 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1046s ago
+[1050.449]   term_id=2912693109592377539 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1045s ago
+[1050.449]   term_id=-2943590555654490829 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1044s ago
+[1050.449]   term_id=-7245578751572442948 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1043s ago
+[1050.449]   term_id=-8018054872861384096 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1041s ago
+[1050.449]   term_id=-8669080603391965318 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1036s ago
+[1050.449]   term_id=8398741980459494025 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1033s ago
+[1050.450]   term_id=-1766903539415178180 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1031s ago
+[1050.450]   term_id=-432725705265349445 addr=127.0.0.1:58464 role=unknown cert=False in=1 out=0 last_seen=1031s ago
+[1050.450]   term_id=-9176274227757260244 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=1030s ago
+[1050.450]   term_id=3502876675831395208 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=1030s ago
+[1050.450]   term_id=-9111819769464301950 addr=127.0.0.1:46227 role=unknown cert=False in=6 out=0 last_seen=1021s ago
+[1050.451]   term_id=8672162328631983287 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1027s ago
+[1050.451]   term_id=-6446605484256805696 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1027s ago
+[1050.451]   term_id=4772143221040174605 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1026s ago
+[1050.451]   term_id=-255931157523027149 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1025s ago
+[1050.451]   term_id=-5749754115196054330 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1023s ago
+[1050.451]   term_id=-8163804615229913763 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1021s ago
+[1050.451]   term_id=-4926259496856446159 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1021s ago
+[1050.451]   term_id=2584131736300306410 addr=127.0.0.1:46227 role=unknown cert=False in=2 out=0 last_seen=1020s ago
+[1050.452]   term_id=-1106312554595023122 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1020s ago
+[1050.452]   term_id=5549262997913207762 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1020s ago
+[1080.458] --- STATUS: 29 clients ---
+[1080.460]   term_id=-2697608252815436935 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1078s ago
+[1080.461]   term_id=6269279792593288696 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1078s ago
+[1080.461]   term_id=3205819932592849908 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=1077s ago
+[1080.461]   term_id=2665540717097937809 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=1077s ago
+[1080.462]   term_id=-8318375484768109668 addr=127.0.0.1:60010 role=unknown cert=False in=10 out=0 last_seen=1060s ago
+[1080.462]   term_id=1199322554568244946 addr=127.0.0.1:60010 role=unknown cert=False in=27 out=0 last_seen=1062s ago
+[1080.462]   term_id=8864947552701480748 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1077s ago
+[1080.462]   term_id=17784951862937349 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1076s ago
+[1080.462]   term_id=2912693109592377539 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1075s ago
+[1080.463]   term_id=-2943590555654490829 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1074s ago
+[1080.463]   term_id=-7245578751572442948 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1073s ago
+[1080.463]   term_id=-8018054872861384096 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1071s ago
+[1080.463]   term_id=-8669080603391965318 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1066s ago
+[1080.463]   term_id=8398741980459494025 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1063s ago
+[1080.464]   term_id=-1766903539415178180 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1061s ago
+[1080.464]   term_id=-432725705265349445 addr=127.0.0.1:58464 role=unknown cert=False in=1 out=0 last_seen=1061s ago
+[1080.464]   term_id=-9176274227757260244 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=1060s ago
+[1080.464]   term_id=3502876675831395208 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=1060s ago
+[1080.465]   term_id=-9111819769464301950 addr=127.0.0.1:46227 role=unknown cert=False in=6 out=0 last_seen=1051s ago
+[1080.465]   term_id=8672162328631983287 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1057s ago
+[1080.465]   term_id=-6446605484256805696 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1057s ago
+[1080.465]   term_id=4772143221040174605 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1056s ago
+[1080.465]   term_id=-255931157523027149 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1055s ago
+[1080.466]   term_id=-5749754115196054330 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1053s ago
+[1080.466]   term_id=-8163804615229913763 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1052s ago
+[1080.466]   term_id=-4926259496856446159 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1051s ago
+[1080.466]   term_id=2584131736300306410 addr=127.0.0.1:46227 role=unknown cert=False in=2 out=0 last_seen=1050s ago
+[1080.466]   term_id=-1106312554595023122 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1050s ago
+[1080.467]   term_id=5549262997913207762 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1050s ago
+[1110.470] --- STATUS: 29 clients ---
+[1110.471]   term_id=-2697608252815436935 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1108s ago
+[1110.473]   term_id=6269279792593288696 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1108s ago
+[1110.473]   term_id=3205819932592849908 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=1108s ago
+[1110.473]   term_id=2665540717097937809 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=1107s ago
+[1110.474]   term_id=-8318375484768109668 addr=127.0.0.1:60010 role=unknown cert=False in=10 out=0 last_seen=1090s ago
+[1110.474]   term_id=1199322554568244946 addr=127.0.0.1:60010 role=unknown cert=False in=27 out=0 last_seen=1092s ago
+[1110.475]   term_id=8864947552701480748 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1107s ago
+[1110.475]   term_id=17784951862937349 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1106s ago
+[1110.475]   term_id=2912693109592377539 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1105s ago
+[1110.476]   term_id=-2943590555654490829 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1104s ago
+[1110.476]   term_id=-7245578751572442948 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1103s ago
+[1110.476]   term_id=-8018054872861384096 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1101s ago
+[1110.476]   term_id=-8669080603391965318 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1096s ago
+[1110.477]   term_id=8398741980459494025 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1094s ago
+[1110.477]   term_id=-1766903539415178180 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1091s ago
+[1110.477]   term_id=-432725705265349445 addr=127.0.0.1:58464 role=unknown cert=False in=1 out=0 last_seen=1091s ago
+[1110.478]   term_id=-9176274227757260244 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=1091s ago
+[1110.478]   term_id=3502876675831395208 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=1090s ago
+[1110.478]   term_id=-9111819769464301950 addr=127.0.0.1:46227 role=unknown cert=False in=6 out=0 last_seen=1081s ago
+[1110.478]   term_id=8672162328631983287 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1087s ago
+[1110.479]   term_id=-6446605484256805696 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1087s ago
+[1110.479]   term_id=4772143221040174605 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1086s ago
+[1110.479]   term_id=-255931157523027149 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1085s ago
+[1110.480]   term_id=-5749754115196054330 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1083s ago
+[1110.480]   term_id=-8163804615229913763 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1082s ago
+[1110.480]   term_id=-4926259496856446159 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1081s ago
+[1110.480]   term_id=2584131736300306410 addr=127.0.0.1:46227 role=unknown cert=False in=2 out=0 last_seen=1080s ago
+[1110.481]   term_id=-1106312554595023122 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1080s ago
+[1110.481]   term_id=5549262997913207762 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1080s ago
+[1140.482] --- STATUS: 29 clients ---
+[1140.483]   term_id=-2697608252815436935 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1138s ago
+[1140.483]   term_id=6269279792593288696 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1138s ago
+[1140.484]   term_id=3205819932592849908 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=1138s ago
+[1140.484]   term_id=2665540717097937809 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=1137s ago
+[1140.484]   term_id=-8318375484768109668 addr=127.0.0.1:60010 role=unknown cert=False in=10 out=0 last_seen=1120s ago
+[1140.484]   term_id=1199322554568244946 addr=127.0.0.1:60010 role=unknown cert=False in=27 out=0 last_seen=1122s ago
+[1140.484]   term_id=8864947552701480748 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1137s ago
+[1140.485]   term_id=17784951862937349 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1136s ago
+[1140.485]   term_id=2912693109592377539 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1135s ago
+[1140.485]   term_id=-2943590555654490829 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1134s ago
+[1140.485]   term_id=-7245578751572442948 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1133s ago
+[1140.486]   term_id=-8018054872861384096 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1131s ago
+[1140.486]   term_id=-8669080603391965318 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1126s ago
+[1140.486]   term_id=8398741980459494025 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1124s ago
+[1140.486]   term_id=-1766903539415178180 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1121s ago
+[1140.486]   term_id=-432725705265349445 addr=127.0.0.1:58464 role=unknown cert=False in=1 out=0 last_seen=1121s ago
+[1140.487]   term_id=-9176274227757260244 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=1121s ago
+[1140.487]   term_id=3502876675831395208 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=1120s ago
+[1140.487]   term_id=-9111819769464301950 addr=127.0.0.1:46227 role=unknown cert=False in=6 out=0 last_seen=1111s ago
+[1140.487]   term_id=8672162328631983287 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1117s ago
+[1140.488]   term_id=-6446605484256805696 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1117s ago
+[1140.488]   term_id=4772143221040174605 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1116s ago
+[1140.488]   term_id=-255931157523027149 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1115s ago
+[1140.488]   term_id=-5749754115196054330 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1113s ago
+[1140.489]   term_id=-8163804615229913763 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1112s ago
+[1140.489]   term_id=-4926259496856446159 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1111s ago
+[1140.489]   term_id=2584131736300306410 addr=127.0.0.1:46227 role=unknown cert=False in=2 out=0 last_seen=1110s ago
+[1140.490]   term_id=-1106312554595023122 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1110s ago
+[1140.490]   term_id=5549262997913207762 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1110s ago
+[1170.494] --- STATUS: 29 clients ---
+[1170.495]   term_id=-2697608252815436935 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1168s ago
+[1170.496]   term_id=6269279792593288696 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1168s ago
+[1170.497]   term_id=3205819932592849908 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=1168s ago
+[1170.498]   term_id=2665540717097937809 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=1167s ago
+[1170.498]   term_id=-8318375484768109668 addr=127.0.0.1:60010 role=unknown cert=False in=10 out=0 last_seen=1150s ago
+[1170.499]   term_id=1199322554568244946 addr=127.0.0.1:60010 role=unknown cert=False in=27 out=0 last_seen=1152s ago
+[1170.499]   term_id=8864947552701480748 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1167s ago
+[1170.499]   term_id=17784951862937349 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1166s ago
+[1170.500]   term_id=2912693109592377539 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1165s ago
+[1170.500]   term_id=-2943590555654490829 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1164s ago
+[1170.501]   term_id=-7245578751572442948 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1163s ago
+[1170.501]   term_id=-8018054872861384096 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1161s ago
+[1170.501]   term_id=-8669080603391965318 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1156s ago
+[1170.502]   term_id=8398741980459494025 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1154s ago
+[1170.502]   term_id=-1766903539415178180 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1151s ago
+[1170.502]   term_id=-432725705265349445 addr=127.0.0.1:58464 role=unknown cert=False in=1 out=0 last_seen=1151s ago
+[1170.502]   term_id=-9176274227757260244 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=1151s ago
+[1170.503]   term_id=3502876675831395208 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=1150s ago
+[1170.503]   term_id=-9111819769464301950 addr=127.0.0.1:46227 role=unknown cert=False in=6 out=0 last_seen=1141s ago
+[1170.503]   term_id=8672162328631983287 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1147s ago
+[1170.503]   term_id=-6446605484256805696 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1147s ago
+[1170.504]   term_id=4772143221040174605 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1146s ago
+[1170.504]   term_id=-255931157523027149 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1145s ago
+[1170.504]   term_id=-5749754115196054330 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1143s ago
+[1170.504]   term_id=-8163804615229913763 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1142s ago
+[1170.505]   term_id=-4926259496856446159 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1141s ago
+[1170.505]   term_id=2584131736300306410 addr=127.0.0.1:46227 role=unknown cert=False in=2 out=0 last_seen=1140s ago
+[1170.505]   term_id=-1106312554595023122 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1140s ago
+[1170.506]   term_id=5549262997913207762 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1140s ago
+[1200.509] --- STATUS: 29 clients ---
+[1200.510]   term_id=-2697608252815436935 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1198s ago
+[1200.511]   term_id=6269279792593288696 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1198s ago
+[1200.511]   term_id=3205819932592849908 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=1198s ago
+[1200.512]   term_id=2665540717097937809 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=1197s ago
+[1200.512]   term_id=-8318375484768109668 addr=127.0.0.1:60010 role=unknown cert=False in=10 out=0 last_seen=1180s ago
+[1200.513]   term_id=1199322554568244946 addr=127.0.0.1:60010 role=unknown cert=False in=27 out=0 last_seen=1182s ago
+[1200.514]   term_id=8864947552701480748 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1197s ago
+[1200.514]   term_id=17784951862937349 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1196s ago
+[1200.515]   term_id=2912693109592377539 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1195s ago
+[1200.515]   term_id=-2943590555654490829 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1194s ago
+[1200.515]   term_id=-7245578751572442948 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1193s ago
+[1200.516]   term_id=-8018054872861384096 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1191s ago
+[1200.516]   term_id=-8669080603391965318 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1186s ago
+[1200.516]   term_id=8398741980459494025 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1184s ago
+[1200.517]   term_id=-1766903539415178180 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1181s ago
+[1200.517]   term_id=-432725705265349445 addr=127.0.0.1:58464 role=unknown cert=False in=1 out=0 last_seen=1181s ago
+[1200.517]   term_id=-9176274227757260244 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=1181s ago
+[1200.518]   term_id=3502876675831395208 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=1181s ago
+[1200.518]   term_id=-9111819769464301950 addr=127.0.0.1:46227 role=unknown cert=False in=6 out=0 last_seen=1171s ago
+[1200.518]   term_id=8672162328631983287 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1178s ago
+[1200.518]   term_id=-6446605484256805696 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1177s ago
+[1200.519]   term_id=4772143221040174605 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1176s ago
+[1200.519]   term_id=-255931157523027149 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1175s ago
+[1200.519]   term_id=-5749754115196054330 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1173s ago
+[1200.519]   term_id=-8163804615229913763 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1172s ago
+[1200.520]   term_id=-4926259496856446159 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1171s ago
+[1200.520]   term_id=2584131736300306410 addr=127.0.0.1:46227 role=unknown cert=False in=2 out=0 last_seen=1170s ago
+[1200.520]   term_id=-1106312554595023122 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1170s ago
+[1200.521]   term_id=5549262997913207762 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1170s ago
+[1230.523] --- STATUS: 29 clients ---
+[1230.524]   term_id=-2697608252815436935 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1228s ago
+[1230.525]   term_id=6269279792593288696 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1228s ago
+[1230.525]   term_id=3205819932592849908 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=1228s ago
+[1230.526]   term_id=2665540717097937809 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=1228s ago
+[1230.526]   term_id=-8318375484768109668 addr=127.0.0.1:60010 role=unknown cert=False in=10 out=0 last_seen=1210s ago
+[1230.527]   term_id=1199322554568244946 addr=127.0.0.1:60010 role=unknown cert=False in=27 out=0 last_seen=1212s ago
+[1230.527]   term_id=8864947552701480748 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1227s ago
+[1230.528]   term_id=17784951862937349 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1226s ago
+[1230.528]   term_id=2912693109592377539 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1225s ago
+[1230.528]   term_id=-2943590555654490829 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1224s ago
+[1230.529]   term_id=-7245578751572442948 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1223s ago
+[1230.529]   term_id=-8018054872861384096 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1221s ago
+[1230.530]   term_id=-8669080603391965318 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1216s ago
+[1230.530]   term_id=8398741980459494025 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1214s ago
+[1230.530]   term_id=-1766903539415178180 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1211s ago
+[1230.531]   term_id=-432725705265349445 addr=127.0.0.1:58464 role=unknown cert=False in=1 out=0 last_seen=1211s ago
+[1230.531]   term_id=-9176274227757260244 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=1211s ago
+[1230.532]   term_id=3502876675831395208 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=1211s ago
+[1230.532]   term_id=-9111819769464301950 addr=127.0.0.1:46227 role=unknown cert=False in=6 out=0 last_seen=1201s ago
+[1230.532]   term_id=8672162328631983287 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1208s ago
+[1230.532]   term_id=-6446605484256805696 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1208s ago
+[1230.533]   term_id=4772143221040174605 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1207s ago
+[1230.533]   term_id=-255931157523027149 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1206s ago
+[1230.533]   term_id=-5749754115196054330 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1204s ago
+[1230.533]   term_id=-8163804615229913763 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1202s ago
+[1230.533]   term_id=-4926259496856446159 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1202s ago
+[1230.534]   term_id=2584131736300306410 addr=127.0.0.1:46227 role=unknown cert=False in=2 out=0 last_seen=1200s ago
+[1230.534]   term_id=-1106312554595023122 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1200s ago
+[1230.534]   term_id=5549262997913207762 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1200s ago
+[1260.538] --- STATUS: 29 clients ---
+[1260.539]   term_id=-2697608252815436935 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1258s ago
+[1260.541]   term_id=6269279792593288696 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1258s ago
+[1260.542]   term_id=3205819932592849908 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=1258s ago
+[1260.542]   term_id=2665540717097937809 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=1258s ago
+[1260.542]   term_id=-8318375484768109668 addr=127.0.0.1:60010 role=unknown cert=False in=10 out=0 last_seen=1240s ago
+[1260.543]   term_id=1199322554568244946 addr=127.0.0.1:60010 role=unknown cert=False in=27 out=0 last_seen=1242s ago
+[1260.543]   term_id=8864947552701480748 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1257s ago
+[1260.544]   term_id=17784951862937349 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1256s ago
+[1260.544]   term_id=2912693109592377539 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1255s ago
+[1260.544]   term_id=-2943590555654490829 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1254s ago
+[1260.545]   term_id=-7245578751572442948 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1253s ago
+[1260.546]   term_id=-8018054872861384096 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1251s ago
+[1260.546]   term_id=-8669080603391965318 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1246s ago
+[1260.546]   term_id=8398741980459494025 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1244s ago
+[1260.547]   term_id=-1766903539415178180 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1241s ago
+[1260.547]   term_id=-432725705265349445 addr=127.0.0.1:58464 role=unknown cert=False in=1 out=0 last_seen=1241s ago
+[1260.547]   term_id=-9176274227757260244 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=1241s ago
+[1260.548]   term_id=3502876675831395208 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=1241s ago
+[1260.548]   term_id=-9111819769464301950 addr=127.0.0.1:46227 role=unknown cert=False in=6 out=0 last_seen=1231s ago
+[1260.548]   term_id=8672162328631983287 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1238s ago
+[1260.548]   term_id=-6446605484256805696 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1238s ago
+[1260.549]   term_id=4772143221040174605 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1237s ago
+[1260.549]   term_id=-255931157523027149 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1236s ago
+[1260.549]   term_id=-5749754115196054330 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1234s ago
+[1260.549]   term_id=-8163804615229913763 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1232s ago
+[1260.549]   term_id=-4926259496856446159 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1232s ago
+[1260.549]   term_id=2584131736300306410 addr=127.0.0.1:46227 role=unknown cert=False in=2 out=0 last_seen=1230s ago
+[1260.550]   term_id=-1106312554595023122 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1230s ago
+[1260.550]   term_id=5549262997913207762 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1230s ago
+[1290.551] --- STATUS: 29 clients ---
+[1290.552]   term_id=-2697608252815436935 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1288s ago
+[1290.553]   term_id=6269279792593288696 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1288s ago
+[1290.553]   term_id=3205819932592849908 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=1288s ago
+[1290.553]   term_id=2665540717097937809 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=1288s ago
+[1290.554]   term_id=-8318375484768109668 addr=127.0.0.1:60010 role=unknown cert=False in=10 out=0 last_seen=1270s ago
+[1290.554]   term_id=1199322554568244946 addr=127.0.0.1:60010 role=unknown cert=False in=27 out=0 last_seen=1272s ago
+[1290.554]   term_id=8864947552701480748 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1287s ago
+[1290.554]   term_id=17784951862937349 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1286s ago
+[1290.554]   term_id=2912693109592377539 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1285s ago
+[1290.554]   term_id=-2943590555654490829 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1284s ago
+[1290.555]   term_id=-7245578751572442948 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1283s ago
+[1290.555]   term_id=-8018054872861384096 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1281s ago
+[1290.555]   term_id=-8669080603391965318 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1276s ago
+[1290.555]   term_id=8398741980459494025 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1274s ago
+[1290.555]   term_id=-1766903539415178180 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1271s ago
+[1290.555]   term_id=-432725705265349445 addr=127.0.0.1:58464 role=unknown cert=False in=1 out=0 last_seen=1271s ago
+[1290.556]   term_id=-9176274227757260244 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=1271s ago
+[1290.556]   term_id=3502876675831395208 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=1271s ago
+[1290.556]   term_id=-9111819769464301950 addr=127.0.0.1:46227 role=unknown cert=False in=6 out=0 last_seen=1261s ago
+[1290.557]   term_id=8672162328631983287 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1268s ago
+[1290.557]   term_id=-6446605484256805696 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1268s ago
+[1290.557]   term_id=4772143221040174605 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1267s ago
+[1290.558]   term_id=-255931157523027149 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1266s ago
+[1290.558]   term_id=-5749754115196054330 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1264s ago
+[1290.558]   term_id=-8163804615229913763 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1262s ago
+[1290.558]   term_id=-4926259496856446159 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1262s ago
+[1290.558]   term_id=2584131736300306410 addr=127.0.0.1:46227 role=unknown cert=False in=2 out=0 last_seen=1260s ago
+[1290.558]   term_id=-1106312554595023122 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1260s ago
+[1290.559]   term_id=5549262997913207762 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1260s ago
+[1320.560] --- STATUS: 29 clients ---
+[1320.560]   term_id=-2697608252815436935 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1318s ago
+[1320.561]   term_id=6269279792593288696 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1318s ago
+[1320.562]   term_id=3205819932592849908 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=1318s ago
+[1320.562]   term_id=2665540717097937809 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=1318s ago
+[1320.562]   term_id=-8318375484768109668 addr=127.0.0.1:60010 role=unknown cert=False in=10 out=0 last_seen=1300s ago
+[1320.562]   term_id=1199322554568244946 addr=127.0.0.1:60010 role=unknown cert=False in=27 out=0 last_seen=1302s ago
+[1320.562]   term_id=8864947552701480748 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1317s ago
+[1320.562]   term_id=17784951862937349 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1316s ago
+[1320.562]   term_id=2912693109592377539 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1315s ago
+[1320.562]   term_id=-2943590555654490829 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1314s ago
+[1320.563]   term_id=-7245578751572442948 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1313s ago
+[1320.563]   term_id=-8018054872861384096 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1311s ago
+[1320.563]   term_id=-8669080603391965318 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1306s ago
+[1320.563]   term_id=8398741980459494025 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1304s ago
+[1320.563]   term_id=-1766903539415178180 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1301s ago
+[1320.563]   term_id=-432725705265349445 addr=127.0.0.1:58464 role=unknown cert=False in=1 out=0 last_seen=1301s ago
+[1320.563]   term_id=-9176274227757260244 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=1301s ago
+[1320.563]   term_id=3502876675831395208 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=1301s ago
+[1320.563]   term_id=-9111819769464301950 addr=127.0.0.1:46227 role=unknown cert=False in=6 out=0 last_seen=1291s ago
+[1320.563]   term_id=8672162328631983287 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1298s ago
+[1320.563]   term_id=-6446605484256805696 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1298s ago
+[1320.564]   term_id=4772143221040174605 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1297s ago
+[1320.564]   term_id=-255931157523027149 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1296s ago
+[1320.564]   term_id=-5749754115196054330 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1294s ago
+[1320.564]   term_id=-8163804615229913763 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1292s ago
+[1320.564]   term_id=-4926259496856446159 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1292s ago
+[1320.564]   term_id=2584131736300306410 addr=127.0.0.1:46227 role=unknown cert=False in=2 out=0 last_seen=1290s ago
+[1320.564]   term_id=-1106312554595023122 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1290s ago
+[1320.564]   term_id=5549262997913207762 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1290s ago
+[1350.570] --- STATUS: 29 clients ---
+[1350.570]   term_id=-2697608252815436935 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1348s ago
+[1350.571]   term_id=6269279792593288696 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1348s ago
+[1350.571]   term_id=3205819932592849908 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=1348s ago
+[1350.572]   term_id=2665540717097937809 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=1348s ago
+[1350.572]   term_id=-8318375484768109668 addr=127.0.0.1:60010 role=unknown cert=False in=10 out=0 last_seen=1330s ago
+[1350.572]   term_id=1199322554568244946 addr=127.0.0.1:60010 role=unknown cert=False in=27 out=0 last_seen=1332s ago
+[1350.573]   term_id=8864947552701480748 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1347s ago
+[1350.574]   term_id=17784951862937349 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1346s ago
+[1350.574]   term_id=2912693109592377539 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1345s ago
+[1350.574]   term_id=-2943590555654490829 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1344s ago
+[1350.574]   term_id=-7245578751572442948 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1343s ago
+[1350.574]   term_id=-8018054872861384096 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1341s ago
+[1350.575]   term_id=-8669080603391965318 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1336s ago
+[1350.575]   term_id=8398741980459494025 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1334s ago
+[1350.575]   term_id=-1766903539415178180 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1331s ago
+[1350.575]   term_id=-432725705265349445 addr=127.0.0.1:58464 role=unknown cert=False in=1 out=0 last_seen=1331s ago
+[1350.575]   term_id=-9176274227757260244 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=1331s ago
+[1350.575]   term_id=3502876675831395208 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=1331s ago
+[1350.576]   term_id=-9111819769464301950 addr=127.0.0.1:46227 role=unknown cert=False in=6 out=0 last_seen=1321s ago
+[1350.576]   term_id=8672162328631983287 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1328s ago
+[1350.576]   term_id=-6446605484256805696 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1328s ago
+[1350.576]   term_id=4772143221040174605 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1327s ago
+[1350.576]   term_id=-255931157523027149 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1326s ago
+[1350.576]   term_id=-5749754115196054330 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1324s ago
+[1350.576]   term_id=-8163804615229913763 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1322s ago
+[1350.577]   term_id=-4926259496856446159 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1322s ago
+[1350.577]   term_id=2584131736300306410 addr=127.0.0.1:46227 role=unknown cert=False in=2 out=0 last_seen=1320s ago
+[1350.577]   term_id=-1106312554595023122 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1321s ago
+[1350.577]   term_id=5549262997913207762 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1321s ago
+[1380.578] --- STATUS: 29 clients ---
+[1380.579]   term_id=-2697608252815436935 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1378s ago
+[1380.580]   term_id=6269279792593288696 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1378s ago
+[1380.580]   term_id=3205819932592849908 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=1378s ago
+[1380.580]   term_id=2665540717097937809 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=1378s ago
+[1380.580]   term_id=-8318375484768109668 addr=127.0.0.1:60010 role=unknown cert=False in=10 out=0 last_seen=1360s ago
+[1380.581]   term_id=1199322554568244946 addr=127.0.0.1:60010 role=unknown cert=False in=27 out=0 last_seen=1362s ago
+[1380.581]   term_id=8864947552701480748 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1377s ago
+[1380.581]   term_id=17784951862937349 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1376s ago
+[1380.581]   term_id=2912693109592377539 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1375s ago
+[1380.582]   term_id=-2943590555654490829 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1374s ago
+[1380.582]   term_id=-7245578751572442948 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1373s ago
+[1380.582]   term_id=-8018054872861384096 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1371s ago
+[1380.583]   term_id=-8669080603391965318 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1366s ago
+[1380.583]   term_id=8398741980459494025 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1364s ago
+[1380.584]   term_id=-1766903539415178180 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1361s ago
+[1380.584]   term_id=-432725705265349445 addr=127.0.0.1:58464 role=unknown cert=False in=1 out=0 last_seen=1361s ago
+[1380.585]   term_id=-9176274227757260244 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=1361s ago
+[1380.585]   term_id=3502876675831395208 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=1361s ago
+[1380.586]   term_id=-9111819769464301950 addr=127.0.0.1:46227 role=unknown cert=False in=6 out=0 last_seen=1351s ago
+[1380.586]   term_id=8672162328631983287 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1358s ago
+[1380.587]   term_id=-6446605484256805696 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1358s ago
+[1380.587]   term_id=4772143221040174605 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1357s ago
+[1380.587]   term_id=-255931157523027149 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1356s ago
+[1380.588]   term_id=-5749754115196054330 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1354s ago
+[1380.588]   term_id=-8163804615229913763 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1352s ago
+[1380.588]   term_id=-4926259496856446159 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1352s ago
+[1380.588]   term_id=2584131736300306410 addr=127.0.0.1:46227 role=unknown cert=False in=2 out=0 last_seen=1350s ago
+[1380.589]   term_id=-1106312554595023122 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1351s ago
+[1380.589]   term_id=5549262997913207762 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1351s ago
+[1410.595] --- STATUS: 29 clients ---
+[1410.596]   term_id=-2697608252815436935 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1408s ago
+[1410.597]   term_id=6269279792593288696 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1408s ago
+[1410.597]   term_id=3205819932592849908 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=1408s ago
+[1410.598]   term_id=2665540717097937809 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=1408s ago
+[1410.598]   term_id=-8318375484768109668 addr=127.0.0.1:60010 role=unknown cert=False in=10 out=0 last_seen=1390s ago
+[1410.599]   term_id=1199322554568244946 addr=127.0.0.1:60010 role=unknown cert=False in=27 out=0 last_seen=1392s ago
+[1410.599]   term_id=8864947552701480748 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1407s ago
+[1410.600]   term_id=17784951862937349 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1406s ago
+[1410.600]   term_id=2912693109592377539 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1405s ago
+[1410.600]   term_id=-2943590555654490829 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1404s ago
+[1410.600]   term_id=-7245578751572442948 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1403s ago
+[1410.601]   term_id=-8018054872861384096 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1401s ago
+[1410.601]   term_id=-8669080603391965318 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1396s ago
+[1410.601]   term_id=8398741980459494025 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1394s ago
+[1410.601]   term_id=-1766903539415178180 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1391s ago
+[1410.601]   term_id=-432725705265349445 addr=127.0.0.1:58464 role=unknown cert=False in=1 out=0 last_seen=1391s ago
+[1410.601]   term_id=-9176274227757260244 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=1391s ago
+[1410.602]   term_id=3502876675831395208 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=1391s ago
+[1410.602]   term_id=-9111819769464301950 addr=127.0.0.1:46227 role=unknown cert=False in=6 out=0 last_seen=1381s ago
+[1410.602]   term_id=8672162328631983287 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1388s ago
+[1410.602]   term_id=-6446605484256805696 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1388s ago
+[1410.602]   term_id=4772143221040174605 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1387s ago
+[1410.602]   term_id=-255931157523027149 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1386s ago
+[1410.603]   term_id=-5749754115196054330 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1384s ago
+[1410.603]   term_id=-8163804615229913763 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1382s ago
+[1410.603]   term_id=-4926259496856446159 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1382s ago
+[1410.603]   term_id=2584131736300306410 addr=127.0.0.1:46227 role=unknown cert=False in=2 out=0 last_seen=1380s ago
+[1410.603]   term_id=-1106312554595023122 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1381s ago
+[1410.604]   term_id=5549262997913207762 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1381s ago
+[1440.610] --- STATUS: 29 clients ---
+[1440.611]   term_id=-2697608252815436935 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1438s ago
+[1440.613]   term_id=6269279792593288696 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1438s ago
+[1440.613]   term_id=3205819932592849908 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=1438s ago
+[1440.613]   term_id=2665540717097937809 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=1438s ago
+[1440.614]   term_id=-8318375484768109668 addr=127.0.0.1:60010 role=unknown cert=False in=10 out=0 last_seen=1420s ago
+[1440.614]   term_id=1199322554568244946 addr=127.0.0.1:60010 role=unknown cert=False in=27 out=0 last_seen=1422s ago
+[1440.615]   term_id=8864947552701480748 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1437s ago
+[1440.615]   term_id=17784951862937349 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1436s ago
+[1440.615]   term_id=2912693109592377539 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1435s ago
+[1440.616]   term_id=-2943590555654490829 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1434s ago
+[1440.616]   term_id=-7245578751572442948 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1433s ago
+[1440.616]   term_id=-8018054872861384096 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1431s ago
+[1440.617]   term_id=-8669080603391965318 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1426s ago
+[1440.618]   term_id=8398741980459494025 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1424s ago
+[1440.618]   term_id=-1766903539415178180 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1421s ago
+[1440.619]   term_id=-432725705265349445 addr=127.0.0.1:58464 role=unknown cert=False in=1 out=0 last_seen=1421s ago
+[1440.619]   term_id=-9176274227757260244 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=1421s ago
+[1440.620]   term_id=3502876675831395208 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=1421s ago
+[1440.620]   term_id=-9111819769464301950 addr=127.0.0.1:46227 role=unknown cert=False in=6 out=0 last_seen=1411s ago
+[1440.620]   term_id=8672162328631983287 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1418s ago
+[1440.620]   term_id=-6446605484256805696 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1418s ago
+[1440.621]   term_id=4772143221040174605 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1417s ago
+[1440.621]   term_id=-255931157523027149 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1416s ago
+[1440.621]   term_id=-5749754115196054330 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1414s ago
+[1440.622]   term_id=-8163804615229913763 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1412s ago
+[1440.622]   term_id=-4926259496856446159 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1412s ago
+[1440.622]   term_id=2584131736300306410 addr=127.0.0.1:46227 role=unknown cert=False in=2 out=0 last_seen=1411s ago
+[1440.622]   term_id=-1106312554595023122 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1411s ago
+[1440.622]   term_id=5549262997913207762 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1411s ago
+[1470.625] --- STATUS: 29 clients ---
+[1470.626]   term_id=-2697608252815436935 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1468s ago
+[1470.626]   term_id=6269279792593288696 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1468s ago
+[1470.626]   term_id=3205819932592849908 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=1468s ago
+[1470.626]   term_id=2665540717097937809 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=1468s ago
+[1470.626]   term_id=-8318375484768109668 addr=127.0.0.1:60010 role=unknown cert=False in=10 out=0 last_seen=1450s ago
+[1470.626]   term_id=1199322554568244946 addr=127.0.0.1:60010 role=unknown cert=False in=27 out=0 last_seen=1452s ago
+[1470.626]   term_id=8864947552701480748 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1467s ago
+[1470.626]   term_id=17784951862937349 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1466s ago
+[1470.626]   term_id=2912693109592377539 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1465s ago
+[1470.626]   term_id=-2943590555654490829 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1464s ago
+[1470.626]   term_id=-7245578751572442948 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1463s ago
+[1470.626]   term_id=-8018054872861384096 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1461s ago
+[1470.627]   term_id=-8669080603391965318 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1456s ago
+[1470.627]   term_id=8398741980459494025 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1454s ago
+[1470.627]   term_id=-1766903539415178180 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1451s ago
+[1470.627]   term_id=-432725705265349445 addr=127.0.0.1:58464 role=unknown cert=False in=1 out=0 last_seen=1451s ago
+[1470.627]   term_id=-9176274227757260244 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=1451s ago
+[1470.627]   term_id=3502876675831395208 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=1451s ago
+[1470.627]   term_id=-9111819769464301950 addr=127.0.0.1:46227 role=unknown cert=False in=6 out=0 last_seen=1441s ago
+[1470.627]   term_id=8672162328631983287 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1448s ago
+[1470.627]   term_id=-6446605484256805696 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1448s ago
+[1470.627]   term_id=4772143221040174605 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1447s ago
+[1470.627]   term_id=-255931157523027149 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1446s ago
+[1470.627]   term_id=-5749754115196054330 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1444s ago
+[1470.627]   term_id=-8163804615229913763 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1442s ago
+[1470.627]   term_id=-4926259496856446159 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1442s ago
+[1470.627]   term_id=2584131736300306410 addr=127.0.0.1:46227 role=unknown cert=False in=2 out=0 last_seen=1441s ago
+[1470.628]   term_id=-1106312554595023122 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1441s ago
+[1470.628]   term_id=5549262997913207762 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1441s ago
+[1500.631] --- STATUS: 29 clients ---
+[1500.632]   term_id=-2697608252815436935 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1498s ago
+[1500.632]   term_id=6269279792593288696 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1498s ago
+[1500.632]   term_id=3205819932592849908 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=1498s ago
+[1500.632]   term_id=2665540717097937809 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=1498s ago
+[1500.633]   term_id=-8318375484768109668 addr=127.0.0.1:60010 role=unknown cert=False in=10 out=0 last_seen=1480s ago
+[1500.633]   term_id=1199322554568244946 addr=127.0.0.1:60010 role=unknown cert=False in=27 out=0 last_seen=1482s ago
+[1500.633]   term_id=8864947552701480748 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1497s ago
+[1500.633]   term_id=17784951862937349 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1496s ago
+[1500.633]   term_id=2912693109592377539 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1495s ago
+[1500.633]   term_id=-2943590555654490829 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1494s ago
+[1500.634]   term_id=-7245578751572442948 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1493s ago
+[1500.634]   term_id=-8018054872861384096 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1491s ago
+[1500.634]   term_id=-8669080603391965318 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1486s ago
+[1500.634]   term_id=8398741980459494025 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1484s ago
+[1500.634]   term_id=-1766903539415178180 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1481s ago
+[1500.634]   term_id=-432725705265349445 addr=127.0.0.1:58464 role=unknown cert=False in=1 out=0 last_seen=1481s ago
+[1500.634]   term_id=-9176274227757260244 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=1481s ago
+[1500.635]   term_id=3502876675831395208 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=1481s ago
+[1500.635]   term_id=-9111819769464301950 addr=127.0.0.1:46227 role=unknown cert=False in=6 out=0 last_seen=1471s ago
+[1500.635]   term_id=8672162328631983287 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1478s ago
+[1500.635]   term_id=-6446605484256805696 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1478s ago
+[1500.635]   term_id=4772143221040174605 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1477s ago
+[1500.635]   term_id=-255931157523027149 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1476s ago
+[1500.636]   term_id=-5749754115196054330 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1474s ago
+[1500.636]   term_id=-8163804615229913763 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1472s ago
+[1500.636]   term_id=-4926259496856446159 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1472s ago
+[1500.636]   term_id=2584131736300306410 addr=127.0.0.1:46227 role=unknown cert=False in=2 out=0 last_seen=1471s ago
+[1500.636]   term_id=-1106312554595023122 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1471s ago
+[1500.636]   term_id=5549262997913207762 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1471s ago
+[1530.637] --- STATUS: 29 clients ---
+[1530.639]   term_id=-2697608252815436935 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1528s ago
+[1530.639]   term_id=6269279792593288696 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1528s ago
+[1530.639]   term_id=3205819932592849908 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=1528s ago
+[1530.639]   term_id=2665540717097937809 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=1528s ago
+[1530.640]   term_id=-8318375484768109668 addr=127.0.0.1:60010 role=unknown cert=False in=10 out=0 last_seen=1510s ago
+[1530.640]   term_id=1199322554568244946 addr=127.0.0.1:60010 role=unknown cert=False in=27 out=0 last_seen=1512s ago
+[1530.640]   term_id=8864947552701480748 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1527s ago
+[1530.640]   term_id=17784951862937349 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1526s ago
+[1530.640]   term_id=2912693109592377539 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1525s ago
+[1530.640]   term_id=-2943590555654490829 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1524s ago
+[1530.641]   term_id=-7245578751572442948 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1523s ago
+[1530.641]   term_id=-8018054872861384096 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1521s ago
+[1530.641]   term_id=-8669080603391965318 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1516s ago
+[1530.641]   term_id=8398741980459494025 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1514s ago
+[1530.641]   term_id=-1766903539415178180 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1511s ago
+[1530.641]   term_id=-432725705265349445 addr=127.0.0.1:58464 role=unknown cert=False in=1 out=0 last_seen=1511s ago
+[1530.642]   term_id=-9176274227757260244 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=1511s ago
+[1530.642]   term_id=3502876675831395208 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=1511s ago
+[1530.642]   term_id=-9111819769464301950 addr=127.0.0.1:46227 role=unknown cert=False in=6 out=0 last_seen=1501s ago
+[1530.642]   term_id=8672162328631983287 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1508s ago
+[1530.643]   term_id=-6446605484256805696 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1508s ago
+[1530.643]   term_id=4772143221040174605 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1507s ago
+[1530.643]   term_id=-255931157523027149 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1506s ago
+[1530.643]   term_id=-5749754115196054330 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1504s ago
+[1530.643]   term_id=-8163804615229913763 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1502s ago
+[1530.643]   term_id=-4926259496856446159 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1502s ago
+[1530.643]   term_id=2584131736300306410 addr=127.0.0.1:46227 role=unknown cert=False in=2 out=0 last_seen=1501s ago
+[1530.644]   term_id=-1106312554595023122 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1501s ago
+[1530.644]   term_id=5549262997913207762 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1501s ago
+[1560.646] --- STATUS: 29 clients ---
+[1560.648]   term_id=-2697608252815436935 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1558s ago
+[1560.648]   term_id=6269279792593288696 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1558s ago
+[1560.649]   term_id=3205819932592849908 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=1558s ago
+[1560.649]   term_id=2665540717097937809 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=1558s ago
+[1560.650]   term_id=-8318375484768109668 addr=127.0.0.1:60010 role=unknown cert=False in=10 out=0 last_seen=1540s ago
+[1560.650]   term_id=1199322554568244946 addr=127.0.0.1:60010 role=unknown cert=False in=27 out=0 last_seen=1542s ago
+[1560.651]   term_id=8864947552701480748 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1557s ago
+[1560.651]   term_id=17784951862937349 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1556s ago
+[1560.652]   term_id=2912693109592377539 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1555s ago
+[1560.652]   term_id=-2943590555654490829 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1554s ago
+[1560.653]   term_id=-7245578751572442948 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1553s ago
+[1560.653]   term_id=-8018054872861384096 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1551s ago
+[1560.653]   term_id=-8669080603391965318 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1546s ago
+[1560.653]   term_id=8398741980459494025 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1544s ago
+[1560.654]   term_id=-1766903539415178180 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1541s ago
+[1560.654]   term_id=-432725705265349445 addr=127.0.0.1:58464 role=unknown cert=False in=1 out=0 last_seen=1541s ago
+[1560.654]   term_id=-9176274227757260244 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=1541s ago
+[1560.654]   term_id=3502876675831395208 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=1541s ago
+[1560.654]   term_id=-9111819769464301950 addr=127.0.0.1:46227 role=unknown cert=False in=6 out=0 last_seen=1531s ago
+[1560.655]   term_id=8672162328631983287 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1538s ago
+[1560.655]   term_id=-6446605484256805696 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1538s ago
+[1560.655]   term_id=4772143221040174605 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1537s ago
+[1560.655]   term_id=-255931157523027149 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1536s ago
+[1560.656]   term_id=-5749754115196054330 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1534s ago
+[1560.656]   term_id=-8163804615229913763 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1532s ago
+[1560.656]   term_id=-4926259496856446159 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1532s ago
+[1560.656]   term_id=2584131736300306410 addr=127.0.0.1:46227 role=unknown cert=False in=2 out=0 last_seen=1531s ago
+[1560.656]   term_id=-1106312554595023122 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1531s ago
+[1560.657]   term_id=5549262997913207762 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1531s ago
+[1590.660] --- STATUS: 29 clients ---
+[1590.661]   term_id=-2697608252815436935 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1588s ago
+[1590.662]   term_id=6269279792593288696 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1588s ago
+[1590.662]   term_id=3205819932592849908 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=1588s ago
+[1590.662]   term_id=2665540717097937809 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=1588s ago
+[1590.662]   term_id=-8318375484768109668 addr=127.0.0.1:60010 role=unknown cert=False in=10 out=0 last_seen=1570s ago
+[1590.663]   term_id=1199322554568244946 addr=127.0.0.1:60010 role=unknown cert=False in=27 out=0 last_seen=1572s ago
+[1590.663]   term_id=8864947552701480748 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1587s ago
+[1590.663]   term_id=17784951862937349 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1586s ago
+[1590.663]   term_id=2912693109592377539 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1585s ago
+[1590.663]   term_id=-2943590555654490829 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1584s ago
+[1590.664]   term_id=-7245578751572442948 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1583s ago
+[1590.664]   term_id=-8018054872861384096 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1581s ago
+[1590.664]   term_id=-8669080603391965318 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1576s ago
+[1590.664]   term_id=8398741980459494025 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1574s ago
+[1590.664]   term_id=-1766903539415178180 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1571s ago
+[1590.664]   term_id=-432725705265349445 addr=127.0.0.1:58464 role=unknown cert=False in=1 out=0 last_seen=1571s ago
+[1590.664]   term_id=-9176274227757260244 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=1571s ago
+[1590.665]   term_id=3502876675831395208 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=1571s ago
+[1590.665]   term_id=-9111819769464301950 addr=127.0.0.1:46227 role=unknown cert=False in=6 out=0 last_seen=1561s ago
+[1590.665]   term_id=8672162328631983287 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1568s ago
+[1590.665]   term_id=-6446605484256805696 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1568s ago
+[1590.665]   term_id=4772143221040174605 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1567s ago
+[1590.665]   term_id=-255931157523027149 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1566s ago
+[1590.665]   term_id=-5749754115196054330 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1564s ago
+[1590.666]   term_id=-8163804615229913763 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1562s ago
+[1590.666]   term_id=-4926259496856446159 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1562s ago
+[1590.666]   term_id=2584131736300306410 addr=127.0.0.1:46227 role=unknown cert=False in=2 out=0 last_seen=1561s ago
+[1590.666]   term_id=-1106312554595023122 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1561s ago
+[1590.666]   term_id=5549262997913207762 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1561s ago
+[1620.667] --- STATUS: 29 clients ---
+[1620.667]   term_id=-2697608252815436935 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1618s ago
+[1620.669]   term_id=6269279792593288696 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1618s ago
+[1620.669]   term_id=3205819932592849908 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=1618s ago
+[1620.669]   term_id=2665540717097937809 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=1618s ago
+[1620.669]   term_id=-8318375484768109668 addr=127.0.0.1:60010 role=unknown cert=False in=10 out=0 last_seen=1600s ago
+[1620.669]   term_id=1199322554568244946 addr=127.0.0.1:60010 role=unknown cert=False in=27 out=0 last_seen=1602s ago
+[1620.669]   term_id=8864947552701480748 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1617s ago
+[1620.669]   term_id=17784951862937349 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1616s ago
+[1620.669]   term_id=2912693109592377539 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1615s ago
+[1620.669]   term_id=-2943590555654490829 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1615s ago
+[1620.670]   term_id=-7245578751572442948 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1613s ago
+[1620.670]   term_id=-8018054872861384096 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1611s ago
+[1620.670]   term_id=-8669080603391965318 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1606s ago
+[1620.670]   term_id=8398741980459494025 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1604s ago
+[1620.670]   term_id=-1766903539415178180 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1601s ago
+[1620.670]   term_id=-432725705265349445 addr=127.0.0.1:58464 role=unknown cert=False in=1 out=0 last_seen=1601s ago
+[1620.670]   term_id=-9176274227757260244 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=1601s ago
+[1620.670]   term_id=3502876675831395208 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=1601s ago
+[1620.670]   term_id=-9111819769464301950 addr=127.0.0.1:46227 role=unknown cert=False in=6 out=0 last_seen=1591s ago
+[1620.671]   term_id=8672162328631983287 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1598s ago
+[1620.671]   term_id=-6446605484256805696 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1598s ago
+[1620.671]   term_id=4772143221040174605 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1597s ago
+[1620.671]   term_id=-255931157523027149 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1596s ago
+[1620.671]   term_id=-5749754115196054330 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1594s ago
+[1620.671]   term_id=-8163804615229913763 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1592s ago
+[1620.671]   term_id=-4926259496856446159 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1592s ago
+[1620.671]   term_id=2584131736300306410 addr=127.0.0.1:46227 role=unknown cert=False in=2 out=0 last_seen=1591s ago
+[1620.671]   term_id=-1106312554595023122 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1591s ago
+[1620.671]   term_id=5549262997913207762 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1591s ago
+[1650.677] --- STATUS: 29 clients ---
+[1650.678]   term_id=-2697608252815436935 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1648s ago
+[1650.678]   term_id=6269279792593288696 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1648s ago
+[1650.678]   term_id=3205819932592849908 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=1648s ago
+[1650.679]   term_id=2665540717097937809 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=1648s ago
+[1650.679]   term_id=-8318375484768109668 addr=127.0.0.1:60010 role=unknown cert=False in=10 out=0 last_seen=1630s ago
+[1650.679]   term_id=1199322554568244946 addr=127.0.0.1:60010 role=unknown cert=False in=27 out=0 last_seen=1632s ago
+[1650.679]   term_id=8864947552701480748 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1647s ago
+[1650.679]   term_id=17784951862937349 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1646s ago
+[1650.680]   term_id=2912693109592377539 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1645s ago
+[1650.680]   term_id=-2943590555654490829 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1645s ago
+[1650.680]   term_id=-7245578751572442948 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1643s ago
+[1650.680]   term_id=-8018054872861384096 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1641s ago
+[1650.680]   term_id=-8669080603391965318 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1636s ago
+[1650.680]   term_id=8398741980459494025 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1634s ago
+[1650.681]   term_id=-1766903539415178180 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1631s ago
+[1650.681]   term_id=-432725705265349445 addr=127.0.0.1:58464 role=unknown cert=False in=1 out=0 last_seen=1631s ago
+[1650.681]   term_id=-9176274227757260244 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=1631s ago
+[1650.681]   term_id=3502876675831395208 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=1631s ago
+[1650.681]   term_id=-9111819769464301950 addr=127.0.0.1:46227 role=unknown cert=False in=6 out=0 last_seen=1621s ago
+[1650.681]   term_id=8672162328631983287 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1628s ago
+[1650.682]   term_id=-6446605484256805696 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1628s ago
+[1650.682]   term_id=4772143221040174605 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1627s ago
+[1650.682]   term_id=-255931157523027149 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1626s ago
+[1650.682]   term_id=-5749754115196054330 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1624s ago
+[1650.682]   term_id=-8163804615229913763 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1622s ago
+[1650.682]   term_id=-4926259496856446159 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1622s ago
+[1650.682]   term_id=2584131736300306410 addr=127.0.0.1:46227 role=unknown cert=False in=2 out=0 last_seen=1621s ago
+[1650.683]   term_id=-1106312554595023122 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1621s ago
+[1650.683]   term_id=5549262997913207762 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1621s ago
+[1680.689] --- STATUS: 29 clients ---
+[1680.692]   term_id=-2697608252815436935 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1678s ago
+[1680.692]   term_id=6269279792593288696 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1678s ago
+[1680.693]   term_id=3205819932592849908 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=1678s ago
+[1680.693]   term_id=2665540717097937809 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=1678s ago
+[1680.693]   term_id=-8318375484768109668 addr=127.0.0.1:60010 role=unknown cert=False in=10 out=0 last_seen=1660s ago
+[1680.693]   term_id=1199322554568244946 addr=127.0.0.1:60010 role=unknown cert=False in=27 out=0 last_seen=1662s ago
+[1680.694]   term_id=8864947552701480748 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1677s ago
+[1680.694]   term_id=17784951862937349 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1676s ago
+[1680.695]   term_id=2912693109592377539 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1675s ago
+[1680.697]   term_id=-2943590555654490829 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1675s ago
+[1680.697]   term_id=-7245578751572442948 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1673s ago
+[1680.697]   term_id=-8018054872861384096 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1671s ago
+[1680.697]   term_id=-8669080603391965318 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1666s ago
+[1680.697]   term_id=8398741980459494025 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1664s ago
+[1680.697]   term_id=-1766903539415178180 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1661s ago
+[1680.698]   term_id=-432725705265349445 addr=127.0.0.1:58464 role=unknown cert=False in=1 out=0 last_seen=1661s ago
+[1680.698]   term_id=-9176274227757260244 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=1661s ago
+[1680.698]   term_id=3502876675831395208 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=1661s ago
+[1680.698]   term_id=-9111819769464301950 addr=127.0.0.1:46227 role=unknown cert=False in=6 out=0 last_seen=1651s ago
+[1680.698]   term_id=8672162328631983287 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1658s ago
+[1680.698]   term_id=-6446605484256805696 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1658s ago
+[1680.699]   term_id=4772143221040174605 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1657s ago
+[1680.699]   term_id=-255931157523027149 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1656s ago
+[1680.699]   term_id=-5749754115196054330 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1654s ago
+[1680.699]   term_id=-8163804615229913763 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1652s ago
+[1680.699]   term_id=-4926259496856446159 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1652s ago
+[1680.700]   term_id=2584131736300306410 addr=127.0.0.1:46227 role=unknown cert=False in=2 out=0 last_seen=1651s ago
+[1680.700]   term_id=-1106312554595023122 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1651s ago
+[1680.700]   term_id=5549262997913207762 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1651s ago
+[1710.701] --- STATUS: 29 clients ---
+[1710.702]   term_id=-2697608252815436935 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1708s ago
+[1710.704]   term_id=6269279792593288696 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1708s ago
+[1710.705]   term_id=3205819932592849908 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=1708s ago
+[1710.705]   term_id=2665540717097937809 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=1708s ago
+[1710.705]   term_id=-8318375484768109668 addr=127.0.0.1:60010 role=unknown cert=False in=10 out=0 last_seen=1690s ago
+[1710.706]   term_id=1199322554568244946 addr=127.0.0.1:60010 role=unknown cert=False in=27 out=0 last_seen=1692s ago
+[1710.706]   term_id=8864947552701480748 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1707s ago
+[1710.706]   term_id=17784951862937349 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1706s ago
+[1710.707]   term_id=2912693109592377539 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1705s ago
+[1710.707]   term_id=-2943590555654490829 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1705s ago
+[1710.707]   term_id=-7245578751572442948 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1703s ago
+[1710.708]   term_id=-8018054872861384096 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1701s ago
+[1710.708]   term_id=-8669080603391965318 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1696s ago
+[1710.708]   term_id=8398741980459494025 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1694s ago
+[1710.709]   term_id=-1766903539415178180 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1691s ago
+[1710.709]   term_id=-432725705265349445 addr=127.0.0.1:58464 role=unknown cert=False in=1 out=0 last_seen=1691s ago
+[1710.709]   term_id=-9176274227757260244 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=1691s ago
+[1710.710]   term_id=3502876675831395208 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=1691s ago
+[1710.710]   term_id=-9111819769464301950 addr=127.0.0.1:46227 role=unknown cert=False in=6 out=0 last_seen=1681s ago
+[1710.711]   term_id=8672162328631983287 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1688s ago
+[1710.711]   term_id=-6446605484256805696 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1688s ago
+[1710.712]   term_id=4772143221040174605 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1687s ago
+[1710.712]   term_id=-255931157523027149 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1686s ago
+[1710.712]   term_id=-5749754115196054330 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1684s ago
+[1710.712]   term_id=-8163804615229913763 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1682s ago
+[1710.713]   term_id=-4926259496856446159 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1682s ago
+[1710.713]   term_id=2584131736300306410 addr=127.0.0.1:46227 role=unknown cert=False in=2 out=0 last_seen=1681s ago
+[1710.713]   term_id=-1106312554595023122 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1681s ago
+[1710.713]   term_id=5549262997913207762 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1681s ago
+[1740.716] --- STATUS: 29 clients ---
+[1740.717]   term_id=-2697608252815436935 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1738s ago
+[1740.718]   term_id=6269279792593288696 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1738s ago
+[1740.718]   term_id=3205819932592849908 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=1738s ago
+[1740.719]   term_id=2665540717097937809 addr=127.0.0.1:46227 role=bridge cert=True in=1 out=0 last_seen=1738s ago
+[1740.719]   term_id=-8318375484768109668 addr=127.0.0.1:60010 role=unknown cert=False in=10 out=0 last_seen=1720s ago
+[1740.719]   term_id=1199322554568244946 addr=127.0.0.1:60010 role=unknown cert=False in=27 out=0 last_seen=1722s ago
+[1740.719]   term_id=8864947552701480748 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1737s ago
+[1740.720]   term_id=17784951862937349 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1736s ago
+[1740.720]   term_id=2912693109592377539 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1735s ago
+[1740.720]   term_id=-2943590555654490829 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1735s ago
+[1740.720]   term_id=-7245578751572442948 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1733s ago
+[1740.721]   term_id=-8018054872861384096 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1731s ago
+[1740.721]   term_id=-8669080603391965318 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1726s ago
+[1740.721]   term_id=8398741980459494025 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1724s ago
+[1740.721]   term_id=-1766903539415178180 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1721s ago
+[1740.721]   term_id=-432725705265349445 addr=127.0.0.1:58464 role=unknown cert=False in=1 out=0 last_seen=1721s ago
+[1740.721]   term_id=-9176274227757260244 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=1721s ago
+[1740.722]   term_id=3502876675831395208 addr=127.0.0.1:60010 role=bridge cert=True in=1 out=0 last_seen=1721s ago
+[1740.722]   term_id=-9111819769464301950 addr=127.0.0.1:46227 role=unknown cert=False in=6 out=0 last_seen=1711s ago
+[1740.722]   term_id=8672162328631983287 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1718s ago
+[1740.722]   term_id=-6446605484256805696 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1718s ago
+[1740.722]   term_id=4772143221040174605 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1717s ago
+[1740.723]   term_id=-255931157523027149 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1716s ago
+[1740.723]   term_id=-5749754115196054330 addr=127.0.0.1:60010 role=unknown cert=False in=1 out=0 last_seen=1714s ago
+[1740.723]   term_id=-8163804615229913763 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1712s ago
+[1740.723]   term_id=-4926259496856446159 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1712s ago
+[1740.723]   term_id=2584131736300306410 addr=127.0.0.1:46227 role=unknown cert=False in=2 out=0 last_seen=1711s ago
+[1740.724]   term_id=-1106312554595023122 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1711s ago
+[1740.724]   term_id=5549262997913207762 addr=127.0.0.1:46227 role=unknown cert=False in=1 out=0 last_seen=1711s ago
