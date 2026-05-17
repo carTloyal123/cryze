@@ -534,71 +534,117 @@ class GutesRelay:
         
         return bytes(ack)
 
-    def _build_init_info_resp(self, req_data: bytes, addr: tuple, predicted_sqnum: int) -> bytes:
-        """Build INIT_INFO_RESP with NO encryption (opt_encrypt=0).
+    def _build_init_info_resp(self, req_data: bytes, addr: tuple, req_sqnum: int) -> bytes:
+        """Build INIT_INFO_RESP with session encryption (opt_encrypt=2).
         
-        The SDK's session receive path decrypts based on opt_encrypt flag.
-        With opt_encrypt=0, no decryption is performed — the SDK reads all fields
-        in plaintext. This avoids the need for the session key entirely.
+        The chime firmware requires session-encrypted responses — opt_encrypt=0
+        with bit25 bypass only works for the bridge SDK, not for device-side SDKs.
         
-        The SDK matches responses by: pending_req.sqnum == incoming_frame.chkval
-        For session-encrypted (opt_encrypt=2) frames, we can't decrypt the sqnum.
-        Instead we predict it: INIT_INFO sqnum = CERTIFY_REQ sqnum + 1 (sequential counter).
+        Uses the same session encryption pattern as _build_calling_ack:
+        1. Build plaintext frame with payload
+        2. Compute chkval
+        3. Encrypt payload (0x18+) with session key
+        4. Encrypt sqnum+chkval (0x0C-0x13) with session key
+        5. Encrypt ID (0x04-0x0B) with GWELL_KEY + XOR with encrypted sqnum/chkval
         """
-        # Build payload with device list so SDK registers devices (prevents offline after subscribe timeout)
-        # Format: flags2(2B) + ack_result(2B) + online_cnt(2B) + offline_cnt(2B) + device_entries
-        # Each device entry (mode!=3): did(8B) + tid_hash(16B) + status(1B) + auth(1B) + srv_id(2B) = 28B
-        # flags2 bit 0 must be set to trigger device list parsing
+        import random as _rand
         
-        # Use the device_id from our config (numeric device ID for the doorbell)
-        device_id = getattr(self, 'device_numeric_id', 429728659090583)  # from WYZE_DID
+        # Get session key for this client
+        session_key = self.state.addr_session_keys.get(addr)
+        if not session_key:
+            for a, sk in self.state.addr_session_keys.items():
+                if a[0] == addr[0]:
+                    session_key = sk
+                    break
         
-        # Device entry: 28 bytes
+        # Build payload: flags2(2B) + ack_result(2B) + online_cnt(2B) + offline_cnt(2B) + device_entry(28B)
+        device_id = getattr(self, 'device_numeric_id', 429728659090583)
+        
         dev_entry = bytearray(28)
-        struct.pack_into('<Q', dev_entry, 0, device_id)  # did (8B)
-        # tid_hash (16B) = zeros (SDK will use did as string key)
-        dev_entry[24] = 1  # status = 1 (online)
-        dev_entry[25] = 1  # auth = 1 (authorized)
-        struct.pack_into('<H', dev_entry, 26, 0)  # srv_id = 0
+        struct.pack_into('<Q', dev_entry, 0, device_id)
+        dev_entry[24] = 1  # status = online
+        dev_entry[25] = 1  # auth = authorized
         
-        flags2 = 0x0001  # bit 0 set = has device list
-        ack_result = 0
-        online_cnt = 1
-        offline_cnt = 0
-        
-        payload = struct.pack('<HHHH', flags2, ack_result, online_cnt, offline_cnt)
+        flags2 = 0x0001  # bit 0 = has device list
+        payload = struct.pack('<HHHH', flags2, 0, 1, 0)  # flags2, ack_result=0, online=1, offline=0
         payload += bytes(dev_entry)
+        
+        # Pad payload to 8-byte boundary for RC5 encryption
+        pad_len = (8 - len(payload) % 8) % 8
+        payload += b'\x00' * pad_len
         
         CRYPTO_HDR = 0x18
         frame_size = CRYPTO_HDR + len(payload)
         resp = bytearray(frame_size)
-        resp[0] = 0x7E  # Session protocol
-        resp[1] = TYPE_INIT_INFO_MSG + 1  # Response type = request type + 1
+        resp[0] = 0x7E  # session proto
+        resp[1] = TYPE_INIT_INFO_MSG + 1  # 0xA7 response
         struct.pack_into('<H', resp, 2, frame_size)
         
-        # Server term_id — MUST match the session_id we returned in CERTIFY_RESP
-        # The SDK checks: incoming_frame.term_id == stored_session_id (from CERTIFY)
+        # term_id — use session_id from CERTIFY
         session_id_bytes = self.state.addr_session_id.get(addr)
-        if session_id_bytes:
-            resp[4:12] = session_id_bytes
+        if not session_id_bytes:
+            for a, sid in self.state.addr_session_id.items():
+                if a[0] == addr[0]:
+                    session_id_bytes = sid
+                    break
+        if session_id_bytes and len(session_id_bytes) >= 8:
+            resp[4:12] = session_id_bytes[:8]
         else:
-            # Fallback: use server_term_id (may not match, but try anyway)
-            term_id_bytes = struct.pack('<q', self.server_term_id)
-            resp[4:12] = term_id_bytes
+            struct.pack_into('<q', resp, 4, self.server_term_id)
         
-        # sqnum (our own) and chkval = predicted request sqnum (for response matching)
+        # sqnum = our own, chkval = request's plaintext sqnum (for response matching)
         sqnum = self._next_sqnum()
         struct.pack_into('<I', resp, 0x0C, sqnum)
-        struct.pack_into('<I', resp, 0x10, predicted_sqnum & 0xFFFFFFFF)
+        struct.pack_into('<I', resp, 0x10, req_sqnum & 0xFFFFFFFF)
         
-        # opt_flags: opt_encrypt=0, opt_resp=1 (bit 21), relay_flag=1 (bit 25)
-        # bit 25 bypasses the session_id routing check in iv_gutes_on_rcvpkt
-        opt_flags = (1 << 21) | (1 << 25)
+        # opt_flags: encrypt=2 (session), opt_resp=1 (bit 21), relay_flag=1 (bit 25)
+        nonce = _rand.randint(0, 0x7FFF)
+        opt_flags = (nonce << 1) | (2 << 16) | (1 << 21) | (1 << 25)
         struct.pack_into('<I', resp, 0x14, opt_flags)
         
-        # Payload
-        resp[CRYPTO_HDR:] = payload
+        # Payload (plaintext)
+        resp[CRYPTO_HDR:CRYPTO_HDR + len(payload)] = payload
         
+        if session_key:
+            # Compute chkval over plaintext frame
+            chkval = self._compute_chkval(resp)
+            struct.pack_into('<I', resp, 0x10, chkval)
+            # But chkval field is ALSO used for response matching — SDK reads it AFTER decrypt
+            # The SDK decrypts sqnum+chkval at 0x0C-0x13, then checks decrypted chkval == stored_req_sqnum
+            # So we put req_sqnum in chkval position, compute chkval, but then replace with req_sqnum
+            # Actually: the chkval check is skipped for opt_resp=1 frames! So we just need chkval for
+            # the pre-decrypt validation path. Let me set chkval = req_sqnum for response matching.
+            struct.pack_into('<I', resp, 0x10, req_sqnum & 0xFFFFFFFF)
+            
+            # Session encrypt
+            rc5_session = RC5(block_bytes=8, rounds=6)
+            rc5_session.setkey(session_key)
+            
+            # 1. Encrypt payload (0x18+)
+            enc_payload = rc5_session.encrypt(bytes(resp[0x18:]))
+            resp[0x18:0x18 + len(enc_payload)] = enc_payload
+            
+            # 2. Encrypt sqnum+chkval (0x0C-0x13)
+            enc_sqchk = rc5_session.encrypt_block(bytes(resp[0x0C:0x14]))
+            resp[0x0C:0x14] = enc_sqchk
+            
+            # 3. Encrypt ID: RC5_enc with GWELL_KEY, then XOR with encrypted sqnum/chkval
+            rc5_id = RC5(block_bytes=8, rounds=6)
+            rc5_id.setkey(GWELL_KEY)
+            enc_id = bytearray(rc5_id.encrypt_block(bytes(resp[4:12])))
+            for i in range(4):
+                enc_id[i] ^= resp[0x0C + i]
+                enc_id[4 + i] ^= resp[0x10 + i]
+            resp[4:12] = enc_id
+            
+            self.log(f"  [DEBUG] INIT_INFO_RESP session-encrypted with key={session_key[:8].hex()}...")
+        else:
+            # No session key — use opt_encrypt=0 fallback (works for bridge SDK)
+            opt_flags = (1 << 21) | (1 << 25)  # opt_resp=1, bit25
+            struct.pack_into('<I', resp, 0x14, opt_flags)
+            self.log(f"  [DEBUG] INIT_INFO_RESP plaintext (no session key)")
+        
+        self.log(f"  [DEBUG] RESP hex: {resp[:24].hex()}")
         return bytes(resp)
 
     def _build_subscribe_resp(self, addr: tuple, predicted_sqnum: int) -> bytes:
