@@ -35,6 +35,7 @@ STDCPP_RENAME = ("libstdc++.so", "libstdc++.so.6")
 SDK_LIBS = ["libiotp2pav.so", "libmbedtls.so"]
 
 go2rtc_proc: subprocess.Popen | None = None
+relay_proc: subprocess.Popen | None = None
 shutting_down = False
 
 
@@ -259,8 +260,66 @@ def shutdown(signum: int, _frame) -> None:
             go2rtc_proc.kill()
             go2rtc_proc.wait(timeout=3)
 
+    if relay_proc and relay_proc.poll() is None:
+        relay_proc.terminate()
+        try:
+            relay_proc.wait(timeout=3)
+            log("Relay stopped.")
+        except subprocess.TimeoutExpired:
+            relay_proc.kill()
+
     log("Shutdown complete.")
     sys.exit(0)
+
+
+# ── GUTES Relay ────────────────────────────────────────────────────
+
+def start_relay() -> subprocess.Popen | None:
+    """Start the GUTES relay server as a background process.
+
+    The relay intercepts the SDK's Mars signaling (LIST, DETECT, CERTIFY)
+    and proxies it to the real Mars cloud.  By running locally, we:
+      - Respond to DETECT instantly (wins the server-selection race)
+      - Can later cache CERTIFY state for fully-offline operation
+      - Avoid DNAT complexity on the router
+
+    The bridge's P2P_URL env is set to |127.0.0.1 so the SDK talks to us.
+    """
+    dotenv = load_env_file()
+    upstream = dotenv.get("RELAY_UPSTREAM", "3.13.212.24:28800")
+    mode = dotenv.get("RELAY_MODE", "proxy")
+    log_file = str(WORK / "relay.log")
+
+    # Resolve current Mars servers for upstream
+    import socket as _sock
+    try:
+        results = _sock.getaddrinfo("wyze-mars-asrv.wyzecam.com", None, _sock.AF_INET)
+        ips = list(set(r[4][0] for r in results))
+        if ips:
+            upstream = f"{ips[0]}:28800"
+            log(f"Resolved Mars relay: {upstream} (from {len(ips)} IPs)")
+    except Exception:
+        log(f"DNS resolution failed, using default upstream: {upstream}")
+
+    cmd = [
+        sys.executable, str(WORK / "scripts" / "gutes_relay.py"),
+        "--mode", mode,
+        "--upstream", upstream,
+        "--log-file", log_file,
+        "--local-ip", "127.0.0.1",
+    ]
+    log(f"Starting GUTES relay ({mode} mode, upstream={upstream})")
+    proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+
+    # Give it a moment to bind ports
+    import time
+    time.sleep(0.3)
+    if proc.poll() is not None:
+        log(f"WARNING: Relay exited immediately (rc={proc.returncode})")
+        return None
+
+    log("GUTES relay running (LIST+DETECT local, CERTIFY proxy to Mars)")
+    return proc
 
 
 # ── Main ───────────────────────────────────────────────────────────
@@ -277,13 +336,18 @@ def main() -> None:
     setup_libs()
     build_bridge()
 
-    # Phase 2: Start go2rtc with .env and LD_PRELOAD/LD_LIBRARY_PATH
+    # Phase 2: Start GUTES relay (local proxy for Mars signaling)
+    relay_proc = start_relay()
+
+    # Phase 3: Start go2rtc with .env and LD_PRELOAD/LD_LIBRARY_PATH
     dotenv = load_env_file()
     env = {
         **os.environ,
         **dotenv,
         "LD_PRELOAD": str(LIBS_DIR / "bionic_interpose.so"),
         "LD_LIBRARY_PATH": f"{LIBS_DIR}:{APK_LIBS}",
+        # Point SDK at our local relay instead of Mars cloud
+        "P2P_URL": dotenv.get("P2P_URL", "|127.0.0.1"),
     }
 
     log("Starting go2rtc...")
@@ -295,10 +359,13 @@ def main() -> None:
         env=env,
     )
 
-    # Phase 3: Wait for go2rtc (or signal)
+    # Phase 4: Wait for go2rtc (or signal)
     rc = go2rtc_proc.wait()
     if not shutting_down:
         log(f"go2rtc exited unexpectedly (code {rc})")
+        # Also stop the relay
+        if relay_proc and relay_proc.poll() is None:
+            relay_proc.terminate()
         sys.exit(rc)
 
 

@@ -137,6 +137,14 @@ class GutesRelay:
         self.log_fp = open(log_file, 'a') if log_file else None
         self.local_ip = local_ip or self._detect_local_ip()
         
+        # Server identity — the relay needs its own stable term_id.
+        # Real Mars servers use unique 64-bit IDs; DETECT_RESP carries the
+        # SERVER's term_id (NOT an echo of the client's).  We generate a
+        # deterministic ID from our IP so it's stable across restarts.
+        ip_hash = hashlib.md5(self.local_ip.encode()).digest()
+        self.server_term_id: int = struct.unpack_from('<q', ip_hash)[0]
+        self.server_sqnum: int = int(time.time()) & 0xFFFFFFFF  # incrementing counter
+        
         # Socket references
         self.relay_socks: dict[int, socket.socket] = {}  # port -> socket
         self.list_sock: Optional[socket.socket] = None
@@ -193,120 +201,149 @@ class GutesRelay:
     def is_response(self, opt_flags: int) -> bool:
         return bool((opt_flags >> 21) & 1)
 
+    def _next_sqnum(self) -> int:
+        """Return and increment server sequence number."""
+        sq = self.server_sqnum
+        self.server_sqnum = (self.server_sqnum + 1) & 0xFFFFFFFF
+        return sq
+
+    def _make_server_chkval(self, sqnum: int) -> int:
+        """Generate a chkval for our server frames (simple hash of sqnum)."""
+        h = hashlib.md5(struct.pack('<I', sqnum)).digest()
+        return struct.unpack_from('<I', h)[0]
+
+    def _encrypt_server_id(self, sqnum: int, chkval: int) -> bytes:
+        """Encrypt our server term_id for a frame header."""
+        return id_encrypt(
+            struct.pack('<q', self.server_term_id),
+            struct.pack('<I', chkval),
+            struct.pack('<I', sqnum),
+        )
+
     def build_detect_resp(self, req_data: bytes) -> bytes:
         """Build DETECT_RESP matching the real Mars relay format.
-        
-        Real DETECT_RESP (56 bytes):
+
+        Critical finding from pcap analysis of real Mars servers:
+        The DETECT_RESP carries the SERVER's own term_id, sqnum, and chkval —
+        NOT an echo of the client's values.  Each server identifies itself.
+        The SDK uses this to distinguish between different relay servers.
+
+        Real DETECT_RESP (56 bytes, frm_len=0x38):
           Header (0x1C):
-            [0]: 0x7F, [1]: 0x02, [2:4]: 0x0038 (56)
-            [4:12]: term_id (copied from req)
-            [0x0C:0x10]: sqnum (copied from req)
-            [0x10:0x14]: chkval (copied from req)
-            [0x14:0x18]: opt_flags = 0x0000a6d0 (specific to detect_resp)
+            [0]: 0x7F  [1]: 0x02  [2:4]: 0x0038 (56)
+            [4:12]: SERVER's term_id (RC5-encrypted with sqnum/chkval XOR)
+            [0x0C:0x10]: SERVER's sqnum (incrementing counter)
+            [0x10:0x14]: SERVER's chkval
+            [0x14:0x18]: opt_flags (random nonce in bits 1-15, rest zero)
             [0x18:0x1A]: flags2 = 0x0001
-            [0x1A:0x1C]: ack_result = 0
+            [0x1A:0x1C]: ack_result = 0x0000
           Payload (28 bytes):
-            +0x00: NTP time (4B LE)
+            +0x00: tick count / uptime in ms (4B LE)
             +0x04: 0x00000000
-            +0x08: MTU info (0x5a, 0x00, 0x58, 0x00) — 90 and 88
-            +0x0c: NTP time (repeat)
+            +0x08: MTU info — 0x58,0x00,0x56,0x00 (88 and 86)
+            +0x0C: tick count repeat
             +0x10: 0x00000000
-            +0x14: server uptime/random (4B)
-            +0x18: server load/flags (4B, e.g., 0x84010000 = 388)
+            +0x14: Unix timestamp (4B LE) — the real time field
+            +0x18: server load (4B LE, lower = better)
         """
+        import random as _rand
+
         resp = bytearray(0x38)  # 56 bytes
         resp[0] = 0x7F
         resp[1] = TYPE_DETECT_RESP
         struct.pack_into('<H', resp, 2, 0x38)
-        
-        # Copy term_id, sqnum, chkval from request
-        resp[4:12] = req_data[4:12]
-        resp[0x0C:0x10] = req_data[0x0C:0x10]
-        resp[0x10:0x14] = req_data[0x10:0x14]
-        
-        # opt_flags: match real Mars relay response exactly
-        struct.pack_into('<I', resp, 0x14, 0x0000a6d0)
-        
-        # flags2 = 0x0001
+
+        # Server's own identity — NOT the client's
+        sqnum = self._next_sqnum()
+        chkval = self._make_server_chkval(sqnum)
+        encrypted_id = self._encrypt_server_id(sqnum, chkval)
+        resp[4:12] = encrypted_id
+        struct.pack_into('<I', resp, 0x0C, sqnum)
+        struct.pack_into('<I', resp, 0x10, chkval)
+
+        # opt_flags: random nonce in bits 1-15, everything else zero
+        # (encrypt=0, qos=0, ack=0, response=0 — matches real Mars servers)
+        nonce = _rand.randint(0, 0x7FFF)
+        opt_flags = nonce << 1
+        struct.pack_into('<I', resp, 0x14, opt_flags)
+
+        # flags2 = 0x0001, ack_result = 0x0000
         struct.pack_into('<H', resp, 0x18, 0x0001)
-        # ack_result = 0
         struct.pack_into('<H', resp, 0x1A, 0x0000)
-        
-        # Payload (28 bytes)
+
+        # Payload (28 bytes) — match real Mars layout from pcap
         now = int(time.time())
-        # NTP time at +0x00
-        struct.pack_into('<I', resp, 0x1C, now)
+        uptime_ms = int((time.time() - self.t0) * 1000) & 0xFFFFFFFF
+        # +0x00: server uptime/tick in milliseconds
+        struct.pack_into('<I', resp, 0x1C, uptime_ms)
         # +0x04: zero
         struct.pack_into('<I', resp, 0x20, 0)
-        # +0x08: MTU values (90, 88 from real capture)
-        resp[0x24] = 0x5A  # 90
+        # +0x08: MTU values (88, 86 from real pcap capture)
+        resp[0x24] = 0x58  # 88
         resp[0x25] = 0x00
-        resp[0x26] = 0x58  # 88  
+        resp[0x26] = 0x56  # 86
         resp[0x27] = 0x00
-        # +0x0C: NTP time repeat
-        struct.pack_into('<I', resp, 0x28, now)
+        # +0x0C: uptime repeat
+        struct.pack_into('<I', resp, 0x28, uptime_ms)
         # +0x10: zero
         struct.pack_into('<I', resp, 0x2C, 0)
-        # +0x14: uptime/random
-        struct.pack_into('<I', resp, 0x30, int(time.time()) & 0x7FFFFFFF)
-        # +0x18: server load (low = better)
+        # +0x14: Unix timestamp (this is where real Mars puts the actual time)
+        struct.pack_into('<I', resp, 0x30, now)
+        # +0x18: server load (lower = SDK prefers this server)
         struct.pack_into('<I', resp, 0x34, 1)  # minimal load
-        
+
         return bytes(resp)
 
     def build_list_resp(self, req_data: bytes, reply_ip: str = None) -> bytes:
         """Build LIST_RESP with our relay as the only server.
-        
+
         Format (from captured 176-byte response, frm_len=0xB0):
-        - Header (0x1C bytes)
+        - Header (0x1C bytes) — uses SERVER's term_id (like DETECT_RESP)
         - Payload: server list entries (per-frame encrypted)
-        
+
         Each server entry (from RE of iv_get_srv_list_from_Rmtlist_Resp):
-        - 4 bytes: IPv4 address (network byte order)  
+        - 4 bytes: IPv4 address (network byte order)
         - 2 bytes: port (LE)
         - 2 bytes: server_id (LE)
         - 2 bytes: flags
-        
-        Since the payload is per-frame encrypted and we know the key derivation,
-        we can build a valid encrypted response.
         """
-        # Build a minimal response with one server entry
-        # We need to match the real response structure so the SDK parses it
-        
+        import random as _rand
+
         # Header
         resp = bytearray(0xB0)  # 176 bytes like real response
         resp[0] = 0x7F
         resp[1] = TYPE_LIST_RESP
         struct.pack_into('<H', resp, 2, 0xB0)
-        
-        # Copy term_id, sqnum from request (SDK verifies these match)
-        resp[4:12] = req_data[4:12]
-        
-        # Increment sqnum for response
-        sqnum = struct.unpack_from('<I', req_data, 0x0C)[0]
+
+        # Server's own identity (confirmed from pcap: LIST_RESP term_id ≠ request)
+        sqnum = self._next_sqnum()
+        chkval = self._make_server_chkval(sqnum)
+        encrypted_id = self._encrypt_server_id(sqnum, chkval)
+        resp[4:12] = encrypted_id
         struct.pack_into('<I', resp, 0x0C, sqnum)
-        
-        # Compute chkval (simple checksum of payload — varies by implementation)
-        struct.pack_into('<I', resp, 0x10, 0)  # placeholder
-        
-        # opt_flags: encrypt=1 (per-frame), is_response=1
-        opt_flags = (1 << 16) | (1 << 21)  # encrypt=1, is_response
+        struct.pack_into('<I', resp, 0x10, chkval)
+
+        # opt_flags: encrypt=1 (per-frame), random nonce
+        nonce = _rand.randint(0, 0x7FFF)
+        opt_flags = (nonce << 1) | (1 << 16)  # encrypt=1
         struct.pack_into('<I', resp, 0x14, opt_flags)
         
-        # Build plaintext payload with our server entry
-        # The real payload has: num_servers(2B) + entries[]
-        # Each entry: ip(4B, network order) + port(2B LE) + srv_id(2B LE) + flags(2B)
+        # Build plaintext payload with our server entries
+        # Real Mars returns ~5 servers on different ports (28800, 8443, 8000, 443).
+        # The SDK sends DETECT to each one. We list our relay on all its ports.
+        # Each entry: ip(4B, NBO) + port(2B LE) + srv_id(2B LE) + flags(2B) = 10 bytes
         payload = bytearray(0xB0 - HEADER_SIZE)
-        
-        # Number of servers = 1
-        struct.pack_into('<H', payload, 0, 1)
-        
-        # Our server entry at offset 2
+
         ip_bytes = socket.inet_aton(reply_ip or self.local_ip)
-        payload[2:6] = ip_bytes
-        struct.pack_into('<H', payload, 6, self.listen_ports[0])  # port
-        struct.pack_into('<H', payload, 8, 1)  # srv_id
-        struct.pack_into('<H', payload, 10, 0)  # flags
+        num_servers = len(self.listen_ports)
+        struct.pack_into('<H', payload, 0, num_servers)
+
+        for i, port in enumerate(self.listen_ports):
+            off = 2 + i * 10
+            payload[off:off+4] = ip_bytes
+            struct.pack_into('<H', payload, off + 4, port)
+            struct.pack_into('<H', payload, off + 6, i + 1)  # srv_id
+            struct.pack_into('<H', payload, off + 8, 0)      # flags
         
         # Encrypt payload with per-frame key
         pfk = derive_per_frame_key(bytes(resp[:0x18]))
@@ -329,22 +366,38 @@ class GutesRelay:
             self.upstream_socks[term_id] = sock
         return self.upstream_socks[term_id]
 
+    def hexdump(self, data: bytes, max_bytes: int = 128) -> str:
+        """Return a compact hex dump string for logging."""
+        truncated = len(data) > max_bytes
+        d = data[:max_bytes]
+        hex_str = ' '.join(f'{b:02x}' for b in d)
+        if truncated:
+            hex_str += f' ... (+{len(data) - max_bytes}B)'
+        return hex_str
+
     def handle_packet(self, data: bytes, addr: tuple, our_port: int) -> Optional[bytes]:
         """Process incoming packet. Returns local response or None (forward/route)."""
         if len(data) < 4:
+            self.log(f"← RUNT ({len(data)}B) from {addr[0]}:{addr[1]} port={our_port} | {self.hexdump(data)}")
             return None
         
         protocol, ftype, frm_len, opt_flags = self.get_frame_info(data)
         term_id = self.decode_term_id(data) if len(data) >= HEADER_SIZE else 0
         type_name = FRAME_TYPES.get(ftype, f"0x{ftype:02X}")
         ack = self.is_ack(opt_flags)
+        is_resp = self.is_response(opt_flags)
+        encrypt_mode = (opt_flags >> 16) & 0xF
         
         # Register/update client
         if term_id != 0:
-            if term_id not in self.state.clients:
+            is_new = term_id not in self.state.clients
+            if is_new:
                 self.state.clients[term_id] = ClientSession(
                     term_id=term_id, addr=addr, our_port=our_port)
-                self.log(f"NEW CLIENT: term_id={term_id} from {addr[0]}:{addr[1]}")
+                self.log(f"NEW CLIENT: term_id={term_id} from {addr[0]}:{addr[1]} port={our_port}")
+                self.log(f"  HDR: proto=0x{protocol:02x} type=0x{ftype:02x}({type_name}) len={frm_len} "
+                        f"opt=0x{opt_flags:08x} enc={encrypt_mode} ack={ack} resp={is_resp}")
+                self.log(f"  HEX: {self.hexdump(data, 256)}")
             client = self.state.clients[term_id]
             client.addr = addr
             client.our_port = our_port
@@ -354,25 +407,31 @@ class GutesRelay:
 
         # --- DETECT: always respond locally (we want to win the race) ---
         if ftype == TYPE_DETECT_REQ:
-            self.log(f"← DETECT_REQ from {addr[0]}:{addr[1]} term_id={term_id}")
+            self.log(f"← DETECT_REQ from {addr[0]}:{addr[1]}:{our_port} "
+                    f"client_tid={term_id} ({frm_len}B)")
             resp = self.build_detect_resp(data)
-            self.log(f"→ DETECT_RESP to {addr[0]}:{addr[1]} (instant)")
+            self.log(f"→ DETECT_RESP to {addr[0]}:{addr[1]} "
+                    f"server_tid={self.server_term_id} ({len(resp)}B)")
             return resp
 
-        # --- LIST_REQ: forward to real Mars and relay the response ---
-        # The LIST_RESP format is complex (per-frame encrypted server entries).
-        # In proxy mode: forward to Mars, relay response back, SDK then sends DETECT to those IPs.
-        # Our iptables DNAT (or DNS override) ensures DETECT comes back to us anyway.
-        # In relay mode: respond locally with our address.
+        # --- LIST_REQ: always respond locally with our address ---
+        # The LIST_RESP payload uses encryption we can't replicate (the per-frame
+        # key derivation produces garbage for LIST_RESP — likely an additional
+        # XOR or different key schedule).  Rather than trying to decrypt/rewrite
+        # real Mars LIST_RESP, we respond locally with our relay as the only
+        # server.  The SDK will then DETECT against us, we respond with our
+        # server term_id, and the SDK proceeds to CERTIFY (which we proxy to
+        # real Mars in proxy mode).
+        #
+        # In proxy mode we ALSO forward to Mars so the upstream socket gets
+        # created (needed for CERTIFY forwarding), but the client uses our
+        # local response because it arrives first.
         elif ftype == TYPE_LIST_REQ:
             self.log(f"← LIST_REQ from {addr[0]}:{addr[1]} term_id={term_id} ({frm_len}B)")
-            if self.mode == "proxy":
-                return None  # Forward to upstream — response routed via _upstream_recv_loop
-            else:
-                reply_ip = "127.0.0.1" if addr[0].startswith("127.") else self.local_ip
-                resp = self.build_list_resp(data, reply_ip)
-                self.log(f"→ LIST_RESP to {addr[0]}:{addr[1]} (servers: {reply_ip}, {len(resp)}B)")
-                return resp
+            reply_ip = "127.0.0.1" if addr[0].startswith("127.") else self.local_ip
+            resp = self.build_list_resp(data, reply_ip)
+            self.log(f"→ LIST_RESP to {addr[0]}:{addr[1]} (local, servers: {reply_ip}, {len(resp)}B)")
+            return resp
 
         # --- CERTIFY ---
         elif ftype == TYPE_CERTIFY_REQ:
@@ -412,8 +471,10 @@ class GutesRelay:
 
         # --- All other frames ---
         else:
-            if not ack:  # Don't spam ACK logs
-                self.log(f"← {type_name} from {addr[0]}:{addr[1]} term_id={term_id} ({frm_len}B)")
+            self.log(f"← {type_name}{'_ACK' if ack else ''} from {addr[0]}:{addr[1]}:{our_port} "
+                    f"term_id={term_id} ({frm_len}B) opt=0x{opt_flags:08x} enc={encrypt_mode}")
+            if ftype not in (TYPE_KEEPALIVE,) or ack:  # Hex dump non-keepalive or keepalive ACKs
+                self.log(f"  HEX: {self.hexdump(data, 256)}")
             return None
 
     def _handle_certify_local(self, data: bytes, addr: tuple, term_id: int) -> Optional[bytes]:
@@ -604,9 +665,10 @@ class GutesRelay:
 
     async def run(self):
         """Main entry point."""
-        self.log(f"GUTES Relay v2 starting")
+        self.log(f"GUTES Relay v3 starting")
         self.log(f"  Mode: {self.mode.upper()}")
         self.log(f"  Local IP: {self.local_ip}")
+        self.log(f"  Server term_id: {self.server_term_id}")
         self.log(f"  Relay ports: {self.listen_ports}")
         self.log(f"  List port: {self.list_port}")
         if self.mode == "proxy":
@@ -792,8 +854,10 @@ class GutesRelay:
                 type_name = FRAME_TYPES.get(ftype, f"0x{ftype:02X}")
                 resp_term_id = self.decode_term_id(data) if len(data) >= HEADER_SIZE else 0
                 
+                opt = struct.unpack_from('<I', data, 0x14)[0] if len(data) >= 0x18 else 0
                 self.log(f"  ← UPS {type_name} from {upstream_addr[0]}:{upstream_addr[1]} "
-                        f"({len(data)}B) term_id={resp_term_id}")
+                        f"({len(data)}B) term_id={resp_term_id} opt=0x{opt:08x}")
+                self.log(f"    UPS HEX: {self.hexdump(data, 256)}")
                 
                 # Rewrite LIST_RESP to replace server IPs with our local IP
                 if ftype == TYPE_LIST_RESP:
