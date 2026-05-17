@@ -1203,7 +1203,8 @@ class GutesRelay:
                     req_sqnum = self.state.addr_last_sqnum.get(addr, 0) + 1
                     self.log(f"  [DEBUG] Using predicted sqnum={req_sqnum} for INIT_INFO_RESP")
                 resp = self._build_init_info_resp(data, addr, req_sqnum)
-                self.log(f"  → INIT_INFO_RESP to {addr[0]}:{addr[1]} ({len(resp)}B)")
+                self.log(f"  → INIT_INFO_RESP to {addr[0]}:{addr[1]} ({len(resp)}B) chkval={req_sqnum}")
+                self.log(f"  [DEBUG] RESP hex: {resp[:24].hex()}")
                 # Track for next prediction
                 self.state.addr_last_sqnum[addr] = req_sqnum
                 return resp
