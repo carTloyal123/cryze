@@ -638,20 +638,37 @@ class GutesRelay:
         return bytes(resp)
 
     def _build_calling_ack(self, calling_data: bytes, addr: tuple, sender_term_id: int) -> Optional[bytes]:
-        """Build CALLING ACK frame containing doorbell's network address.
+        """Build session-encrypted CALLING ACK with doorbell's network address.
         
-        The ACK path for mode=1 reliable frames goes through iv_gutes_on_rcvfrm_ack:
-        - Matching: stored_request_sqnum == ACK_frame[0x0C] (raw bytes, NO decryption)
-        - Callback: iv_on_ackfrm_Calling(ctx, pending_entry, ack_frame, status=0)
+        CRITICAL DISCOVERY: iv_gutes_frm_decrypt IS called before iv_gutes_on_rcvfrm_ack!
+        All incoming frames (except DETECT_RESP) are decrypted at line 18053 in iv_gutes_on_rcvpkt.
         
-        ACK frame expects (from iv_on_ackfrm_Calling):
-          - frame[0x18] uint16: flags, bit 0 = opt_with_netaddr
-          - frame[0x20] 4 bytes: doorbell IPv4 (in_addr_t, network byte order)
-          - frame[0x24] uint16: doorbell port (network byte order)
+        For opt_encrypt=0 with opt_ack=1 (opt_resp=0): SDK validates chkval → FAILS (our chkval=0).
+        Real Mars uses opt_encrypt=2 (session) for the ACK. After SDK decrypts, it reads plaintext sqnum.
         
-        CRITICAL: opt_ack=1 (bit 20), NOT opt_resp=1. opt_encrypt=0 (no encryption).
-        The ACK matching reads frame[0x0C] raw — must be the plaintext request sqnum.
+        ACK matching (after decryption): stored_req_sqnum == decrypted_ack_frame[0x0C]
+        Callback iv_on_ackfrm_Calling reads decrypted payload at frame offsets 0x18, 0x20, 0x24.
         """
+        # Get session key
+        session_key = self.state.addr_session_keys.get(addr)
+        if not session_key:
+            for a, sk in self.state.addr_session_keys.items():
+                if a[0] == addr[0]:
+                    session_key = sk
+                    break
+        if not session_key:
+            self.log(f"  [MTP] No session key for CALLING_ACK")
+            return None
+        
+        # Get certify key for ID encryption
+        import json
+        try:
+            with open(os.path.join(os.path.dirname(__file__), '..', 'cache', 'auth.json')) as f:
+                auth_data = json.load(f)
+            certify_key = bytes.fromhex(auth_data['mars_access_token'][:128])[0x30:0x40]
+        except Exception:
+            certify_key = session_key[:16]
+        
         doorbell_ip_str = os.environ.get('DOORBELL_IP', '192.168.1.81')
         doorbell_port = 8899
         
@@ -659,39 +676,78 @@ class GutesRelay:
         req_sqnum = self._extract_req_sqnum(calling_data, addr)
         self.log(f"  [MTP] CALLING req_sqnum={req_sqnum} (for ACK matching)")
         
-        # Build ACK frame: 38 bytes (24 header + 14 payload)
-        frame_size = 38
+        # Build ACK frame — must be multiple of 8 bytes for encryption
+        # Header (24) + payload must be padded to 8-byte boundary
+        # Payload: 2B flags + 2B ack_result + 4B padding + 4B IP + 2B port = 14 bytes → pad to 16
+        payload_size = 16  # padded to 8-byte multiple
+        frame_size = 0x18 + payload_size  # 24 + 16 = 40 bytes
         resp = bytearray(frame_size)
         resp[0] = 0x7E  # session proto
-        resp[1] = 0xA4  # Same type as request (ACK doesn't need type+1)
+        resp[1] = 0xA4  # Same type as request
         struct.pack_into('<H', resp, 2, frame_size)
         
-        # term_id: not critical for ACK (bit25 bypasses routing)
-        struct.pack_into('<q', resp, 4, self.server_term_id)
+        # term_id (plaintext, will be encrypted with certify key)
+        session_id_bytes = self.state.addr_session_id.get(addr)
+        if not session_id_bytes:
+            for a, sid in self.state.addr_session_id.items():
+                if a[0] == addr[0]:
+                    session_id_bytes = sid
+                    break
+        if session_id_bytes and len(session_id_bytes) >= 8:
+            resp[4:12] = session_id_bytes[:8]
+        else:
+            struct.pack_into('<q', resp, 4, self.server_term_id)
         
-        # sqnum = request's plaintext sqnum (ACK matching: stored_sqnum == ack[0x0C])
+        # sqnum = request's plaintext sqnum (will match after SDK decrypts)
         struct.pack_into('<I', resp, 0x0C, req_sqnum)
-        struct.pack_into('<I', resp, 0x10, 0)  # chkval (unused for ACK)
+        # chkval will be computed below
         
-        # opt_flags: encrypt=0, opt_ack=1 (bit 20), relay_flag=1 (bit 25)
+        # opt_flags: encrypt=2 (session), opt_ack=1 (bit 20), relay_flag=1 (bit 25)
         import random as _rand
         nonce = _rand.randint(0, 0x7FFF)
-        opt_flags = (nonce << 1) | (0 << 16) | (1 << 20) | (1 << 25)
+        opt_flags = (nonce << 1) | (2 << 16) | (1 << 20) | (1 << 25)
         struct.pack_into('<I', resp, 0x14, opt_flags)
         
-        # Payload at 0x18:
-        # [0x18-0x19]: flags uint16, bit 0 = opt_with_netaddr
-        # [0x1A-0x1B]: ack_result = 0 (success)
+        # Payload at 0x18 (plaintext before encryption):
         struct.pack_into('<H', resp, 0x18, 1)  # opt_with_netaddr = 1
-        struct.pack_into('<H', resp, 0x1A, 0)  # ack_result = 0
-        # [0x1C-0x1F]: padding/link_id (4B)
-        # [0x20-0x23]: doorbell IPv4
+        struct.pack_into('<H', resp, 0x1A, 0)  # ack_result = 0 (success)
+        # bytes 0x1C-0x1F: padding (0)
+        # bytes 0x20-0x23: doorbell IPv4
         ip_bytes = socket.inet_aton(doorbell_ip_str)
         resp[0x20:0x24] = ip_bytes
-        # [0x24-0x25]: doorbell port (network byte order)
+        # bytes 0x24-0x25: doorbell port (network byte order)
         struct.pack_into('>H', resp, 0x24, doorbell_port)
         
-        self.log(f"  [MTP] Built CALLING_ACK: doorbell={doorbell_ip_str}:{doorbell_port} "
+        # Compute chkval (XOR of all dwords, excluding chkval itself)
+        chkval = self._compute_chkval(resp)
+        struct.pack_into('<I', resp, 0x10, chkval)
+        
+        # --- Session encrypt ---
+        # SDK decrypts: 0x0C-0x13 (sqnum+chkval) and 0x18+ (payload), all with session key
+        # encrypt_data_len = frm_len - 0x18
+        rc5_session = RC5(block_bytes=8, rounds=6)
+        rc5_session.setkey(session_key)
+        
+        # 1. Encrypt payload (0x18 to end) — SDK decrypts from 0x18
+        payload_data = bytes(resp[0x18:])
+        if len(payload_data) >= 8:
+            enc_payload = rc5_session.encrypt(payload_data[:len(payload_data) - len(payload_data) % 8])
+            resp[0x18:0x18 + len(enc_payload)] = enc_payload
+        
+        # 2. Encrypt sqnum+chkval (0x0C-0x13)
+        enc_sqchk = rc5_session.encrypt_block(bytes(resp[0x0C:0x14]))
+        resp[0x0C:0x14] = enc_sqchk
+        
+        # 3. Encrypt ID (0x04-0x0B): RC5_enc with GWELL_KEY, then XOR with encrypted sqnum/chkval
+        rc5_id = RC5(block_bytes=8, rounds=6)
+        rc5_id.setkey(GWELL_KEY)
+        enc_id = bytearray(rc5_id.encrypt_block(bytes(resp[4:12])))
+        for i in range(4):
+            enc_id[i] ^= resp[0x0C + i]      # XOR with encrypted sqnum
+            enc_id[4 + i] ^= resp[0x10 + i]  # XOR with encrypted chkval
+        resp[4:12] = enc_id
+        
+        self.log(f"  [MTP] Built CALLING_ACK (session-enc): doorbell={doorbell_ip_str}:{doorbell_port} "
                  f"req_sqnum={req_sqnum} frame_size={frame_size}")
         return bytes(resp)
 
