@@ -1364,7 +1364,7 @@ class GutesRelay:
         
         # Track doorbell's source port as its MTP port
         # The doorbell's GUTES source port IS the port it listens on for MTP
-        role = self.identify_device_role(addr, term_id)
+        role = self.identify_device_role(term_id, addr)
         if role == "doorbell" and addr[1] > 0:
             self.state.doorbell_mtp_port = addr[1]
             self.log(f"  [RELAY] Doorbell MTP port captured: {addr[1]} (from CERTIFY source port)")
