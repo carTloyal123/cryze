@@ -98,8 +98,49 @@ except: print('3.13.212.24')
     fi
 }
 
+_block_cloud_relay() {
+    # Block outbound TCP and UDP to cloud relay servers (force LAN-only video).
+    # The SDK uses both LAN UDP and cloud TCP/UDP relays simultaneously;
+    # blocking non-LAN traffic eliminates the cloud relay path entirely.
+    local CHAIN="WYZE_BLOCK_RELAY"
+    # Flush and rebuild if already exists (Mars IPs may change)
+    docker exec "$DEV" iptables -D OUTPUT -j "$CHAIN" 2>/dev/null || true
+    docker exec "$DEV" iptables -F "$CHAIN" 2>/dev/null || true
+    docker exec "$DEV" iptables -X "$CHAIN" 2>/dev/null || true
+
+    echo "  Setting up LAN-only firewall rules..."
+    docker exec "$DEV" iptables -N "$CHAIN"
+    # Allow all LAN/localhost traffic (both TCP and UDP)
+    docker exec "$DEV" iptables -A "$CHAIN" -d 192.168.0.0/16 -j RETURN
+    docker exec "$DEV" iptables -A "$CHAIN" -d 10.0.0.0/8 -j RETURN
+    docker exec "$DEV" iptables -A "$CHAIN" -d 172.16.0.0/12 -j RETURN
+    docker exec "$DEV" iptables -A "$CHAIN" -d 127.0.0.0/8 -j RETURN
+    # Allow UDP to Mars signaling ports only (28800 and 51701)
+    docker exec "$DEV" iptables -A "$CHAIN" -p udp --dport 28800 -j RETURN
+    docker exec "$DEV" iptables -A "$CHAIN" -p udp --dport 51701 -j RETURN
+    # Allow HTTPS for wakeup API
+    docker exec "$DEV" iptables -A "$CHAIN" -p tcp --dport 443 -j RETURN
+    # Allow DNS
+    docker exec "$DEV" iptables -A "$CHAIN" -p udp --dport 53 -j RETURN
+    docker exec "$DEV" iptables -A "$CHAIN" -p tcp --dport 53 -j RETURN
+    # Block everything else to external IPs (TCP relay servers only)
+    # NOTE: Must allow UDP to external IPs for NAT hairpin (doorbell's WAN IP)
+    docker exec "$DEV" iptables -A "$CHAIN" -p tcp -j REJECT
+    # Insert into OUTPUT chain
+    docker exec "$DEV" iptables -I OUTPUT 1 -j "$CHAIN"
+    echo "  Cloud relay blocked — video will be LAN-only"
+}
+
 _run_bridge() {
     _ensure_relay
+    # Block cloud relay TCP if LAN_ONLY is set or not explicitly disabled
+    local lan_only="${LAN_ONLY:-}"
+    if [[ -f "$HERE/.env" ]] && [[ -z "$lan_only" ]]; then
+        lan_only=$(grep -m1 '^LAN_ONLY=' "$HERE/.env" 2>/dev/null | cut -d= -f2 || echo "")
+    fi
+    if [[ "$lan_only" == "1" || "$lan_only" == "true" ]]; then
+        _block_cloud_relay
+    fi
     local envfile
     envfile=$(mktemp)
     trap "rm -f '$envfile'" EXIT
