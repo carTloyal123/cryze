@@ -605,8 +605,8 @@ class GutesRelay:
         # Payload (plaintext)
         resp[CRYPTO_HDR:CRYPTO_HDR + len(payload)] = payload
         
-        if session_key:
-            # Compute chkval over plaintext frame
+        if session_key and self._verify_session_key_valid(session_key, req_data):
+            # Session key verified — use session encryption
             chkval = self._compute_chkval(resp)
             struct.pack_into('<I', resp, 0x10, chkval)
             # But chkval field is ALSO used for response matching — SDK reads it AFTER decrypt
@@ -646,6 +646,20 @@ class GutesRelay:
         
         self.log(f"  [DEBUG] RESP hex: {resp[:24].hex()}")
         return bytes(resp)
+
+    def _verify_session_key_valid(self, session_key: bytes, req_data: bytes) -> bool:
+        """Check if our stored session key can actually decrypt this frame.
+        
+        If we derived the session key with the WRONG certify key (e.g., bridge's
+        key for a chime's CERTIFY), the decrypted session key is garbage and
+        session encryption will fail. We detect this by checking if the 32-byte
+        key has a repeating pattern (characteristic of wrong-key decryption).
+        """
+        # Check for repeating 8-byte pattern (sign of wrong certify key)
+        if len(session_key) >= 16:
+            if session_key[:8] == session_key[8:16]:
+                return False
+        return True
 
     def _build_subscribe_resp(self, addr: tuple, predicted_sqnum: int) -> bytes:
         """Build SUBSCRIBE_RESP (type=0xA1) with opt_encrypt=0, opt_resp=1, bit25=1.
