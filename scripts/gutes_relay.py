@@ -52,10 +52,12 @@ TYPE_CALLING_REQ = 0xA4
 TYPE_INIT_INFO_MSG = 0xA6
 TYPE_GDM_PUSH = 0xA7
 TYPE_CALLING_ERR = 0xAA
+TYPE_MTP_RES_RESP_A3 = 0xA3  # MTP resource response (relay server list)
 TYPE_SESSION_CTL = 0xB0
 TYPE_SESSION_CTL_RESP = 0xB1
 TYPE_ONLINE_MSG = 0xB4
 TYPE_PASSTHROUGH = 0xBD
+TYPE_MTP_DATA = 0xCA  # MTP media data over TCP relay
 
 FRAME_TYPES = {
     0x01: "DETECT_REQ", 0x02: "DETECT_RESP",
@@ -63,11 +65,12 @@ FRAME_TYPES = {
     0x15: "LIST_REQ", 0x16: "LIST_RESP",
     0x17: "KEEPALIVE",
     0xA0: "SUBSCRIBE", 0xA1: "SUBSCRIBE_RESP",
-    0xA2: "MTP_RES_RESP", 0xA4: "CALLING_REQ",
+    0xA2: "MTP_RES_RESP", 0xA3: "MTP_RES_RESP_A3",
+    0xA4: "CALLING_REQ",
     0xA6: "INIT_INFO", 0xA7: "GDM_PUSH",
     0xAA: "CALLING_ERR/GDM", 0xB0: "SESSION_CTL",
     0xB1: "SESSION_CTL_RESP", 0xB4: "ONLINE_MSG",
-    0xBD: "PASSTHROUGH",
+    0xBD: "PASSTHROUGH", 0xCA: "MTP_DATA",
 }
 
 HEADER_SIZE = 0x1C
@@ -99,6 +102,28 @@ class PendingWakeup:
     bridge_term_id: int = 0
     timestamp: float = 0.0
     timeout: float = 30.0  # Max wait time (seconds)
+
+
+@dataclass
+class MtpConnection:
+    """Tracks one side of an MTP TCP relay connection."""
+    reader: object = None  # asyncio.StreamReader
+    writer: object = None  # asyncio.StreamWriter
+    addr: tuple = ('', 0)
+    term_id: int = 0
+    role: str = "unknown"  # "bridge" or "doorbell"
+    link_id: int = 0
+    bytes_relayed: int = 0
+
+
+@dataclass
+class MtpRelayPair:
+    """A paired MTP relay session (bridge <-> doorbell)."""
+    link_id: int = 0
+    bridge: Optional[MtpConnection] = None
+    doorbell: Optional[MtpConnection] = None
+    created: float = 0.0
+    active: bool = False
 
 
 @dataclass
@@ -135,6 +160,12 @@ class RelayState:
     doorbell_last_ack: float = 0.0  # Timestamp of last received keepalive ACK
     keepalive_misses: int = 0  # Consecutive unacknowledged keepalives
     keepalive_enabled: bool = False  # Whether the keepalive loop is active
+    
+    # MTP relay state
+    mtp_link_counter: int = 1  # Incrementing link_id for MTP sessions
+    mtp_pairs: dict[int, 'MtpRelayPair'] = field(default_factory=dict)  # link_id -> pair
+    mtp_pending_bridges: list = field(default_factory=list)  # MtpConnections waiting for doorbell
+    mtp_pending_doorbells: list = field(default_factory=list)  # MtpConnections waiting for bridge
 
 
 class GutesRelay:
@@ -144,10 +175,13 @@ class GutesRelay:
                  mode: str = "proxy", upstream: str = "3.13.212.24:28800",
                  log_file: Optional[str] = None, local_ip: str = "",
                  keepalive: bool = False,
-                 session_cache: str = "cache/session_keys.json"):
+                 session_cache: str = "cache/session_keys.json",
+                 mtp_port: int = 23000):
         self.listen_ports = listen_ports or [28800, 8443, 8000]
         self.list_port = list_port
+        self.mtp_port = mtp_port
         self.mode = mode
+        self._extra_responses = []  # [(bytes, addr)] queue for multi-response sends
         self.upstream_host = upstream.split(':')[0]
         self.upstream_port = int(upstream.split(':')[1])
         self.state = RelayState(keepalive_enabled=keepalive)
@@ -522,6 +556,162 @@ class GutesRelay:
         self.log(f"  → SUBSCRIBE_RESP to {addr[0]}:{addr[1]} ({frame_size}B) chkval={predicted_sqnum}")
         return bytes(resp)
 
+    def _build_calling_ack(self, calling_data: bytes, addr: tuple, sender_term_id: int) -> Optional[bytes]:
+        """Build CALLING ACK (type 0xA4 with ack bit) containing doorbell's network address.
+        
+        The SDK's iv_on_ackfrm_Calling expects:
+          - payload[0:2] (frame+0x18): flags uint16, bit 0 = opt_with_netaddr
+          - payload[8:12] (frame+0x20): doorbell IPv4 (in_addr_t, network byte order)
+          - payload[12:14] (frame+0x24): doorbell port (uint16, network byte order)
+        Total payload: 14 bytes. Frame len = 24 + 14 = 38.
+        """
+        # Get doorbell IP
+        doorbell_ip_str = os.environ.get('DOORBELL_IP', '192.168.1.81')
+        doorbell_port = 8899
+        
+        # Build frame: proto=0x7E, type=0xA4, len=38
+        frame_size = 38
+        resp = bytearray(frame_size)
+        resp[0] = 0x7E  # session proto
+        resp[1] = 0xA4  # CALLING type (same as request — it's an ACK)
+        struct.pack_into('<H', resp, 2, frame_size)
+        
+        # term_id: use session_id from CERTIFY (stored as bytes)
+        session_id_bytes = self.state.addr_session_id.get(addr)
+        if session_id_bytes and len(session_id_bytes) >= 8:
+            resp[4:12] = session_id_bytes[:8]
+        else:
+            struct.pack_into('<q', resp, 4, self.server_term_id)
+        
+        # sqnum and chkval for ACK matching
+        # For ACK frames, chkval = the request's sqnum (matching key)
+        req_sqnum = self._extract_req_sqnum(calling_data)
+        struct.pack_into('<I', resp, 0x0C, 0)  # sqnum (not important for ACK)
+        struct.pack_into('<I', resp, 0x10, req_sqnum)  # chkval = req sqnum
+        
+        # opt_flags: encrypt=0, ack=1 (bit 20), relay_flag bit25
+        # bit 20 = is_ack, bit 25 = relay_flag (bypass routing)
+        opt_flags = (1 << 20) | (1 << 25)  # ack + relay_flag
+        struct.pack_into('<I', resp, 0x14, opt_flags)
+        
+        # Payload (starts at offset 0x18):
+        # +0x00: flags (uint16) — bit 0 = opt_with_netaddr
+        struct.pack_into('<H', resp, 0x18, 1)  # opt_with_netaddr = 1
+        # +0x02-0x07: padding (zeros)
+        # +0x08: IPv4 address (network byte order)
+        ip_bytes = socket.inet_aton(doorbell_ip_str)
+        resp[0x20:0x24] = ip_bytes
+        # +0x0C: port (network byte order) 
+        struct.pack_into('>H', resp, 0x24, doorbell_port)
+        
+        self.log(f"  [MTP] Built CALLING_ACK: doorbell={doorbell_ip_str}:{doorbell_port} chkval={req_sqnum}")
+        return bytes(resp)
+
+    def _build_mtp_res_resp(self, calling_data: bytes, addr: tuple, sender_term_id: int) -> Optional[bytes]:
+        """Build MTP_RES_RESP (type 0xA3) directing the SDK to our local TCP relay.
+        
+        The MTP_RES_RESP tells the SDK where the TCP relay servers are.
+        The SDK will then TCP-connect to one of those addresses and begin
+        sending MTP_DATA (type 0xCA) frames.
+        
+        MTP_RES_RESP payload structure (from pcap analysis):
+          Offset 0x00: link_id (4B LE) — must match the CALLING request
+          Offset 0x04: result (4B LE) — 0 = success
+          Offset 0x08: relay_count (1B) — number of TCP relay entries (typically 4)
+          Offset 0x09: flags (1B)
+          Offset 0x0A: padding (2B)
+          Offset 0x0C: relay entries, each 8 bytes:
+                        IP (4B network order) + port (2B LE) + padding (2B)
+          After relays: doorbell UDP address for NAT punch:
+                        IP (4B network order) + port (2B LE) + padding (2B)
+        
+        We populate all relay entries with our local IP:mtp_port.
+        """
+        import random as _rand
+        
+        # Extract the CALLING request's sqnum for response matching
+        calling_sqnum = self._extract_req_sqnum(calling_data)
+        
+        # Allocate a link_id for this MTP session
+        link_id = self.state.mtp_link_counter
+        self.state.mtp_link_counter += 1
+        
+        # Build payload
+        num_relays = 4  # SDK expects up to 4 relay server entries
+        local_ip_bytes = socket.inet_aton(self.local_ip)
+        
+        # Payload: link_id(4) + result(4) + relay_count(1) + flags(1) + pad(2)
+        #        + relays(num_relays * 8) + doorbell_udp(8)
+        payload_size = 12 + (num_relays * 8) + 8  # = 52 bytes
+        payload = bytearray(payload_size)
+        
+        struct.pack_into('<I', payload, 0, link_id)  # link_id
+        struct.pack_into('<I', payload, 4, 0)  # result = 0 (success)
+        payload[8] = num_relays  # relay_count
+        payload[9] = 0  # flags
+        # padding at [10:12] stays 0
+        
+        # Fill relay entries (each: IP 4B NBO + port 2B LE + 2B pad)
+        for i in range(num_relays):
+            off = 12 + (i * 8)
+            payload[off:off+4] = local_ip_bytes
+            struct.pack_into('<H', payload, off + 4, self.mtp_port)
+            # 2 bytes padding stays 0
+        
+        # Doorbell UDP address (for NAT punch — use doorbell's known addr if available)
+        doorbell_off = 12 + (num_relays * 8)
+        if self.state.doorbell_addr != ('', 0):
+            db_ip = socket.inet_aton(self.state.doorbell_addr[0])
+            db_port = self.state.doorbell_addr[1]
+        else:
+            # Fallback: use local IP (doorbell should connect to us anyway)
+            db_ip = local_ip_bytes
+            db_port = self.mtp_port
+        payload[doorbell_off:doorbell_off+4] = db_ip
+        struct.pack_into('<H', payload, doorbell_off + 4, db_port)
+        
+        # Build the frame (opt_encrypt=0, opt_resp=1, bit25=1)
+        CRYPTO_HDR = 0x18
+        frame_size = CRYPTO_HDR + payload_size
+        resp = bytearray(frame_size)
+        resp[0] = 0x7E  # Session protocol
+        resp[1] = TYPE_MTP_RES_RESP_A3  # 0xA3
+        struct.pack_into('<H', resp, 2, frame_size)
+        
+        # term_id = session_id from CERTIFY (so SDK routing check passes)
+        session_id_bytes = self.state.addr_session_id.get(addr)
+        if session_id_bytes:
+            resp[4:12] = session_id_bytes
+        else:
+            struct.pack_into('<q', resp, 4, self.server_term_id)
+        
+        # sqnum (ours) and chkval = CALLING request sqnum (for response matching)
+        sqnum = self._next_sqnum()
+        struct.pack_into('<I', resp, 0x0C, sqnum)
+        struct.pack_into('<I', resp, 0x10, calling_sqnum & 0xFFFFFFFF)
+        
+        # opt_flags: opt_encrypt=0, opt_resp=1 (bit 21), relay_flag=1 (bit 25)
+        opt_flags = (1 << 21) | (1 << 25)
+        struct.pack_into('<I', resp, 0x14, opt_flags)
+        
+        # Write payload
+        resp[CRYPTO_HDR:] = payload
+        
+        self.log(f"  [MTP] Built MTP_RES_RESP: link_id={link_id} "
+                f"relay={self.local_ip}:{self.mtp_port} "
+                f"doorbell_udp={socket.inet_ntoa(db_ip)}:{db_port} "
+                f"chkval={calling_sqnum} ({frame_size}B)")
+        
+        # Store the link_id so we can match incoming TCP connections
+        # Create an MTP pair waiting for connections
+        self.state.mtp_pairs[link_id] = MtpRelayPair(
+            link_id=link_id,
+            created=time.time(),
+            active=False,
+        )
+        
+        return bytes(resp)
+
     def _compute_chkval(self, frame: bytearray) -> int:
         """Compute the GUTES frame checksum matching iv_gute_frm_init_chkval.
         
@@ -754,7 +944,10 @@ class GutesRelay:
         # --- CALLING: log and handle wakeup routing ---
         elif ftype == TYPE_CALLING_REQ:
             self.log(f"← CALLING_REQ from {addr[0]}:{addr[1]} term_id={term_id} ({frm_len}B)")
-            self._handle_calling(data, addr, term_id)
+            self.log(f"  HEX: {self.hexdump(data, 256)}")
+            mtp_resp = self._handle_calling(data, addr, term_id)
+            if mtp_resp:
+                return mtp_resp
             return None
 
         # --- SUBSCRIBE ---
@@ -889,7 +1082,7 @@ class GutesRelay:
 
     # ===== WAKEUP ROUTING INFRASTRUCTURE =====
 
-    def _handle_calling(self, data: bytes, addr: tuple, sender_term_id: int):
+    def _handle_calling(self, data: bytes, addr: tuple, sender_term_id: int) -> Optional[bytes]:
         """Handle CALLING_REQ with full routing logic.
         
         In the real Mars relay, CALLING is routed by destination term_id
@@ -897,10 +1090,12 @@ class GutesRelay:
         
         Relay mode routing:
         1. Try to decrypt payload to find destination term_id
-        2. If destination is online: forward CALLING directly
-        3. If destination is offline: queue and trigger wakeup
+        2. Route CALLING to doorbell if online
+        3. Generate MTP_RES_RESP directing bridge to our local TCP relay
         
         Proxy mode: Mars handles routing, we just log and forward.
+        
+        Returns: MTP_RES_RESP bytes to send back to caller, or None.
         """
         if self.mode == "relay":
             # Try to determine destination from payload
@@ -918,22 +1113,40 @@ class GutesRelay:
             if target_term_id:
                 target = self.state.clients.get(target_term_id)
                 if target and (time.time() - target.last_seen) < 30:
-                    # Target is online — route directly
+                    # Target is online — route CALLING directly to it
                     self._route_calling_to(data, target, sender_term_id)
-                    return
+            else:
+                # Target not connected — queue CALLING and trigger wakeup
+                self.log(f"  [CALLING] Target offline (dest={target_term_id}) — queuing + wakeup")
+                self.state.pending_callings.append(PendingWakeup(
+                    calling_data=data,
+                    bridge_term_id=sender_term_id,
+                    timestamp=time.time(),
+                    timeout=30.0
+                ))
+                self._trigger_chime_wakeup()
             
-            # Target not connected — queue CALLING and trigger wakeup
-            self.log(f"  [CALLING] Target offline (dest={target_term_id}) — queuing + wakeup")
-            self.state.pending_callings.append(PendingWakeup(
-                calling_data=data,
-                bridge_term_id=sender_term_id,
-                timestamp=time.time(),
-                timeout=30.0
-            ))
-            self._trigger_chime_wakeup()
+            # Generate MTP_RES_RESP to direct the bridge to our local TCP relay
+            # This tells the SDK: "connect to our relay for media transport"
+            # But first, send a CALLING ACK with the doorbell's address
+            # (the SDK expects this before MTP_RES_RESP)
+            calling_ack = self._build_calling_ack(data, addr, sender_term_id)
+            mtp_resp = self._build_mtp_res_resp(data, addr, sender_term_id)
+            if calling_ack and mtp_resp:
+                self.log(f"  [MTP] Sending CALLING_ACK + MTP_RES_RESP to bridge {addr[0]}:{addr[1]}")
+                # Return both concatenated — the recv loop will need to handle this
+                # Actually we can't return two frames. Let me send the ACK via the socket
+                # and return the MTP_RES_RESP
+                self._extra_responses.append((calling_ack, addr))
+                return mtp_resp
+            elif mtp_resp:
+                self.log(f"  [MTP] Sending MTP_RES_RESP to bridge {addr[0]}:{addr[1]}")
+                return mtp_resp
+            return None
         # In proxy mode: Mars handles routing, but log for awareness
         else:
             self.log(f"  [PROXY] CALLING forwarded to Mars for routing")
+            return None
 
     def _extract_calling_dest(self, data: bytes, sender_term_id: int) -> int:
         """Try to extract destination term_id from CALLING payload.
@@ -1298,6 +1511,7 @@ class GutesRelay:
         self.log(f"  Server term_id: {self.server_term_id}")
         self.log(f"  Relay ports: {self.listen_ports}")
         self.log(f"  List port: {self.list_port}")
+        self.log(f"  MTP relay port: {self.mtp_port}")
         self.log(f"  Keepalive: {'ENABLED' if self.state.keepalive_enabled else 'disabled'}")
         if self.mode == "proxy":
             self.log(f"  Upstream: {self.upstream_host}:{self.upstream_port}")
@@ -1355,6 +1569,10 @@ class GutesRelay:
         if self.state.keepalive_enabled:
             tasks.append(asyncio.create_task(self._keepalive_loop()))
 
+        # MTP TCP relay listener (relay mode)
+        if self.mode == "relay":
+            tasks.append(asyncio.create_task(self._mtp_tcp_listen()))
+
         await asyncio.gather(*tasks)
 
     async def _recv_loop(self, sock: socket.socket, port: int, role: str):
@@ -1374,6 +1592,13 @@ class GutesRelay:
             resp = self.handle_packet(data, addr, port)
             
             if resp is not None:
+                # Send any extra responses first (e.g., CALLING_ACK before MTP_RES_RESP)
+                while self._extra_responses:
+                    extra_data, extra_addr = self._extra_responses.pop(0)
+                    try:
+                        sock.sendto(extra_data, extra_addr)
+                    except OSError as e:
+                        self.log(f"  ERROR sending extra to {extra_addr}: {e}")
                 # Local response
                 try:
                     sock.sendto(resp, addr)
@@ -1638,6 +1863,306 @@ class GutesRelay:
         await asyncio.gather(client_to_upstream(), upstream_to_client())
         self.log(f"  TCP connection from {client_addr[0]}:{client_addr[1]} closed")
 
+    # ===== MTP TCP RELAY SERVER =====
+
+    async def _mtp_tcp_listen(self):
+        """Listen for MTP TCP connections from bridge and doorbell.
+        
+        After we send MTP_RES_RESP, the SDK connects to our mtp_port via TCP.
+        The bridge connects first (it initiated the CALLING).
+        The doorbell may connect later (after receiving the routed CALLING).
+        
+        We pair connections and forward MTP_DATA (0xCA) between them.
+        """
+        server = await asyncio.start_server(
+            self._mtp_tcp_handle_client,
+            '0.0.0.0', self.mtp_port, reuse_address=True)
+        self.log(f"  [MTP] Listening on TCP :{self.mtp_port} (MTP relay)")
+        async with server:
+            await server.serve_forever()
+
+    async def _mtp_tcp_handle_client(self, reader: asyncio.StreamReader,
+                                      writer: asyncio.StreamWriter):
+        """Handle an incoming MTP TCP connection.
+        
+        Connection identification strategy:
+        - Read the first frame to determine the sender's identity
+        - If from bridge IP → bridge side
+        - If from doorbell IP → doorbell side
+        - Pair bridge+doorbell and start bidirectional forwarding
+        """
+        peer = writer.get_extra_info('peername')
+        peer_ip = peer[0] if peer else 'unknown'
+        peer_port = peer[1] if peer else 0
+        self.log(f"  [MTP] TCP connection from {peer_ip}:{peer_port}")
+        
+        # Create MTP connection object
+        conn = MtpConnection(
+            reader=reader,
+            writer=writer,
+            addr=(peer_ip, peer_port),
+        )
+        
+        # Identify the role based on IP
+        role = self._identify_mtp_role(peer_ip)
+        conn.role = role
+        self.log(f"  [MTP] Identified as: {role} (from {peer_ip}:{peer_port})")
+        
+        if role == "bridge":
+            # Bridge connecting — try to pair with a waiting doorbell
+            paired = self._mtp_try_pair_bridge(conn)
+            if paired:
+                await self._mtp_relay_loop(paired)
+            else:
+                # No doorbell yet — wait for one
+                self.state.mtp_pending_bridges.append(conn)
+                self.log(f"  [MTP] Bridge queued, waiting for doorbell connection...")
+                # Wait up to 30s for doorbell to connect
+                paired = await self._mtp_wait_for_pair(conn, "bridge")
+                if paired:
+                    await self._mtp_relay_loop(paired)
+                else:
+                    self.log(f"  [MTP] Bridge connection timed out waiting for doorbell")
+                    writer.close()
+        elif role == "doorbell":
+            # Doorbell connecting — try to pair with a waiting bridge
+            paired = self._mtp_try_pair_doorbell(conn)
+            if paired:
+                await self._mtp_relay_loop(paired)
+            else:
+                # No bridge yet — wait for one
+                self.state.mtp_pending_doorbells.append(conn)
+                self.log(f"  [MTP] Doorbell queued, waiting for bridge connection...")
+                paired = await self._mtp_wait_for_pair(conn, "doorbell")
+                if paired:
+                    await self._mtp_relay_loop(paired)
+                else:
+                    self.log(f"  [MTP] Doorbell connection timed out waiting for bridge")
+                    writer.close()
+        else:
+            # Unknown — read first frame to try to identify
+            self.log(f"  [MTP] Unknown role for {peer_ip}:{peer_port}, "
+                    f"reading first frame to identify...")
+            try:
+                first_data = await asyncio.wait_for(reader.read(8192), timeout=10.0)
+                if first_data:
+                    conn.role = self._identify_mtp_role_from_frame(first_data, peer_ip)
+                    self.log(f"  [MTP] Re-identified as: {conn.role} from first frame")
+                    # Try pairing again
+                    if conn.role == "bridge":
+                        self.state.mtp_pending_bridges.append(conn)
+                    else:
+                        self.state.mtp_pending_doorbells.append(conn)
+                    paired = await self._mtp_wait_for_pair(conn, conn.role)
+                    if paired:
+                        # Send the buffered first_data to the peer
+                        if conn.role == "bridge" and paired.doorbell:
+                            paired.doorbell.writer.write(first_data)
+                        elif conn.role == "doorbell" and paired.bridge:
+                            paired.bridge.writer.write(first_data)
+                        await self._mtp_relay_loop(paired)
+                    else:
+                        writer.close()
+                else:
+                    writer.close()
+            except (asyncio.TimeoutError, ConnectionError):
+                self.log(f"  [MTP] Connection from {peer_ip}:{peer_port} failed/timed out")
+                writer.close()
+
+    def _identify_mtp_role(self, ip: str) -> str:
+        """Identify whether an MTP TCP connection is from bridge or doorbell."""
+        # Check against known client IPs
+        for tid, client in self.state.clients.items():
+            if client.addr[0] == ip:
+                if client.role in ("bridge", "doorbell"):
+                    return client.role
+        
+        # Direct IP heuristics
+        if ip in ("192.168.1.245", "192.168.1.236", "127.0.0.1", "192.168.5.1"):
+            return "bridge"
+        elif ip == "192.168.1.81":
+            return "doorbell"
+        
+        # If bridge is local (same machine), the IP might match local_ip
+        if ip == self.local_ip or ip == "127.0.0.1":
+            return "bridge"
+        
+        return "unknown"
+
+    def _identify_mtp_role_from_frame(self, data: bytes, ip: str) -> str:
+        """Try to identify role from the first MTP frame data."""
+        if len(data) >= HEADER_SIZE:
+            term_id = self.decode_term_id(data)
+            if term_id == self.state.bridge_term_id:
+                return "bridge"
+            elif term_id == self.state.doorbell_term_id:
+                return "doorbell"
+        # Fallback: first connector is likely bridge (it initiated CALLING)
+        return "bridge"
+
+    def _mtp_try_pair_bridge(self, bridge_conn: MtpConnection) -> Optional[MtpRelayPair]:
+        """Try to pair a bridge connection with a waiting doorbell."""
+        if self.state.mtp_pending_doorbells:
+            doorbell_conn = self.state.mtp_pending_doorbells.pop(0)
+            pair = MtpRelayPair(
+                link_id=self.state.mtp_link_counter,
+                bridge=bridge_conn,
+                doorbell=doorbell_conn,
+                created=time.time(),
+                active=True,
+            )
+            self.log(f"  [MTP] PAIRED: bridge {bridge_conn.addr} <-> doorbell {doorbell_conn.addr}")
+            return pair
+        return None
+
+    def _mtp_try_pair_doorbell(self, doorbell_conn: MtpConnection) -> Optional[MtpRelayPair]:
+        """Try to pair a doorbell connection with a waiting bridge."""
+        if self.state.mtp_pending_bridges:
+            bridge_conn = self.state.mtp_pending_bridges.pop(0)
+            pair = MtpRelayPair(
+                link_id=self.state.mtp_link_counter,
+                bridge=bridge_conn,
+                doorbell=doorbell_conn,
+                created=time.time(),
+                active=True,
+            )
+            self.log(f"  [MTP] PAIRED: bridge {bridge_conn.addr} <-> doorbell {doorbell_conn.addr}")
+            return pair
+        return None
+
+    async def _mtp_wait_for_pair(self, conn: MtpConnection, role: str,
+                                  timeout: float = 30.0) -> Optional[MtpRelayPair]:
+        """Wait for the other side to connect and pair with us."""
+        start = time.time()
+        while (time.time() - start) < timeout:
+            await asyncio.sleep(0.1)
+            # Check if we've been paired (removed from pending list means paired)
+            if role == "bridge" and conn not in self.state.mtp_pending_bridges:
+                # We were paired by a doorbell connecting
+                # Find the pair that has us
+                for pair in self.state.mtp_pairs.values():
+                    if pair.bridge is conn:
+                        return pair
+                # Also check — the doorbell handler may have created a pair directly
+                # Check if there's a new pair with this bridge
+                break
+            elif role == "doorbell" and conn not in self.state.mtp_pending_doorbells:
+                for pair in self.state.mtp_pairs.values():
+                    if pair.doorbell is conn:
+                        return pair
+                break
+            
+            # Actively try to pair
+            if role == "bridge" and self.state.mtp_pending_doorbells:
+                doorbell_conn = self.state.mtp_pending_doorbells.pop(0)
+                # Remove ourselves from pending
+                if conn in self.state.mtp_pending_bridges:
+                    self.state.mtp_pending_bridges.remove(conn)
+                pair = MtpRelayPair(
+                    link_id=self.state.mtp_link_counter,
+                    bridge=conn,
+                    doorbell=doorbell_conn,
+                    created=time.time(),
+                    active=True,
+                )
+                self.state.mtp_pairs[pair.link_id] = pair
+                self.log(f"  [MTP] PAIRED (delayed): bridge {conn.addr} <-> doorbell {doorbell_conn.addr}")
+                return pair
+            elif role == "doorbell" and self.state.mtp_pending_bridges:
+                bridge_conn = self.state.mtp_pending_bridges.pop(0)
+                if conn in self.state.mtp_pending_doorbells:
+                    self.state.mtp_pending_doorbells.remove(conn)
+                pair = MtpRelayPair(
+                    link_id=self.state.mtp_link_counter,
+                    bridge=bridge_conn,
+                    doorbell=conn,
+                    created=time.time(),
+                    active=True,
+                )
+                self.state.mtp_pairs[pair.link_id] = pair
+                self.log(f"  [MTP] PAIRED (delayed): bridge {bridge_conn.addr} <-> doorbell {conn.addr}")
+                return pair
+        
+        # Cleanup: remove from pending if still there
+        if role == "bridge" and conn in self.state.mtp_pending_bridges:
+            self.state.mtp_pending_bridges.remove(conn)
+        elif role == "doorbell" and conn in self.state.mtp_pending_doorbells:
+            self.state.mtp_pending_doorbells.remove(conn)
+        return None
+
+    async def _mtp_relay_loop(self, pair: MtpRelayPair):
+        """Bidirectional relay between paired bridge and doorbell TCP connections.
+        
+        Forwards all data (including MTP_DATA frames, type 0xCA) between the two.
+        """
+        if not pair.bridge or not pair.doorbell:
+            self.log(f"  [MTP] Cannot relay — incomplete pair (link_id={pair.link_id})")
+            return
+        
+        pair.active = True
+        bridge_r = pair.bridge.reader
+        bridge_w = pair.bridge.writer
+        doorbell_r = pair.doorbell.reader
+        doorbell_w = pair.doorbell.writer
+        
+        self.log(f"  [MTP] RELAY ACTIVE: bridge {pair.bridge.addr} <-> doorbell {pair.doorbell.addr}")
+        
+        bytes_b2d = 0  # bridge -> doorbell
+        bytes_d2b = 0  # doorbell -> bridge
+        
+        async def bridge_to_doorbell():
+            nonlocal bytes_b2d
+            try:
+                while True:
+                    data = await bridge_r.read(65536)
+                    if not data:
+                        break
+                    doorbell_w.write(data)
+                    await doorbell_w.drain()
+                    bytes_b2d += len(data)
+                    # Log first frame or periodically
+                    if bytes_b2d == len(data) or bytes_b2d % (1024 * 1024) < len(data):
+                        ftype = data[1] if len(data) >= 2 else 0
+                        type_name = FRAME_TYPES.get(ftype, f"0x{ftype:02X}")
+                        self.log(f"  [MTP] B→D: {type_name} ({len(data)}B) "
+                                f"total={bytes_b2d}B")
+            except (ConnectionError, asyncio.IncompleteReadError, OSError):
+                pass
+        
+        async def doorbell_to_bridge():
+            nonlocal bytes_d2b
+            try:
+                while True:
+                    data = await doorbell_r.read(65536)
+                    if not data:
+                        break
+                    bridge_w.write(data)
+                    await bridge_w.drain()
+                    bytes_d2b += len(data)
+                    if bytes_d2b == len(data) or bytes_d2b % (1024 * 1024) < len(data):
+                        ftype = data[1] if len(data) >= 2 else 0
+                        type_name = FRAME_TYPES.get(ftype, f"0x{ftype:02X}")
+                        self.log(f"  [MTP] D→B: {type_name} ({len(data)}B) "
+                                f"total={bytes_d2b}B")
+            except (ConnectionError, asyncio.IncompleteReadError, OSError):
+                pass
+        
+        try:
+            await asyncio.gather(bridge_to_doorbell(), doorbell_to_bridge())
+        finally:
+            pair.active = False
+            self.log(f"  [MTP] RELAY CLOSED: link_id={pair.link_id} "
+                    f"B→D={bytes_b2d}B D→B={bytes_d2b}B")
+            # Cleanup
+            try:
+                bridge_w.close()
+            except:
+                pass
+            try:
+                doorbell_w.close()
+            except:
+                pass
+
     async def _status_loop(self):
         """Periodically log relay status."""
         while True:
@@ -1672,6 +2197,8 @@ def main():
                        help='Enable periodic KEEPALIVE to doorbell to prevent sleep')
     parser.add_argument('--session-cache', default='cache/session_keys.json',
                        help='Path to persistent session key cache (default: cache/session_keys.json)')
+    parser.add_argument('--mtp-port', type=int, default=23000,
+                       help='TCP port for MTP relay server (default: 23000)')
     args = parser.parse_args()
 
     ports = [int(p.strip()) for p in args.ports.split(',')]
@@ -1685,6 +2212,7 @@ def main():
         local_ip=args.local_ip,
         keepalive=args.keepalive,
         session_cache=args.session_cache,
+        mtp_port=args.mtp_port,
     )
 
     try:
