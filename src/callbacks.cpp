@@ -24,7 +24,7 @@ namespace cb {
 // --- Global state ---
 std::atomic<bool>     g_app_online{false};
 std::atomic<bool>     g_sub_success{false};
-std::atomic<uint32_t> g_sub_error{0xFFFFFFFF};
+std::atomic<uint32_t> g_sub_error{0};
 std::atomic<int>      g_video_frames{0};
 std::atomic<size_t>   g_video_bytes{0};
 int                   g_output_fd = -1;

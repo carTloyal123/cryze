@@ -1,117 +1,108 @@
-# Next Steps
+# Wyze Video Doorbell Pro — Offline Bridge
 
-## ✅ 1. Relay fix (DONE)
-Relay sends its own server term_id in DETECT_RESP (not echo of client's). Validated against real Mars servers via mars_probe.py.
+## Goal: Sub-5 Second Time-to-First-Frame ✅ ACHIEVED
 
-## ✅ 2. Session key caching (DONE)
-Relay captures session keys from proxied CERTIFY_RESP. Keys stored in `cache/session_keys.json` for offline operation.
-
-## ✅ 3. Local CERTIFY (DONE)
-In `--relay` mode, CERTIFY is handled locally:
-- Parses client's 32-byte key contribution from CERTIFY_REQ
-- Generates server key, derives session_key = client_key XOR server_key
-- Builds proper CERTIFY_RESP with per-frame encrypted payload
-
-## ✅ 4. Local CALLING routing (DONE)
-In `--relay` mode, CALLING frames are routed between bridge and doorbell:
-- Decrypts CALLING payload with session key to find destination term_id
-- Routes directly to connected target via UDP or TCP
-- Falls back to heuristic routing (bridge↔doorbell) if decryption fails
-
-## ✅ 5. Doorbell keepalive (DONE)
-`--keepalive` flag sends KEEPALIVE (type 0x17) every 25s to prevent doorbell sleep:
-- Tracks doorbell addr from CERTIFY/DETECT
-- Monitors ACK responses; warns after 3 consecutive misses
-- Enabled via `RELAY_KEEPALIVE=1` in .env
-
-## ✅ 6. Persistent bridge daemon (DONE)
-`bridge-daemon` binary keeps SDK initialized and subscribed. On viewer connect:
-- Skips 5s init + 2s subscribe (already done)
-- Only calls iv_start_av_link (fast path)
-- Commands via stdin: start/stop/quit/status
-
-## ✅ 7. Docker cleanup (DONE)
-- Healthcheck for go2rtc API
-- .env.example with all config knobs documented
-- Single `docker compose up` from zero to RTSP stream
+**Measured: 3.4 seconds** (warm doorbell, Mars-mediated CALLING via TCP relay)
 
 ---
 
-## Testing Checklist
+## Verified Timing Breakdown (2026-05-16)
 
-### Proxy mode (current default — internet required):
-```bash
-# 1. Build and start
-./into.sh rebuild   # or just: docker compose up --build
+| Phase | Time | Cumulative |
+|-------|------|------------|
+| Auth (cached) | ~50ms | 50ms |
+| SDK init + CERTIFY + ONLINE | 700ms | 750ms |
+| Subscribe (error → immediate break) | 90ms | 840ms |
+| AV link CALLING sent | 0ms | 840ms |
+| CALLING ACK from Mars | 60ms | 900ms |
+| TCP relay connects (MTP) | ~2.2s | 3.1s |
+| AV link success | 200ms | 3.3s |
+| **First H.264 frame** | **~100ms** | **3.4s** |
 
-# 2. Verify relay log shows CERTIFY flowing through:
-tail -f relay.log   # Look for CERTIFY_REQ → FWD → CERTIFY_RESP → RELAY
+300 frames in 20s (15fps continuous), 1.9MB H.264, 1920x1080
 
-# 3. Connect viewer:
-ffplay rtsp://localhost:8554/doorbell
+---
+
+## Architecture
+
+```
+Viewer → go2rtc → bridge → SDK → Mars (signaling) → TCP relay → doorbell
+                              ↑
+                    P2P_URL=|mars-ip (LIST/CERTIFY/CALLING)
 ```
 
-### Relay mode (fully offline after first auth):
+Key insight: The doorbell **never** responds to LAN broadcast (even when awake).
+All connections go through Mars-mediated TCP relay. Setting `LAN_WAIT=0` skips
+the useless broadcast poll entirely.
+
+---
+
+## ✅ Completed Steps
+
+### 1. GUTES Relay (local signaling)
+- LIST_RESP: correct payload format, unencrypted, BE port encoding
+- DETECT_RESP: per-frame key extraction for response matching
+- CERTIFY_RESP: local key exchange, session_id tracking
+- INIT_INFO_RESP: sqnum prediction, device list, relay_flag bypass
+- SUBSCRIBE_RESP: early error break (no wasted timeout)
+
+### 2. Bridge Optimizations
+- Subscribe early-break on error (saves 2-3s)
+- LAN_WAIT=0 (doorbell never broadcasts, skip useless poll)
+- Fallback LAN-INJECT for SDK's find_dst_id_inlan check
+- Cached auth (no HTTP roundtrip on warm start)
+
+### 3. End-to-End Verified
+- Wakeup via `run_action_batch` → doorbell wakes in ~90s
+- Once awake: SDK → Mars → CALLING → TCP relay → video in 3.4s
+- 15fps H.264 stream, stable for 20+ seconds tested
+
+---
+
+## Remaining Work (Future)
+
+### For Full Offline Mode
+1. **Proxy CALLING/MTP through local relay** — currently requires Mars for
+   TCP relay allocation. Need to implement local MTP relay or learn the
+   doorbell's direct P2P port.
+
+2. **Doorbell keepalive** — send periodic pings to keep doorbell awake
+   (currently goes to sleep after ~5min idle). Requires knowing the
+   doorbell's GUTES session port (only available when it's connected to Mars).
+
+3. **Local DNS override** — point `wyze-mars-asrv.wyzecam.com` to local relay
+   so doorbell connects to us instead of Mars. Then we can proxy CALLING locally.
+
+### For Production Deployment
+1. **Docker compose integration** — `docker compose up` from zero to RTSP
+2. **go2rtc pipe transport** — `--stdout` mode feeds H.264 directly to go2rtc
+3. **Persistent daemon** — keeps SDK warm for instant reconnect (<2s)
+4. **Health monitoring** — auto-restart on doorbell disconnect
+
+---
+
+## Quick Start
+
 ```bash
-# 1. Run once in proxy mode to cache Mars token + session keys
-#    (cache/auth.json + cache/session_keys.json)
+# 1. Configure .env (see .env.example)
+#    Required: WYZE_EMAIL, WYZE_PASSWORD, WYZE_KEY_ID, WYZE_API_KEY
+#    Required: P2P_URL=|<mars-ip>  (use: dig +short wyze-mars-asrv.wyzecam.com)
+#    Set: LAN_WAIT=0  SUBSCRIBE_WAIT=5  DOORBELL_IP=192.168.1.81
 
-# 2. Switch to relay mode:
-#    In .env: RELAY_MODE=relay  RELAY_KEEPALIVE=1
+# 2. Build and run
+./into.sh build
+./into.sh run 30     # 30 second capture → logs/frames.h264
 
-# 3. Disconnect internet and test:
-docker compose up
-ffplay rtsp://localhost:8554/doorbell
-# Expected: <5s time-to-first-frame (doorbell kept awake by keepalive)
-```
-
-### Persistent daemon mode (fastest reconnect):
-```bash
-# Start daemon (keeps SDK warm):
-./into.sh shell
-./build/bridge-daemon --device YOUR_MAC
-
-# In another terminal, send commands:
-echo "start" > /proc/PID/fd/0   # or pipe stdin
-# H.264 flows on stdout immediately
-echo "stop" > /proc/PID/fd/0    # stops stream, keeps SDK alive
-echo "start" > /proc/PID/fd/0   # instant restart (<2s)
+# 3. Play the captured stream
+ffplay logs/frames.h264
 ```
 
 ---
 
-## ⚠️ Critical: DNAT Configuration
+## Network Requirements
 
-**Current blocker**: Router-level DNAT redirects ALL Mars traffic (TCP+UDP to
-`wyze-mars-asrv.wyzecam.com` IPs) to the local bridge host. This also breaks:
-- **Doorbell → Mars session**: doorbell can't maintain its cloud connection
-- **Chime → Mars session**: chime can't receive push notifications
-- **Cloud wakeup**: DMS `run_action_batch` queues but never reaches doorbell
-
-**Required fix (on OPNsense router):**
-1. **Remove** the broad Mars DNAT rule (or restrict source to bridge host IP only)
-2. The bridge does NOT need DNAT — it uses `P2P_URL=|127.0.0.1` to talk to the local relay directly
-3. The doorbell and chime MUST be able to reach real Mars for wakeup to work
-4. Alternatively: add source exception for doorbell (192.168.1.81) and chime (192.168.1.12)
-
-Once DNAT is fixed:
-- Cloud wakeup (`run_action_batch`) → Mars → doorbell (via chime BT or direct session)
-- Doorbell wakes, connects to real Mars, responds to LAN broadcast
-- SDK finds doorbell in broadcast list with correct P2P port
-- LAN CALLING succeeds with `opt_lan_call=1` → MTP establishes → video flows
-
----
-
-## Architecture (Final)
-
-```
-Viewer → go2rtc → bridge/daemon → SDK → [local relay] → doorbell
-                                              ↑
-                                    keepalive (25s) ─── doorbell stays awake
-```
-
-| Path | Time-to-First-Frame | Internet Required |
-|------|---------------------|-------------------|
-| Cold start (proxy) | ~90s | Yes (Mars + DMS wakeup) |
-| Warm start (keepalive) | ~9s | No (cached creds) |
-| Daemon + keepalive | ~2-3s | No |
+- Bridge host needs **UDP access to Mars** (wyze-mars-asrv.wyzecam.com:28800/51701)
+- Bridge host needs **TCP access to relay servers** (various AWS IPs, ports 8000-50000)
+- **No DNAT needed** — bridge uses `P2P_URL` to specify Mars directly
+- **No router config needed** — works on any standard network
+- Doorbell must be able to reach Mars for cloud wakeup to work

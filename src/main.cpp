@@ -298,18 +298,25 @@ int main(int argc, char** argv) {
         creds.access_token.c_str(), creds.device_mac.c_str(), (uint32_t)creds.access_token.size());
     std::fprintf(stderr, "  iv_subscribe_dev returned msg_id=%u\n", msg_id);
 
-    // In relay mode, subscribe will always timeout (can't decrypt session responses).
-    // Use short timeout (3s) to detect if it somehow works, otherwise proceed quickly.
+    // Subscribe may timeout (relay mode) or fail with error.
+    // Break early if error arrives — no point waiting the full timeout.
     const char* sub_wait_env = std::getenv("SUBSCRIBE_WAIT");
     int sub_wait = sub_wait_env ? std::atoi(sub_wait_env) : 20;
-    if (!wait_for(cb::g_sub_success, sub_wait, "subscribe")) {
-        uint32_t err = cb::g_sub_error.load();
-        std::fprintf(stderr, "  subscribe failed: error=0x%x\n", err);
-        // In relay mode, subscribe may timeout because we can't decrypt session-encrypted responses.
-        // The device is already registered via INIT_INFO_RESP, so we can proceed to AV link.
-        std::fprintf(stderr, "  [relay] proceeding despite subscribe failure (device registered in INIT_INFO)\n");
-    } else {
+    {
+        auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(sub_wait);
+        while (!cb::g_sub_success.load() && !g_shutdown.load()) {
+            if (cb::g_sub_error.load() != 0) break;  // error received — stop waiting
+            if (std::chrono::steady_clock::now() >= deadline) break;
+            std::this_thread::sleep_for(std::chrono::milliseconds(50));
+        }
+    }
+    if (cb::g_sub_success.load()) {
         std::fprintf(stderr, "  subscribed OK!\n");
+    } else {
+        uint32_t err = cb::g_sub_error.load();
+        std::fprintf(stderr, "  subscribe %s: error=0x%x\n",
+                     err ? "failed" : "timed out", err);
+        std::fprintf(stderr, "  [relay] proceeding despite subscribe failure (device registered in INIT_INFO)\n");
     }
 
     // ================================================================
