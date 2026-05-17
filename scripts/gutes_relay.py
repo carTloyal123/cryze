@@ -637,6 +637,41 @@ class GutesRelay:
         self.log(f"  → SUBSCRIBE_RESP to {addr[0]}:{addr[1]} ({frame_size}B) chkval={predicted_sqnum}")
         return bytes(resp)
 
+    def _build_session_ctl_resp(self, data: bytes, addr: tuple, predicted_sqnum: int) -> Optional[bytes]:
+        """Build SESSION_CTL_RESP (type=0xB1) — success response.
+        
+        Same structure as SUBSCRIBE_RESP but with type 0xB1.
+        """
+        payload_size = 0x34 - 0x18 + 2  # 30 bytes
+        payload = bytearray(payload_size)  # all zeros = success
+        
+        CRYPTO_HDR = 0x18
+        frame_size = CRYPTO_HDR + payload_size
+        resp = bytearray(frame_size)
+        resp[0] = 0x7E  # Session protocol
+        resp[1] = TYPE_SESSION_CTL_RESP  # 0xB1
+        struct.pack_into('<H', resp, 2, frame_size)
+        
+        # term_id = session_id from CERTIFY
+        session_id_bytes = self.state.addr_session_id.get(addr)
+        if session_id_bytes:
+            resp[4:12] = session_id_bytes
+        else:
+            struct.pack_into('<q', resp, 4, self.server_term_id)
+        
+        sqnum = self._next_sqnum()
+        struct.pack_into('<I', resp, 0x0C, sqnum)
+        struct.pack_into('<I', resp, 0x10, predicted_sqnum & 0xFFFFFFFF)
+        
+        # opt_flags: opt_encrypt=0, opt_resp=1 (bit 21), relay_flag=1 (bit 25)
+        opt_flags = (1 << 21) | (1 << 25)
+        struct.pack_into('<I', resp, 0x14, opt_flags)
+        
+        # Payload (all zeros = success)
+        resp[CRYPTO_HDR:] = payload
+        
+        return bytes(resp)
+
     def _build_calling_ack(self, calling_data: bytes, addr: tuple, sender_term_id: int) -> Optional[bytes]:
         """Build session-encrypted CALLING ACK with doorbell's network address.
         
@@ -1109,17 +1144,51 @@ class GutesRelay:
                 return resp
             return None
 
-        # --- KEEPALIVE ACK from doorbell ---
-        elif ftype == TYPE_KEEPALIVE and ack:
-            if term_id != 0 and term_id in self.state.clients:
-                client = self.state.clients[term_id]
-                if client.role == "doorbell" or addr[0] == "192.168.1.81":
+        # --- KEEPALIVE handling ---
+        elif ftype == TYPE_KEEPALIVE:
+            doorbell_ip = os.environ.get('DOORBELL_IP', '192.168.1.81')
+            if ack:
+                # ACK from a device (response to our keepalive)
+                if term_id != 0 and term_id in self.state.clients:
+                    client = self.state.clients[term_id]
+                    if client.role == "doorbell" or addr[0] == doorbell_ip:
+                        self.state.doorbell_last_ack = time.time()
+                        self.state.keepalive_misses = 0
+                        self.log(f"← KEEPALIVE_ACK from doorbell {addr[0]}:{addr[1]} "
+                                f"term_id={term_id} — misses reset")
+                        return None
+                self.log(f"← KEEPALIVE_ACK from {addr[0]}:{addr[1]} term_id={term_id}")
+                return None
+            else:
+                # KEEPALIVE request FROM device (device is sending keepalive TO us)
+                # We must respond with a KEEPALIVE_ACK to keep the session alive
+                self.log(f"← KEEPALIVE from {addr[0]}:{addr[1]} term_id={term_id}")
+                # Update last_seen and track doorbell
+                if addr[0] == doorbell_ip:
                     self.state.doorbell_last_ack = time.time()
                     self.state.keepalive_misses = 0
-                    self.log(f"← KEEPALIVE_ACK from doorbell {addr[0]}:{addr[1]} "
-                            f"term_id={term_id} — misses reset")
-                    return None
-            self.log(f"← KEEPALIVE_ACK from {addr[0]}:{addr[1]} term_id={term_id}")
+                    if not self.state.doorbell_term_id and term_id:
+                        self.state.doorbell_term_id = term_id
+                        self.log(f"  [ROLE] Doorbell identified via KEEPALIVE: term_id={term_id}")
+                # Build a KEEPALIVE ACK response
+                ack_resp = self._build_keepalive_ack(data, addr)
+                if ack_resp:
+                    return ack_resp
+                return None
+
+        # --- SESSION_CTL (0xB0) — subscribe/registration from devices ---
+        elif ftype == TYPE_SESSION_CTL:
+            self.log(f"← SESSION_CTL from {addr[0]}:{addr[1]} term_id={term_id} ({frm_len}B)")
+            if not ack and not is_resp:
+                # Respond with SESSION_CTL_RESP (type 0xB1) — success
+                # Use same approach as SUBSCRIBE_RESP
+                base_sqnum = self.state.addr_last_sqnum.get(addr, 0)
+                predicted_sqnum = base_sqnum + 2
+                resp = self._build_session_ctl_resp(data, addr, predicted_sqnum)
+                if resp:
+                    self.state.addr_last_sqnum[addr] = predicted_sqnum
+                    self.log(f"  → SESSION_CTL_RESP to {addr[0]}:{addr[1]} ({len(resp)}B)")
+                    return resp
             return None
 
         # --- All other frames ---
@@ -1455,28 +1524,26 @@ class GutesRelay:
             self.log(f"  [WAKEUP] Delivered {delivered} CALLINGs, expired {expired}")
 
     def identify_device_role(self, term_id: int, addr: tuple) -> str:
-        """Attempt to identify device role based on IP and behavior.
-        
-        Known IPs from our network:
-        - 192.168.1.12  = Chime (always on, plugged in)
-        - 192.168.1.81  = Doorbell (connects when woken)
-        - 192.168.1.245 = Bridge on macOS/Colima
-        - 192.168.1.236 = Bridge on ccc.local
+        """Identify device role based on IP matching.
+
+        Uses environment variables for configurable IPs:
+        - DOORBELL_IP: IP of the doorbell
+        - CHIME_IP: IP of the chime (optional)
+        - Bridge: localhost or our own IP
         """
         ip = addr[0]
-        
-        # Direct IP matching (works for known devices)
-        if ip == "192.168.1.12":
-            return "chime"
-        elif ip == "192.168.1.81":
+        doorbell_ip = os.environ.get('DOORBELL_IP', '192.168.1.81')
+        chime_ip = os.environ.get('CHIME_IP', '192.168.1.12')
+
+        if ip == doorbell_ip:
             return "doorbell"
-        elif ip in ("192.168.1.245", "192.168.1.236", "127.0.0.1", "192.168.5.1"):
+        elif ip == chime_ip:
+            return "chime"
+        elif ip in (self.local_ip, "127.0.0.1", "192.168.5.1"):
             return "bridge"
         
-        # Heuristic: the first certified client from a non-bridge IP
-        # that sends INIT_INFO with 2 devices is likely the bridge
+        # Heuristic: if from the same subnet but not doorbell/chime, likely bridge
         return "unknown"
-
     def _persist_session_key(self, term_id: int, session_key: bytes):
         """Persist session key to JSON cache file."""
         try:
@@ -1631,6 +1698,40 @@ class GutesRelay:
         struct.pack_into('<H', frame, 0x1A, 0x0000)
 
         return bytes(frame)
+
+    def _build_keepalive_ack(self, request_data: bytes, addr: tuple) -> Optional[bytes]:
+        """Build a KEEPALIVE ACK in response to a device's KEEPALIVE.
+        
+        The ACK echoes the request's sqnum in the response's sqnum field,
+        and sets opt_ack=1 (bit 20).
+        """
+        if len(request_data) < HEADER_SIZE:
+            return None
+        
+        ack = bytearray(HEADER_SIZE)
+        ack[0] = request_data[0]  # Same proto (0x7E or 0x7F)
+        ack[1] = TYPE_KEEPALIVE
+        struct.pack_into('<H', ack, 2, HEADER_SIZE)
+        
+        # Use our server term_id
+        import random as _rand
+        sqnum = struct.unpack_from('<I', request_data, 0x0C)[0]  # Echo request sqnum
+        chkval = 0
+        encrypted_id = self._encrypt_server_id(sqnum, chkval)
+        ack[4:12] = encrypted_id
+        struct.pack_into('<I', ack, 0x0C, sqnum)
+        struct.pack_into('<I', ack, 0x10, chkval)
+        
+        # opt_flags: opt_ack=1 (bit 20), random nonce
+        nonce = _rand.randint(0, 0x7FFF)
+        opt_flags = (nonce << 1) | (1 << 20)  # opt_ack=1
+        struct.pack_into('<I', ack, 0x14, opt_flags)
+        
+        # flags2 and ack_result = 0
+        struct.pack_into('<H', ack, 0x18, 0x0000)
+        struct.pack_into('<H', ack, 0x1A, 0x0000)
+        
+        return bytes(ack)
 
     async def _keepalive_loop(self):
         """Periodically send KEEPALIVE frames to the doorbell to prevent sleep.
