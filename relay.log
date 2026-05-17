@@ -1,0 +1,525 @@
+[   0.001] GUTES Relay v3 starting
+[   0.001]   Mode: RELAY
+[   0.001]   Local IP: 192.168.1.245
+[   0.001]   Server term_id: -3195816737827617183
+[   0.001]   Relay ports: [28800, 8443, 8000]
+[   0.001]   List port: 51701
+[   0.001]   MTP relay port: 23000
+[   0.001]   Keepalive: ENABLED
+[   0.002] 
+[   0.002]   Listening on UDP :28800
+[   0.002]   Listening on UDP :8443
+[   0.002]   Listening on UDP :8000
+[   0.002]   Listening on UDP :51701 (list)
+[   0.002] 
+[   0.002] Ready — waiting for connections...
+[   0.002] ============================================================
+[   0.005] [KEEPALIVE] Loop started (interval=25s, max_misses=3)
+[   0.005]   Listening on TCP :28800 (signaling)
+[   0.011]   Listening on TCP :8443 (signaling)
+[   0.012]   Listening on TCP :8000 (signaling)
+[   0.012]   [MTP] Listening on TCP :23000 (MTP relay)
+[   4.590] NEW CLIENT: term_id=-2697608252815436935 from 127.0.0.1:50455 port=51701
+[   4.592]   HDR: proto=0x7f type=0x15(LIST_REQ) len=40 opt=0x00010000 enc=1 ack=False resp=False
+[   4.592]   HEX: 7f 15 28 00 2e 9f 00 cf e4 c0 26 de 94 a8 2c d1 82 bc 14 81 00 00 01 00 b4 03 bc b0 4c 02 f4 14 1b 54 3c 61 0e 1b ce 3b
+[   4.592] ← LIST_REQ from 127.0.0.1:50455 term_id=-2697608252815436935 (40B)
+[   4.599] → LIST_RESP to 127.0.0.1:50455 (local, servers: 127.0.0.1, 68B)
+[   4.602] NEW CLIENT: term_id=4823779154985576288 from 127.0.0.1:50455 port=28800
+[   4.602]   HDR: proto=0x7f type=0x01(DETECT_REQ) len=68 opt=0x00010000 enc=1 ack=False resp=False
+[   4.602]   HEX: 7f 01 44 00 13 0f 9a 6b 40 2b 74 2e a9 38 b6 75 26 57 46 71 00 00 01 00 e1 69 7a f9 4c 77 37 14 fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee 00 00 00 00
+[   4.603] ← DETECT_REQ from 127.0.0.1:50455:28800 client_tid=4823779154985576288 (68B)
+[   4.603] → DETECT_RESP to 127.0.0.1:50455 server_tid=-3195816737827617183 (56B)
+[   4.638] NEW CLIENT: term_id=7430385217595894046 from 127.0.0.1:50455 port=28800
+[   4.639]   HDR: proto=0x7f type=0x0c(CERTIFY) len=164 opt=0x014d92c6 enc=13 ack=False resp=False
+[   4.639]   HEX: 7f 0c a4 00 86 67 2a e1 da 65 bb 09 3c 50 06 ff bc 19 89 56 c6 92 4d 01 09 e0 f2 c8 6a 89 ab 58 00 99 3d e0 53 5a af 18 7f 40 73 57 df 7d 86 19 64 33 64 5e 06 8c 4f 22 c4 a6 1b 39 de 26 18 17 08 04 00 00 5c 88 5f 0a 00 00 00 00 00 00 00 00 00 00 00 00 01 01 bd 66 35 44 bf 97 0d aa 7b ff 6e 03 36 c9 a9 44 72 d8 92 50 c9 c6 86 74 1b 12 0e 58 ff 05 81 6c db 49 87 b4 44 67 59 26 4b 15 16 dc 8c 21 28 ed 6e af fd 22 b5 b2 da b1 2b c7 ba 80 10 bf 4a 30 f1 28 e8 c7 55 69 c5 53 d4 01 8a 7f 9a c6
+[   4.639] ← CERTIFY_REQ from 127.0.0.1:50455 term_id=7430385217595894046 (164B)
+[   4.639]   [DEBUG] CERTIFY plaintext sqnum=824591630
+[   4.639]   [DEBUG] Raw payload (first 48B): 09e0f2c86a89ab5800993de0535aaf187f407357df7d86196433645e068c4f22c4a61b39de261817080400005c885f0a encrypt_mode=1
+[   4.639]   [DEBUG] Per-frame key: 7f0ca400c6924d00
+[   4.639]   [DEBUG] Decrypted payload (first 48B): 0100000064866f8300ce21a128c9cb9f66238245aa735886eb3dab8596a11bc606aea7793da2de2425260697af0d7745
+[   4.639]   [DEBUG] hash_checksum=0x836f8664 enc_key=00ce21a128c9cb9f66238245aa735886eb3dab8596a11bc606aea7793da2de24
+[   4.640]   [RELAY] Certify key: 67130b9788acf8936cdb4d35b26a9936
+[   4.640]   [RELAY] Session key VERIFIED! hash=0x836f8664
+[   4.640]   [RELAY] CERTIFY session_key=a0ef48ce889f1d79... session_id=0100000064866f83
+[   4.641]   [RELAY] Cached REAL session_key=a0ef48ce889f1d79... for term_id=7430385217595894046
+[   4.641]   [ROLE] Identified BRIDGE: term_id=7430385217595894046 addr=127.0.0.1:50455
+[   4.641]   [RELAY] -> CERTIFY_RESP to 127.0.0.1:50455 (80B)
+[   4.689] NEW CLIENT: term_id=-3883018214033362050 from 127.0.0.1:50455 port=28800
+[   4.689]   HDR: proto=0x7e type=0xa6(INIT_INFO) len=62 opt=0x000ee416 enc=14 ack=False resp=False
+[   4.689]   HEX: 7e a6 3e 00 d6 61 aa 31 72 b6 63 db d6 c6 cc 0b e9 9a 8e 3f 16 e4 0e 00 3e 25 90 1e 95 8a b5 55 00 c0 6b 08 c3 9c 05 79 47 4a b9 f7 c0 eb 58 20 47 4a b9 f7 c0 eb 58 20 01 00 00 00 00 0d
+[   4.690] ← INIT_INFO from 127.0.0.1:50455 term_id=-3883018214033362050
+[   4.690]   [ROLE] Identified BRIDGE: term_id=-3883018214033362050 addr=127.0.0.1:50455
+[   4.690]   [DEBUG] Using predicted sqnum=824591631 for INIT_INFO_RESP
+[   4.690]   → INIT_INFO_RESP to 127.0.0.1:50455 (60B)
+[   4.738] NEW CLIENT: term_id=58820244361610603 from 127.0.0.1:50455 port=28800
+[   4.739]   HDR: proto=0x7e type=0xa0(SUBSCRIBE) len=48 opt=0x000a34e6 enc=10 ack=False resp=False
+[   4.739]   HEX: 7e a0 30 00 c8 00 e9 28 a5 ac 7b 47 c8 a7 8f 12 3e 80 96 a3 e6 34 0a 00 b2 b6 58 84 7e ee 0f 26 33 b7 36 a4 d1 37 95 ea 7f c0 95 1d cd f0 3c 01
+[   4.739] ← SUBSCRIBE from 127.0.0.1:50455 term_id=58820244361610603 (48B)
+[   4.739]   [DEBUG] SUBSCRIBE predicted_sqnum=824591633 (base=824591631)
+[   4.739]   → SUBSCRIBE_RESP to 127.0.0.1:50455 (54B) chkval=824591633
+[   4.789] NEW CLIENT: term_id=-4467648361960945834 from 127.0.0.1:50455 port=28800
+[   4.789]   HDR: proto=0x7e type=0xb0(SESSION_CTL) len=108 opt=0x000e35ca enc=14 ack=False resp=False
+[   4.789]   HEX: 7e b0 6c 00 f2 39 07 d8 ee 97 d7 94 f2 9e 61 e2 75 bb 3a 70 ca 35 0e 00 4c f9 d9 13 f1 d7 10 d6 41 4e 0e ad b0 77 82 bf e5 43 ef 82 c7 88 6c 38 05 31 f4 63 a2 71 1c 82 43 60 72 b3 2b 67 81 09 65 59 87 47 57 24 7d e9 83 ea 72 34 db f9 8c 62 6f 61 b4 d5 90 bc 5b 55 28 6b 5d 64 20 4e 41 86 84 d6 57 8a b1 75 24 08 11 85 93 a5
+[   4.789] ← SESSION_CTL from 127.0.0.1:50455 term_id=-4467648361960945834 (108B)
+[   4.789]   → SESSION_CTL_RESP to 127.0.0.1:50455 (54B)
+[   5.191] ← SESSION_CTL from 127.0.0.1:50455 term_id=-4467648361960945834 (108B)
+[   5.192]   → SESSION_CTL_RESP to 127.0.0.1:50455 (54B)
+[   5.602] NEW CLIENT: term_id=-3464462352050404084 from 127.0.0.1:50455 port=28800
+[   5.604]   HDR: proto=0x7f type=0x01(DETECT_REQ) len=68 opt=0x00010000 enc=1 ack=False resp=False
+[   5.604]   HEX: 7f 01 44 00 c7 95 bc 86 ab 37 88 2d 7d a2 90 98 cd 4b ba 72 00 00 01 00 60 cc a3 af d6 5c 87 fc fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee 00 00 00 00
+[   5.605] ← DETECT_REQ from 127.0.0.1:50455:28800 client_tid=-3464462352050404084 (68B)
+[   5.606] → DETECT_RESP to 127.0.0.1:50455 server_tid=-3195816737827617183 (56B)
+[   5.790] ← SESSION_CTL from 127.0.0.1:50455 term_id=-4467648361960945834 (108B)
+[   5.791]   → SESSION_CTL_RESP to 127.0.0.1:50455 (54B)
+[   6.389] ← SESSION_CTL from 127.0.0.1:50455 term_id=-4467648361960945834 (108B)
+[   6.390]   → SESSION_CTL_RESP to 127.0.0.1:50455 (54B)
+[   6.590] ← SUBSCRIBE from 127.0.0.1:50455 term_id=58820244361610603 (48B)
+[   6.591]   [DEBUG] SUBSCRIBE predicted_sqnum=824591643 (base=824591641)
+[   6.591]   → SUBSCRIBE_RESP to 127.0.0.1:50455 (54B) chkval=824591643
+[   6.601] NEW CLIENT: term_id=1121277114035624920 from 127.0.0.1:50455 port=28800
+[   6.602]   HDR: proto=0x7f type=0x01(DETECT_REQ) len=68 opt=0x00010000 enc=1 ack=False resp=False
+[   6.602]   HEX: 7f 01 44 00 c0 2e 4d 77 61 df 65 90 7a 19 61 69 07 a3 57 cf 00 00 01 00 e0 b6 37 96 e1 6b 58 57 fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee 00 00 00 00
+[   6.603] ← DETECT_REQ from 127.0.0.1:50455:28800 client_tid=1121277114035624920 (68B)
+[   6.603] → DETECT_RESP to 127.0.0.1:50455 server_tid=-3195816737827617183 (56B)
+[   6.990] ← SESSION_CTL from 127.0.0.1:50455 term_id=-4467648361960945834 (108B)
+[   6.991]   → SESSION_CTL_RESP to 127.0.0.1:50455 (54B)
+[   7.591] ← SESSION_CTL from 127.0.0.1:50455 term_id=-4467648361960945834 (108B)
+[   7.592]   → SESSION_CTL_RESP to 127.0.0.1:50455 (54B)
+[   7.601] NEW CLIENT: term_id=2800886124315409127 from 127.0.0.1:50455 port=28800
+[   7.602]   HDR: proto=0x7f type=0x01(DETECT_REQ) len=68 opt=0x00010000 enc=1 ack=False resp=False
+[   7.603]   HEX: 7f 01 44 00 0b 15 63 3c 57 f0 7c 62 b1 22 4f 22 31 8c 4e 3d 00 00 01 00 95 30 47 af af c8 d7 f0 fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee 00 00 00 00
+[   7.604] ← DETECT_REQ from 127.0.0.1:50455:28800 client_tid=2800886124315409127 (68B)
+[   7.605] → DETECT_RESP to 127.0.0.1:50455 server_tid=-3195816737827617183 (56B)
+[   7.889] NEW CLIENT: term_id=739325381870747078 from 127.0.0.1:50455 port=28800
+[   7.890]   HDR: proto=0x7e type=0xa4(CALLING_REQ) len=161 opt=0x0006a838 enc=6 ack=False resp=False
+[   7.891]   HEX: 7e a4 a1 00 e6 12 b5 68 9e 2d 10 43 e6 b5 d3 52 05 01 fd a7 38 a8 06 00 41 c0 85 10 8c 5b c8 33 6d 46 4b e6 aa 78 6d 4d 35 8e 2e 8d 19 fd 96 eb 07 70 d4 55 71 55 5f 91 47 4a b9 f7 c0 eb 58 20 a1 d4 4b 47 43 f8 2d 5c 47 4a b9 f7 c0 eb 58 20 47 4a b9 f7 c0 eb 58 20 47 4a b9 f7 c0 eb 58 20 47 4a b9 f7 c0 eb 58 20 47 4a b9 f7 c0 eb 58 20 47 4a b9 f7 c0 eb 58 20 0f bd b3 0a 5f 36 8f 1e 8d 89 7b 98 b3 07 7a 2c ed 93 e6 58 f4 2c 84 3e 97 00 c6 26 72 6d b9 0a b8 f8 6a da a9 fa 90 59 38
+[   7.891] ← CALLING_REQ from 127.0.0.1:50455 term_id=739325381870747078 (161B)
+[   7.891]   HEX: 7e a4 a1 00 e6 12 b5 68 9e 2d 10 43 e6 b5 d3 52 05 01 fd a7 38 a8 06 00 41 c0 85 10 8c 5b c8 33 6d 46 4b e6 aa 78 6d 4d 35 8e 2e 8d 19 fd 96 eb 07 70 d4 55 71 55 5f 91 47 4a b9 f7 c0 eb 58 20 a1 d4 4b 47 43 f8 2d 5c 47 4a b9 f7 c0 eb 58 20 47 4a b9 f7 c0 eb 58 20 47 4a b9 f7 c0 eb 58 20 47 4a b9 f7 c0 eb 58 20 47 4a b9 f7 c0 eb 58 20 47 4a b9 f7 c0 eb 58 20 0f bd b3 0a 5f 36 8f 1e 8d 89 7b 98 b3 07 7a 2c ed 93 e6 58 f4 2c 84 3e 97 00 c6 26 72 6d b9 0a b8 f8 6a da a9 fa 90 59 38
+[   7.893]   [CALLING] Decrypted dest_term_id=71257888307284993
+[   7.894]   [DEBUG] _extract_req_sqnum: using session_key=a0ef48ce889f1d79... for addr=('127.0.0.1', 50455)
+[   7.894]   [DEBUG] _extract_req_sqnum: decrypted sqnum=824591638 from enc_bytes=e6b5d3520501fda7
+[   7.895]   [MTP] CALLING req_sqnum=824591638 (for ACK matching)
+[   7.895]   [MTP] Built CALLING_ACK (session-enc): doorbell=192.168.1.81:8899 req_sqnum=824591638 frame_size=40
+[   7.896]   [MTP] Extracted link_id=16591020 from CALLING (session-dec)
+[   7.896]   [MTP] Built MTP_RES_RESP: link_id=16591020 doorbell_lan=192.168.1.81:8899 v4_cnt=0 v6_cnt=0 (LAN-only, no relay servers) (122B)
+[   7.896]   [MTP] Sending CALLING_ACK + MTP_RES_RESP to bridge 127.0.0.1:50455
+[   8.189] ← SESSION_CTL from 127.0.0.1:50455 term_id=-4467648361960945834 (108B)
+[   8.190]   → SESSION_CTL_RESP to 127.0.0.1:50455 (54B)
+[   8.589] ← SUBSCRIBE from 127.0.0.1:50455 term_id=58820244361610603 (48B)
+[   8.590]   [DEBUG] SUBSCRIBE predicted_sqnum=824591651 (base=824591649)
+[   8.590]   → SUBSCRIBE_RESP to 127.0.0.1:50455 (54B) chkval=824591651
+[   8.790] ← SESSION_CTL from 127.0.0.1:50455 term_id=-4467648361960945834 (108B)
+[   8.791]   → SESSION_CTL_RESP to 127.0.0.1:50455 (54B)
+[   9.390] ← SESSION_CTL from 127.0.0.1:50455 term_id=-4467648361960945834 (108B)
+[   9.391]   → SESSION_CTL_RESP to 127.0.0.1:50455 (54B)
+[   9.603] NEW CLIENT: term_id=6176357058955938936 from 127.0.0.1:50455 port=28800
+[   9.604]   HDR: proto=0x7f type=0x01(DETECT_REQ) len=68 opt=0x00010000 enc=1 ack=False resp=False
+[   9.604]   HEX: 7f 01 44 00 b8 c3 7b fd 9d 86 67 0a 02 f4 57 e3 fb fa 55 55 00 00 01 00 8d fe ae 66 ac cf 7f d1 fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee 00 00 00 00
+[   9.605] ← DETECT_REQ from 127.0.0.1:50455:28800 client_tid=6176357058955938936 (68B)
+[   9.605] → DETECT_RESP to 127.0.0.1:50455 server_tid=-3195816737827617183 (56B)
+[   9.991] ← SESSION_CTL from 127.0.0.1:50455 term_id=-4467648361960945834 (108B)
+[   9.991]   → SESSION_CTL_RESP to 127.0.0.1:50455 (54B)
+[  10.590] ← SUBSCRIBE from 127.0.0.1:50455 term_id=58820244361610603 (48B)
+[  10.590]   [DEBUG] SUBSCRIBE predicted_sqnum=824591659 (base=824591657)
+[  10.591]   → SUBSCRIBE_RESP to 127.0.0.1:50455 (54B) chkval=824591659
+[  10.592] ← SESSION_CTL from 127.0.0.1:50455 term_id=-4467648361960945834 (108B)
+[  10.592]   → SESSION_CTL_RESP to 127.0.0.1:50455 (54B)
+[  11.190] ← SESSION_CTL from 127.0.0.1:50455 term_id=-4467648361960945834 (108B)
+[  11.190]   → SESSION_CTL_RESP to 127.0.0.1:50455 (54B)
+[  11.602] NEW CLIENT: term_id=-7640991224128660827 from 127.0.0.1:50455 port=28800
+[  11.604]   HDR: proto=0x7f type=0x01(DETECT_REQ) len=68 opt=0x00010000 enc=1 ack=False resp=False
+[  11.604]   HEX: 7f 01 44 00 99 1e e0 15 1c 89 d4 64 23 29 cc 0b 7a f5 e6 3b 00 00 01 00 93 e8 b9 33 50 8d 4c 28 fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee 00 00 00 00
+[  11.605] ← DETECT_REQ from 127.0.0.1:50455:28800 client_tid=-7640991224128660827 (68B)
+[  11.605] → DETECT_RESP to 127.0.0.1:50455 server_tid=-3195816737827617183 (56B)
+[  11.791] ← SESSION_CTL from 127.0.0.1:50455 term_id=-4467648361960945834 (108B)
+[  11.791]   → SESSION_CTL_RESP to 127.0.0.1:50455 (54B)
+[  12.390] ← SESSION_CTL from 127.0.0.1:50455 term_id=-4467648361960945834 (108B)
+[  12.391]   → SESSION_CTL_RESP to 127.0.0.1:50455 (54B)
+[  12.591] ← SUBSCRIBE from 127.0.0.1:50455 term_id=58820244361610603 (48B)
+[  12.593]   [DEBUG] SUBSCRIBE predicted_sqnum=824591669 (base=824591667)
+[  12.594]   → SUBSCRIBE_RESP to 127.0.0.1:50455 (54B) chkval=824591669
+[  12.991] ← SESSION_CTL from 127.0.0.1:43240 term_id=-4467648361960945834 (108B)
+[  12.992]   → SESSION_CTL_RESP to 127.0.0.1:43240 (54B)
+[  13.590] ← SESSION_CTL from 127.0.0.1:43240 term_id=-4467648361960945834 (108B)
+[  13.591]   → SESSION_CTL_RESP to 127.0.0.1:43240 (54B)
+[  14.189] ← SESSION_CTL from 127.0.0.1:43240 term_id=-4467648361960945834 (108B)
+[  14.190]   → SESSION_CTL_RESP to 127.0.0.1:43240 (54B)
+[  14.593] ← SUBSCRIBE from 127.0.0.1:43240 term_id=58820244361610603 (48B)
+[  14.594]   [DEBUG] SUBSCRIBE predicted_sqnum=8 (base=6)
+[  14.595]   → SUBSCRIBE_RESP to 127.0.0.1:43240 (54B) chkval=8
+[  14.788] ← SESSION_CTL from 127.0.0.1:43240 term_id=-4467648361960945834 (108B)
+[  14.789]   → SESSION_CTL_RESP to 127.0.0.1:43240 (54B)
+[  15.389] ← SESSION_CTL from 127.0.0.1:43240 term_id=-4467648361960945834 (108B)
+[  15.390]   → SESSION_CTL_RESP to 127.0.0.1:43240 (54B)
+[  15.990] ← SESSION_CTL from 127.0.0.1:43240 term_id=-4467648361960945834 (108B)
+[  15.991]   → SESSION_CTL_RESP to 127.0.0.1:43240 (54B)
+[  16.590] ← SUBSCRIBE from 127.0.0.1:43240 term_id=58820244361610603 (48B)
+[  16.590]   [DEBUG] SUBSCRIBE predicted_sqnum=16 (base=14)
+[  16.591]   → SUBSCRIBE_RESP to 127.0.0.1:43240 (54B) chkval=16
+[  16.591] ← SESSION_CTL from 127.0.0.1:43240 term_id=-4467648361960945834 (108B)
+[  16.591]   → SESSION_CTL_RESP to 127.0.0.1:43240 (54B)
+[  16.602] NEW CLIENT: term_id=-238824946723465159 from 127.0.0.1:43240 port=28800
+[  16.602]   HDR: proto=0x7f type=0x01(DETECT_REQ) len=68 opt=0x00010000 enc=1 ack=False resp=False
+[  16.602]   HEX: 7f 01 44 00 a3 06 33 82 e7 dc 35 a0 19 31 1f 9c 81 a0 07 ff 00 00 01 00 e0 21 4e 0a 55 ff 0f 62 fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee 00 00 00 00
+[  16.603] ← DETECT_REQ from 127.0.0.1:43240:28800 client_tid=-238824946723465159 (68B)
+[  16.603] → DETECT_RESP to 127.0.0.1:43240 server_tid=-3195816737827617183 (56B)
+[  17.189] ← SESSION_CTL from 127.0.0.1:43240 term_id=-4467648361960945834 (108B)
+[  17.190]   → SESSION_CTL_RESP to 127.0.0.1:43240 (54B)
+[  17.791] ← SESSION_CTL from 127.0.0.1:43240 term_id=-4467648361960945834 (108B)
+[  17.792]   → SESSION_CTL_RESP to 127.0.0.1:43240 (54B)
+[  18.391] ← SESSION_CTL from 127.0.0.1:43240 term_id=-4467648361960945834 (108B)
+[  18.392]   → SESSION_CTL_RESP to 127.0.0.1:43240 (54B)
+[  18.591] ← SUBSCRIBE from 127.0.0.1:43240 term_id=58820244361610603 (48B)
+[  18.598]   [DEBUG] SUBSCRIBE predicted_sqnum=26 (base=24)
+[  18.600]   → SUBSCRIBE_RESP to 127.0.0.1:43240 (54B) chkval=26
+[  18.641] NEW CLIENT: term_id=7478001619592431247 from 127.0.0.1:43240 port=28800
+[  18.642]   HDR: proto=0x7e type=0xa4(CALLING_REQ) len=161 opt=0x00065df8 enc=6 ack=False resp=False
+[  18.643]   HEX: 7e a4 a1 00 3a 00 4d 7b 49 11 81 14 3a a7 2b 41 d2 3d 6c f0 f8 5d 06 00 f4 67 cd a0 2a 37 0a 74 6d 46 4b e6 aa 78 6d 4d 35 8e 2e 8d 19 fd 96 eb 16 c8 26 b9 c2 da e8 90 47 4a b9 f7 c0 eb 58 20 a1 d4 4b 47 43 f8 2d 5c 47 4a b9 f7 c0 eb 58 20 47 4a b9 f7 c0 eb 58 20 47 4a b9 f7 c0 eb 58 20 47 4a b9 f7 c0 eb 58 20 47 4a b9 f7 c0 eb 58 20 47 4a b9 f7 c0 eb 58 20 aa e1 8f 7a 1e da 9d 74 8d 89 7b 98 b3 07 7a 2c ed 93 e6 58 f4 2c 84 3e 97 00 c6 26 72 6d b9 0a b8 f8 6a da a9 fa 90 59 38
+[  18.644] ← CALLING_REQ from 127.0.0.1:43240 term_id=7478001619592431247 (161B)
+[  18.645]   HEX: 7e a4 a1 00 3a 00 4d 7b 49 11 81 14 3a a7 2b 41 d2 3d 6c f0 f8 5d 06 00 f4 67 cd a0 2a 37 0a 74 6d 46 4b e6 aa 78 6d 4d 35 8e 2e 8d 19 fd 96 eb 16 c8 26 b9 c2 da e8 90 47 4a b9 f7 c0 eb 58 20 a1 d4 4b 47 43 f8 2d 5c 47 4a b9 f7 c0 eb 58 20 47 4a b9 f7 c0 eb 58 20 47 4a b9 f7 c0 eb 58 20 47 4a b9 f7 c0 eb 58 20 47 4a b9 f7 c0 eb 58 20 47 4a b9 f7 c0 eb 58 20 aa e1 8f 7a 1e da 9d 74 8d 89 7b 98 b3 07 7a 2c ed 93 e6 58 f4 2c 84 3e 97 00 c6 26 72 6d b9 0a b8 f8 6a da a9 fa 90 59 38
+[  18.647]   [CALLING] Decrypted dest_term_id=71512558393101313
+[  18.649]   [DEBUG] _extract_req_sqnum: using session_key=a0ef48ce889f1d79... for addr=('127.0.0.1', 43240)
+[  18.649]   [DEBUG] _extract_req_sqnum: decrypted sqnum=824591643 from enc_bytes=3aa72b41d23d6cf0
+[  18.650]   [MTP] CALLING req_sqnum=824591643 (for ACK matching)
+[  18.650]   [MTP] Built CALLING_ACK (session-enc): doorbell=192.168.1.81:8899 req_sqnum=824591643 frame_size=40
+[  18.651]   [MTP] Extracted link_id=16650315 from CALLING (session-dec)
+[  18.651]   [MTP] Built MTP_RES_RESP: link_id=16650315 doorbell_lan=192.168.1.81:8899 v4_cnt=0 v6_cnt=0 (LAN-only, no relay servers) (122B)
+[  18.651]   [MTP] Sending CALLING_ACK + MTP_RES_RESP to bridge 127.0.0.1:43240
+[  18.990] ← SESSION_CTL from 127.0.0.1:43240 term_id=-4467648361960945834 (108B)
+[  18.991]   → SESSION_CTL_RESP to 127.0.0.1:43240 (54B)
+[  19.589] ← SESSION_CTL from 127.0.0.1:43240 term_id=-4467648361960945834 (108B)
+[  19.590]   → SESSION_CTL_RESP to 127.0.0.1:43240 (54B)
+[  20.190] ← SESSION_CTL from 127.0.0.1:43240 term_id=-4467648361960945834 (108B)
+[  20.191]   → SESSION_CTL_RESP to 127.0.0.1:43240 (54B)
+[  20.590] ← SUBSCRIBE from 127.0.0.1:43240 term_id=58820244361610603 (48B)
+[  20.591]   [DEBUG] SUBSCRIBE predicted_sqnum=34 (base=32)
+[  20.592]   → SUBSCRIBE_RESP to 127.0.0.1:43240 (54B) chkval=34
+[  21.603] NEW CLIENT: term_id=5524712652511065019 from 127.0.0.1:43240 port=28800
+[  21.603]   HDR: proto=0x7f type=0x01(DETECT_REQ) len=68 opt=0x00010000 enc=1 ack=False resp=False
+[  21.603]   HEX: 7f 01 44 00 e4 b4 55 01 1f 4b 1f ed 5e 83 79 1f 79 37 2d b2 00 00 01 00 80 60 e2 cf 77 7e ad 06 fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee 00 00 00 00
+[  21.603] ← DETECT_REQ from 127.0.0.1:43240:28800 client_tid=5524712652511065019 (68B)
+[  21.604] → DETECT_RESP to 127.0.0.1:43240 server_tid=-3195816737827617183 (56B)
+[  21.604] ← TCP signaling connection from 127.0.0.1:36720 on port 28800
+[  21.604]   TCP-SIG ← DETECT_REQ (36B) from 127.0.0.1:36720
+[  21.604] NEW CLIENT: term_id=-4665304433075157467 from 127.0.0.1:36720 port=28800
+[  21.605]   HDR: proto=0x7f type=0x01(DETECT_REQ) len=36 opt=0x00010000 enc=1 ack=False resp=False
+[  21.605]   HEX: 7f 01 24 00 42 84 9f 34 81 f0 9d 92 f8 b3 b3 2a e7 8c af cd 00 00 01 00 9e 27 5d 38 a5 0d 21 c2 00 00 00 00
+[  21.605] ← DETECT_REQ from 127.0.0.1:36720:28800 client_tid=-4665304433075157467 (36B)
+[  21.605] → DETECT_RESP to 127.0.0.1:36720 server_tid=-3195816737827617183 (56B)
+[  21.607]   TCP-SIG → DETECT_RESP (56B)
+[  21.639] NEW CLIENT: term_id=-9183530479762960293 from 127.0.0.1:43240 port=28800
+[  21.639]   HDR: proto=0x7f type=0x0c(CERTIFY) len=172 opt=0x014dad86 enc=13 ack=False resp=False
+[  21.639]   HEX: 7f 0c ac 00 ed 61 5d a2 35 9c bb 3d 57 56 71 bc 53 e0 89 62 86 ad 4d 01 4b b6 95 82 fc b0 57 44 6e aa 0c 81 04 a8 54 a6 a8 9d e8 8a 5a 12 e3 72 66 2a d0 53 f5 12 bb 6a 24 05 14 0a a0 66 e8 84 5f 0c 51 28 ea e8 5f 6f 64 86 6f 83 c5 ca 5f 0a 00 00 00 00 00 00 00 00 00 00 00 00 01 01 5a ae 8e 12 b4 ff 90 53 d4 79 a7 db 70 de b3 f9 ee 10 5f 37 4a 0c fc fc b9 5e ef 69 2c 66 53 13 f0 9e ad 9d 85 03 39 9e fd 97 6e bf 8c f7 c1 2f 65 73 95 b7 f4 ca 41 46 67 87 5e dc 6c d3 dc ee 2d 7a 6c 60 2f 05 d9 c0 9d 62 dd 0a 3d 59
+[  21.639] ← CERTIFY_REQ from 127.0.0.1:43240 term_id=-9183530479762960293 (172B)
+[  21.639]   [DEBUG] CERTIFY plaintext sqnum=824591646
+[  21.639]   [DEBUG] Raw payload (first 48B): 4bb69582fcb057446eaa0c8104a854a6a89de88a5a12e372662ad053f512bb6a2405140aa066e8845f0c5128eae85f6f encrypt_mode=1
+[  21.640]   [DEBUG] Per-frame key: 7f0cac0086ad4d00
+[  21.640]   [DEBUG] Decrypted payload (first 48B): 0500000064866f8300ce21a128c9cb9f66238245aa735886eb3dab8596a11bc606aea7793da2de240804000001000000
+[  21.640]   [DEBUG] hash_checksum=0x836f8664 enc_key=00ce21a128c9cb9f66238245aa735886eb3dab8596a11bc606aea7793da2de24
+[  21.640]   [RELAY] Certify key: 67130b9788acf8936cdb4d35b26a9936
+[  21.641]   [RELAY] Session key VERIFIED! hash=0x836f8664
+[  21.641]   [RELAY] CERTIFY session_key=a0ef48ce889f1d79... session_id=0500000064866f83
+[  21.642]   [RELAY] Cached REAL session_key=a0ef48ce889f1d79... for term_id=-9183530479762960293
+[  21.642]   [ROLE] Identified BRIDGE: term_id=-9183530479762960293 addr=127.0.0.1:43240
+[  21.643]   [RELAY] -> CERTIFY_RESP to 127.0.0.1:43240 (80B)
+[  21.689] NEW CLIENT: term_id=-3832161533438347283 from 127.0.0.1:43240 port=28800
+[  21.689]   HDR: proto=0x7e type=0xa6(INIT_INFO) len=62 opt=0x000e884c enc=14 ack=False resp=False
+[  21.689]   HEX: 7e a6 3e 00 52 d3 6d f4 eb 55 0b df 49 09 67 21 2b ce 0a 2a 4c 88 0e 00 3e 25 90 1e 95 8a b5 55 00 c0 6b 08 c3 9c 05 79 47 4a b9 f7 c0 eb 58 20 47 4a b9 f7 c0 eb 58 20 01 00 00 00 00 0d
+[  21.689] ← INIT_INFO from 127.0.0.1:43240 term_id=-3832161533438347283
+[  21.689]   [ROLE] Identified BRIDGE: term_id=-3832161533438347283 addr=127.0.0.1:43240
+[  21.689]   [DEBUG] Using predicted sqnum=824591647 for INIT_INFO_RESP
+[  21.689]   → INIT_INFO_RESP to 127.0.0.1:43240 (60B)
+[  21.739] NEW CLIENT: term_id=-2013179216233766460 from 127.0.0.1:43240 port=28800
+[  21.739]   HDR: proto=0x7e type=0xa0(SUBSCRIBE) len=48 opt=0x000a3de4 enc=10 ack=False resp=False
+[  21.739]   HEX: 7e a0 30 00 cd cd cb 05 5a c0 f5 d6 d6 17 c1 d0 9a 5b f4 23 e4 3d 0a 00 ae 9c dd e8 4c 63 e0 79 33 b7 36 a4 d1 37 95 ea 69 c2 23 e4 6b fa 3d 76
+[  21.739] ← SUBSCRIBE from 127.0.0.1:43240 term_id=-2013179216233766460 (48B)
+[  21.739]   [DEBUG] SUBSCRIBE predicted_sqnum=824591649 (base=824591647)
+[  21.739]   → SUBSCRIBE_RESP to 127.0.0.1:43240 (54B) chkval=824591649
+[  22.589] ← SUBSCRIBE from 127.0.0.1:43240 term_id=58820244361610603 (48B)
+[  22.590]   [DEBUG] SUBSCRIBE predicted_sqnum=824591651 (base=824591649)
+[  22.591]   → SUBSCRIBE_RESP to 127.0.0.1:43240 (54B) chkval=824591651
+[  23.590] ← SUBSCRIBE from 127.0.0.1:43240 term_id=-2013179216233766460 (48B)
+[  23.591]   [DEBUG] SUBSCRIBE predicted_sqnum=824591653 (base=824591651)
+[  23.592]   → SUBSCRIBE_RESP to 127.0.0.1:43240 (54B) chkval=824591653
+[  24.592]   TCP-SIG connection from 127.0.0.1:36720 closed: 0 bytes read on a total of 4 expected bytes
+[  24.596] NEW CLIENT: term_id=8701787512178467621 from 127.0.0.1:43240 port=51701
+[  24.597]   HDR: proto=0x7f type=0x15(LIST_REQ) len=40 opt=0x00010000 enc=1 ack=False resp=False
+[  24.598]   HEX: 7f 15 28 00 66 bd ec 9e 05 f4 37 43 dc 8a c0 80 63 88 05 1c 00 00 01 00 b4 03 bc b0 4c 02 f4 14 1b 54 3c 61 0e 1b ce 3b
+[  24.598] ← LIST_REQ from 127.0.0.1:43240 term_id=8701787512178467621 (40B)
+[  24.599] → LIST_RESP to 127.0.0.1:43240 (local, servers: 127.0.0.1, 68B)
+[  24.604] NEW CLIENT: term_id=-224496160799250426 from 127.0.0.1:43240 port=28800
+[  24.605]   HDR: proto=0x7f type=0x01(DETECT_REQ) len=68 opt=0x00010000 enc=1 ack=False resp=False
+[  24.606]   HEX: 7f 01 44 00 a8 3a 6e 57 d1 63 fa ac 12 0d 42 49 b7 1f c8 f3 00 00 01 00 c4 03 8a 75 d0 e8 3e 38 fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee 00 00 00 00
+[  24.606] ← DETECT_REQ from 127.0.0.1:43240:28800 client_tid=-224496160799250426 (68B)
+[  24.607] → DETECT_RESP to 127.0.0.1:43240 server_tid=-3195816737827617183 (56B)
+[  25.589] ← SUBSCRIBE from 127.0.0.1:43240 term_id=-2013179216233766460 (48B)
+[  25.590]   [DEBUG] SUBSCRIBE predicted_sqnum=824591655 (base=824591653)
+[  25.591]   → SUBSCRIBE_RESP to 127.0.0.1:43240 (54B) chkval=824591655
+[  25.604] NEW CLIENT: term_id=5935852929749870487 from 127.0.0.1:43240 port=28800
+[  25.605]   HDR: proto=0x7f type=0x01(DETECT_REQ) len=68 opt=0x00010000 enc=1 ack=False resp=False
+[  25.606]   HEX: 7f 01 44 00 bc 71 14 34 45 91 e5 d4 06 46 38 2a 23 ed d7 8b 00 00 01 00 c3 b2 ae aa cb 3f e3 7f fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee 00 00 00 00
+[  25.606] ← DETECT_REQ from 127.0.0.1:43240:28800 client_tid=5935852929749870487 (68B)
+[  25.607] → DETECT_RESP to 127.0.0.1:43240 server_tid=-3195816737827617183 (56B)
+[  26.605] NEW CLIENT: term_id=-4488153043257044280 from 127.0.0.1:43240 port=28800
+[  26.605]   HDR: proto=0x7f type=0x01(DETECT_REQ) len=68 opt=0x00010000 enc=1 ack=False resp=False
+[  26.606]   HEX: 7f 01 44 00 07 16 d8 40 b3 c8 d4 2f bd 21 f4 5e d5 b4 e6 70 00 00 01 00 36 cd 46 4d 63 57 3b 8a fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee 00 00 00 00
+[  26.606] ← DETECT_REQ from 127.0.0.1:43240:28800 client_tid=-4488153043257044280 (68B)
+[  26.606] → DETECT_RESP to 127.0.0.1:43240 server_tid=-3195816737827617183 (56B)
+[  27.590] ← SUBSCRIBE from 127.0.0.1:43240 term_id=-2013179216233766460 (48B)
+[  27.591]   [DEBUG] SUBSCRIBE predicted_sqnum=824591657 (base=824591655)
+[  27.591]   → SUBSCRIBE_RESP to 127.0.0.1:43240 (54B) chkval=824591657
+[  28.606] NEW CLIENT: term_id=-1079958678096564147 from 127.0.0.1:43240 port=28800
+[  28.607]   HDR: proto=0x7f type=0x01(DETECT_REQ) len=68 opt=0x00010000 enc=1 ack=False resp=False
+[  28.607]   HEX: 7f 01 44 00 18 63 79 e0 f4 98 3b c4 a2 54 55 fe 92 e4 09 9b 00 00 01 00 82 ef 26 00 d4 42 51 c0 fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee 00 00 00 00
+[  28.607] ← DETECT_REQ from 127.0.0.1:43240:28800 client_tid=-1079958678096564147 (68B)
+[  28.607] → DETECT_RESP to 127.0.0.1:43240 server_tid=-3195816737827617183 (56B)
+[  29.590] ← SUBSCRIBE from 127.0.0.1:43240 term_id=-2013179216233766460 (48B)
+[  29.591]   [DEBUG] SUBSCRIBE predicted_sqnum=824591659 (base=824591657)
+[  29.592]   → SUBSCRIBE_RESP to 127.0.0.1:43240 (54B) chkval=824591659
+[  30.007] --- STATUS: 24 clients ---
+[  30.008]   term_id=-2697608252815436935 addr=127.0.0.1:50455 role=unknown cert=False in=1 out=0 last_seen=25s ago
+[  30.008]   term_id=4823779154985576288 addr=127.0.0.1:50455 role=unknown cert=False in=1 out=0 last_seen=25s ago
+[  30.008]   term_id=7430385217595894046 addr=127.0.0.1:50455 role=bridge cert=True in=1 out=0 last_seen=25s ago
+[  30.009]   term_id=-3883018214033362050 addr=127.0.0.1:50455 role=bridge cert=True in=1 out=0 last_seen=25s ago
+[  30.009]   term_id=58820244361610603 addr=127.0.0.1:43240 role=unknown cert=False in=10 out=0 last_seen=7s ago
+[  30.009]   term_id=-4467648361960945834 addr=127.0.0.1:43240 role=unknown cert=False in=27 out=0 last_seen=10s ago
+[  30.009]   term_id=-3464462352050404084 addr=127.0.0.1:50455 role=unknown cert=False in=1 out=0 last_seen=24s ago
+[  30.009]   term_id=1121277114035624920 addr=127.0.0.1:50455 role=unknown cert=False in=1 out=0 last_seen=23s ago
+[  30.010]   term_id=2800886124315409127 addr=127.0.0.1:50455 role=unknown cert=False in=1 out=0 last_seen=22s ago
+[  30.010]   term_id=739325381870747078 addr=127.0.0.1:50455 role=unknown cert=False in=1 out=0 last_seen=22s ago
+[  30.010]   term_id=6176357058955938936 addr=127.0.0.1:50455 role=unknown cert=False in=1 out=0 last_seen=20s ago
+[  30.010]   term_id=-7640991224128660827 addr=127.0.0.1:50455 role=unknown cert=False in=1 out=0 last_seen=18s ago
+[  30.011]   term_id=-238824946723465159 addr=127.0.0.1:43240 role=unknown cert=False in=1 out=0 last_seen=13s ago
+[  30.011]   term_id=7478001619592431247 addr=127.0.0.1:43240 role=unknown cert=False in=1 out=0 last_seen=11s ago
+[  30.011]   term_id=5524712652511065019 addr=127.0.0.1:43240 role=unknown cert=False in=1 out=0 last_seen=8s ago
+[  30.011]   term_id=-4665304433075157467 addr=127.0.0.1:36720 role=unknown cert=False in=1 out=0 last_seen=8s ago
+[  30.012]   term_id=-9183530479762960293 addr=127.0.0.1:43240 role=bridge cert=True in=1 out=0 last_seen=8s ago
+[  30.012]   term_id=-3832161533438347283 addr=127.0.0.1:43240 role=bridge cert=True in=1 out=0 last_seen=8s ago
+[  30.012]   term_id=-2013179216233766460 addr=127.0.0.1:43240 role=unknown cert=False in=5 out=0 last_seen=0s ago
+[  30.012]   term_id=8701787512178467621 addr=127.0.0.1:43240 role=unknown cert=False in=1 out=0 last_seen=5s ago
+[  30.013]   term_id=-224496160799250426 addr=127.0.0.1:43240 role=unknown cert=False in=1 out=0 last_seen=5s ago
+[  30.013]   term_id=5935852929749870487 addr=127.0.0.1:43240 role=unknown cert=False in=1 out=0 last_seen=4s ago
+[  30.013]   term_id=-4488153043257044280 addr=127.0.0.1:43240 role=unknown cert=False in=1 out=0 last_seen=3s ago
+[  30.013]   term_id=-1079958678096564147 addr=127.0.0.1:43240 role=unknown cert=False in=1 out=0 last_seen=1s ago
+[  30.606] NEW CLIENT: term_id=8636369458094918807 from 127.0.0.1:50455 port=28800
+[  30.607]   HDR: proto=0x7f type=0x01(DETECT_REQ) len=68 opt=0x00010000 enc=1 ack=False resp=False
+[  30.608]   HEX: 7f 01 44 00 f0 48 b0 44 10 0d e5 e3 4a 7f 9c 5a 76 71 d7 bc 00 00 01 00 11 90 ad 65 25 88 a5 7c fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee fc d4 f1 9a 43 f5 16 ee 00 00 00 00
+[  30.614] ← DETECT_REQ from 127.0.0.1:50455:28800 client_tid=8636369458094918807 (68B)
+[  30.615] → DETECT_RESP to 127.0.0.1:50455 server_tid=-3195816737827617183 (56B)
+[  30.640] NEW CLIENT: term_id=-3530260611150020036 from 127.0.0.1:50455 port=28800
+[  30.641]   HDR: proto=0x7e type=0xa4(CALLING_REQ) len=161 opt=0x0006bc06 enc=6 ack=False resp=False
+[  30.641]   HEX: 7e a4 a1 00 ed 60 cc 5b e3 5a 24 80 f6 ba c6 8e 23 c1 25 75 06 bc 06 00 fe 4a 40 0a c6 9d cb 83 6d 46 4b e6 aa 78 6d 4d 35 8e 2e 8d 19 fd 96 eb 07 70 d4 55 71 55 5f 91 47 4a b9 f7 c0 eb 58 20 a1 d4 4b 47 43 f8 2d 5c 47 4a b9 f7 c0 eb 58 20 47 4a b9 f7 c0 eb 58 20 47 4a b9 f7 c0 eb 58 20 47 4a b9 f7 c0 eb 58 20 47 4a b9 f7 c0 eb 58 20 47 4a b9 f7 c0 eb 58 20 c5 f2 7a 81 31 79 39 87 8d 89 7b 98 b3 07 7a 2c ed 93 e6 58 f4 2c 84 3e 97 00 c6 26 72 6d b9 0a b8 f8 6a da a9 fa 90 59 38
+[  30.642] ← CALLING_REQ from 127.0.0.1:50455 term_id=-3530260611150020036 (161B)
+[  30.642]   HEX: 7e a4 a1 00 ed 60 cc 5b e3 5a 24 80 f6 ba c6 8e 23 c1 25 75 06 bc 06 00 fe 4a 40 0a c6 9d cb 83 6d 46 4b e6 aa 78 6d 4d 35 8e 2e 8d 19 fd 96 eb 07 70 d4 55 71 55 5f 91 47 4a b9 f7 c0 eb 58 20 a1 d4 4b 47 43 f8 2d 5c 47 4a b9 f7 c0 eb 58 20 47 4a b9 f7 c0 eb 58 20 47 4a b9 f7 c0 eb 58 20 47 4a b9 f7 c0 eb 58 20 47 4a b9 f7 c0 eb 58 20 47 4a b9 f7 c0 eb 58 20 c5 f2 7a 81 31 79 39 87 8d 89 7b 98 b3 07 7a 2c ed 93 e6 58 f4 2c 84 3e 97 00 c6 26 72 6d b9 0a b8 f8 6a da a9 fa 90 59 38
+[  30.643]   [CALLING] Decrypted dest_term_id=69086468806544385
+[  30.644]   [DEBUG] _extract_req_sqnum: using session_key=a0ef48ce889f1d79... for addr=('127.0.0.1', 50455)
+[  30.645]   [DEBUG] _extract_req_sqnum: decrypted sqnum=824591655 from enc_bytes=f6bac68e23c12575
+[  30.645]   [MTP] CALLING req_sqnum=824591655 (for ACK matching)
+[  30.645]   [MTP] Built CALLING_ACK (session-enc): doorbell=192.168.1.81:8899 req_sqnum=824591655 frame_size=40
+[  30.645]   [MTP] Extracted link_id=16085447 from CALLING (session-dec)
+[  30.646]   [MTP] Built MTP_RES_RESP: link_id=16085447 doorbell_lan=192.168.1.81:8899 v4_cnt=0 v6_cnt=0 (LAN-only, no relay servers) (122B)
+[  30.646]   [MTP] Sending CALLING_ACK + MTP_RES_RESP to bridge 127.0.0.1:50455
+[  31.589] ← SUBSCRIBE from 127.0.0.1:50455 term_id=-2013179216233766460 (48B)
+[  31.590]   [DEBUG] SUBSCRIBE predicted_sqnum=824591671 (base=824591669)
+[  31.590]   → SUBSCRIBE_RESP to 127.0.0.1:50455 (54B) chkval=824591671
+[  31.741] NEW CLIENT: term_id=5029563807601158143 from 127.0.0.1:50455 port=28800
+[  31.743]   HDR: proto=0x7e type=0xb9(0xB9) len=76 opt=0x0006e7fc enc=6 ack=False resp=False
+[  31.743]   HEX: 7e b9 4c 00 96 f3 97 2d 11 e3 a4 1d 8d 29 9d f8 d1 78 a5 e8 fc e7 06 00 12 3a bd c5 a0 53 5c d7 d3 e4 66 94 63 53 a5 5f 52 e7 71 6f 00 af 8f 56 47 4a b9 f7 c0 eb 58 20 70 cc a4 d8 4f 16 04 6a 20 26 9f 5b f6 7f b9 7e 00 00 00 00
+[  31.744] ← 0xB9 from 127.0.0.1:50455:28800 term_id=5029563807601158143 (76B) opt=0x0006e7fc enc=6
+[  31.744]   HEX: 7e b9 4c 00 96 f3 97 2d 11 e3 a4 1d 8d 29 9d f8 d1 78 a5 e8 fc e7 06 00 12 3a bd c5 a0 53 5c d7 d3 e4 66 94 63 53 a5 5f 52 e7 71 6f 00 af 8f 56 47 4a b9 f7 c0 eb 58 20 70 cc a4 d8 4f 16 04 6a 20 26 9f 5b f6 7f b9 7e 00 00 00 00
+[  31.745]   ! NO PEER to route 0xB9 (term_id=5029563807601158143, clients=[-2697608252815436935, 4823779154985576288, 7430385217595894046, -3883018214033362050, 58820244361610603, -4467648361960945834, -3464462352050404084, 1121277114035624920, 2800886124315409127, 739325381870747078, 6176357058955938936, -7640991224128660827, -238824946723465159, 7478001619592431247, 5524712652511065019, -4665304433075157467, -9183530479762960293, -3832161533438347283, -2013179216233766460, 8701787512178467621, -224496160799250426, 5935852929749870487, -4488153043257044280, -1079958678096564147, 8636369458094918807, -3530260611150020036, 5029563807601158143])
+[  31.790] NEW CLIENT: term_id=8950010405902759461 from 127.0.0.1:50455 port=28800
+[  31.791]   HDR: proto=0x7e type=0xbc(0xBC) len=56 opt=0x000685ec enc=6 ack=False resp=False
+[  31.791]   HEX: 7e bc 38 00 77 b3 33 49 f9 f7 8b 2a 6c 69 39 9c 39 6c 8a df ec 85 06 00 36 96 97 bd ee e8 af d4 ed 87 34 bb b8 88 82 72 ef f5 4e 7a a8 30 bd d4 ba 6b 5a 5c 1d 19 97 91
+[  31.792] ← 0xBC from 127.0.0.1:50455:28800 term_id=8950010405902759461 (56B) opt=0x000685ec enc=6
+[  31.792]   HEX: 7e bc 38 00 77 b3 33 49 f9 f7 8b 2a 6c 69 39 9c 39 6c 8a df ec 85 06 00 36 96 97 bd ee e8 af d4 ed 87 34 bb b8 88 82 72 ef f5 4e 7a a8 30 bd d4 ba 6b 5a 5c 1d 19 97 91
+[  31.792]   ! NO PEER to route 0xBC (term_id=8950010405902759461, clients=[-2697608252815436935, 4823779154985576288, 7430385217595894046, -3883018214033362050, 58820244361610603, -4467648361960945834, -3464462352050404084, 1121277114035624920, 2800886124315409127, 739325381870747078, 6176357058955938936, -7640991224128660827, -238824946723465159, 7478001619592431247, 5524712652511065019, -4665304433075157467, -9183530479762960293, -3832161533438347283, -2013179216233766460, 8701787512178467621, -224496160799250426, 5935852929749870487, -4488153043257044280, -1079958678096564147, 8636369458094918807, -3530260611150020036, 5029563807601158143, 8950010405902759461])
+[  31.793] NEW CLIENT: term_id=7492960284956818666 from 127.0.0.1:50455 port=28800
+[  31.794]   HDR: proto=0x7e type=0xd8(0xD8) len=54 opt=0x00065b76 enc=6 ack=False resp=False
+[  31.794]   HEX: 7e d8 36 00 ab a9 50 b1 78 0a 18 3f b0 73 5a 64 b8 91 19 ca 76 5b 06 00 6d 46 4b e6 aa 78 6d 4d 35 8e 2e 8d 19 fd 96 eb bc 27 ca 10 3d ee 11 13 00 00 01 00 00 00
+[  31.795] ← 0xD8 from 127.0.0.1:50455:28800 term_id=7492960284956818666 (54B) opt=0x00065b76 enc=6
+[  31.795]   HEX: 7e d8 36 00 ab a9 50 b1 78 0a 18 3f b0 73 5a 64 b8 91 19 ca 76 5b 06 00 6d 46 4b e6 aa 78 6d 4d 35 8e 2e 8d 19 fd 96 eb bc 27 ca 10 3d ee 11 13 00 00 01 00 00 00
+[  31.795]   ! NO PEER to route 0xD8 (term_id=7492960284956818666, clients=[-2697608252815436935, 4823779154985576288, 7430385217595894046, -3883018214033362050, 58820244361610603, -4467648361960945834, -3464462352050404084, 1121277114035624920, 2800886124315409127, 739325381870747078, 6176357058955938936, -7640991224128660827, -238824946723465159, 7478001619592431247, 5524712652511065019, -4665304433075157467, -9183530479762960293, -3832161533438347283, -2013179216233766460, 8701787512178467621, -224496160799250426, 5935852929749870487, -4488153043257044280, -1079958678096564147, 8636369458094918807, -3530260611150020036, 5029563807601158143, 8950010405902759461, 7492960284956818666])
+[  31.796] ← 0xB9 from 127.0.0.1:50455:28800 term_id=5029563807601158143 (76B) opt=0x1006e7fc enc=6
+[  31.797]   HEX: 7e b9 4c 00 96 f3 97 2d 11 e3 a4 1d 8d 29 9d f8 d1 78 a5 e8 fc e7 06 10 12 3a bd c5 a0 53 5c d7 d3 e4 66 94 63 53 a5 5f 52 e7 71 6f 00 af 8f 56 47 4a b9 f7 c0 eb 58 20 70 cc a4 d8 4f 16 04 6a 20 26 9f 5b f6 7f b9 7e 00 00 00 00
+[  31.797]   ! NO PEER to route 0xB9 (term_id=5029563807601158143, clients=[-2697608252815436935, 4823779154985576288, 7430385217595894046, -3883018214033362050, 58820244361610603, -4467648361960945834, -3464462352050404084, 1121277114035624920, 2800886124315409127, 739325381870747078, 6176357058955938936, -7640991224128660827, -238824946723465159, 7478001619592431247, 5524712652511065019, -4665304433075157467, -9183530479762960293, -3832161533438347283, -2013179216233766460, 8701787512178467621, -224496160799250426, 5935852929749870487, -4488153043257044280, -1079958678096564147, 8636369458094918807, -3530260611150020036, 5029563807601158143, 8950010405902759461, 7492960284956818666])
+[  60.015] --- STATUS: 29 clients ---
+[  60.016]   term_id=-2697608252815436935 addr=127.0.0.1:50455 role=unknown cert=False in=1 out=0 last_seen=55s ago
+[  60.016]   term_id=4823779154985576288 addr=127.0.0.1:50455 role=unknown cert=False in=1 out=0 last_seen=55s ago
+[  60.017]   term_id=7430385217595894046 addr=127.0.0.1:50455 role=bridge cert=True in=1 out=0 last_seen=55s ago
+[  60.017]   term_id=-3883018214033362050 addr=127.0.0.1:50455 role=bridge cert=True in=1 out=0 last_seen=55s ago
+[  60.018]   term_id=58820244361610603 addr=127.0.0.1:43240 role=unknown cert=False in=10 out=0 last_seen=37s ago
+[  60.018]   term_id=-4467648361960945834 addr=127.0.0.1:43240 role=unknown cert=False in=27 out=0 last_seen=40s ago
+[  60.018]   term_id=-3464462352050404084 addr=127.0.0.1:50455 role=unknown cert=False in=1 out=0 last_seen=54s ago
+[  60.019]   term_id=1121277114035624920 addr=127.0.0.1:50455 role=unknown cert=False in=1 out=0 last_seen=53s ago
+[  60.019]   term_id=2800886124315409127 addr=127.0.0.1:50455 role=unknown cert=False in=1 out=0 last_seen=52s ago
+[  60.020]   term_id=739325381870747078 addr=127.0.0.1:50455 role=unknown cert=False in=1 out=0 last_seen=52s ago
+[  60.020]   term_id=6176357058955938936 addr=127.0.0.1:50455 role=unknown cert=False in=1 out=0 last_seen=50s ago
+[  60.020]   term_id=-7640991224128660827 addr=127.0.0.1:50455 role=unknown cert=False in=1 out=0 last_seen=48s ago
+[  60.021]   term_id=-238824946723465159 addr=127.0.0.1:43240 role=unknown cert=False in=1 out=0 last_seen=43s ago
+[  60.021]   term_id=7478001619592431247 addr=127.0.0.1:43240 role=unknown cert=False in=1 out=0 last_seen=41s ago
+[  60.022]   term_id=5524712652511065019 addr=127.0.0.1:43240 role=unknown cert=False in=1 out=0 last_seen=38s ago
+[  60.022]   term_id=-4665304433075157467 addr=127.0.0.1:36720 role=unknown cert=False in=1 out=0 last_seen=38s ago
+[  60.022]   term_id=-9183530479762960293 addr=127.0.0.1:43240 role=bridge cert=True in=1 out=0 last_seen=38s ago
+[  60.023]   term_id=-3832161533438347283 addr=127.0.0.1:43240 role=bridge cert=True in=1 out=0 last_seen=38s ago
+[  60.023]   term_id=-2013179216233766460 addr=127.0.0.1:50455 role=unknown cert=False in=6 out=0 last_seen=28s ago
+[  60.023]   term_id=8701787512178467621 addr=127.0.0.1:43240 role=unknown cert=False in=1 out=0 last_seen=35s ago
+[  60.023]   term_id=-224496160799250426 addr=127.0.0.1:43240 role=unknown cert=False in=1 out=0 last_seen=35s ago
+[  60.024]   term_id=5935852929749870487 addr=127.0.0.1:43240 role=unknown cert=False in=1 out=0 last_seen=34s ago
+[  60.024]   term_id=-4488153043257044280 addr=127.0.0.1:43240 role=unknown cert=False in=1 out=0 last_seen=33s ago
+[  60.024]   term_id=-1079958678096564147 addr=127.0.0.1:43240 role=unknown cert=False in=1 out=0 last_seen=31s ago
+[  60.024]   term_id=8636369458094918807 addr=127.0.0.1:50455 role=unknown cert=False in=1 out=0 last_seen=29s ago
+[  60.025]   term_id=-3530260611150020036 addr=127.0.0.1:50455 role=unknown cert=False in=1 out=0 last_seen=29s ago
+[  60.025]   term_id=5029563807601158143 addr=127.0.0.1:50455 role=unknown cert=False in=2 out=0 last_seen=28s ago
+[  60.025]   term_id=8950010405902759461 addr=127.0.0.1:50455 role=unknown cert=False in=1 out=0 last_seen=28s ago
+[  60.026]   term_id=7492960284956818666 addr=127.0.0.1:50455 role=unknown cert=False in=1 out=0 last_seen=28s ago
+[  90.028] --- STATUS: 29 clients ---
+[  90.029]   term_id=-2697608252815436935 addr=127.0.0.1:50455 role=unknown cert=False in=1 out=0 last_seen=85s ago
+[  90.030]   term_id=4823779154985576288 addr=127.0.0.1:50455 role=unknown cert=False in=1 out=0 last_seen=85s ago
+[  90.030]   term_id=7430385217595894046 addr=127.0.0.1:50455 role=bridge cert=True in=1 out=0 last_seen=85s ago
+[  90.030]   term_id=-3883018214033362050 addr=127.0.0.1:50455 role=bridge cert=True in=1 out=0 last_seen=85s ago
+[  90.031]   term_id=58820244361610603 addr=127.0.0.1:43240 role=unknown cert=False in=10 out=0 last_seen=67s ago
+[  90.031]   term_id=-4467648361960945834 addr=127.0.0.1:43240 role=unknown cert=False in=27 out=0 last_seen=70s ago
+[  90.032]   term_id=-3464462352050404084 addr=127.0.0.1:50455 role=unknown cert=False in=1 out=0 last_seen=84s ago
+[  90.032]   term_id=1121277114035624920 addr=127.0.0.1:50455 role=unknown cert=False in=1 out=0 last_seen=83s ago
+[  90.032]   term_id=2800886124315409127 addr=127.0.0.1:50455 role=unknown cert=False in=1 out=0 last_seen=82s ago
+[  90.033]   term_id=739325381870747078 addr=127.0.0.1:50455 role=unknown cert=False in=1 out=0 last_seen=82s ago
+[  90.033]   term_id=6176357058955938936 addr=127.0.0.1:50455 role=unknown cert=False in=1 out=0 last_seen=80s ago
+[  90.034]   term_id=-7640991224128660827 addr=127.0.0.1:50455 role=unknown cert=False in=1 out=0 last_seen=78s ago
+[  90.034]   term_id=-238824946723465159 addr=127.0.0.1:43240 role=unknown cert=False in=1 out=0 last_seen=73s ago
+[  90.034]   term_id=7478001619592431247 addr=127.0.0.1:43240 role=unknown cert=False in=1 out=0 last_seen=71s ago
+[  90.035]   term_id=5524712652511065019 addr=127.0.0.1:43240 role=unknown cert=False in=1 out=0 last_seen=68s ago
+[  90.035]   term_id=-4665304433075157467 addr=127.0.0.1:36720 role=unknown cert=False in=1 out=0 last_seen=68s ago
+[  90.036]   term_id=-9183530479762960293 addr=127.0.0.1:43240 role=bridge cert=True in=1 out=0 last_seen=68s ago
+[  90.036]   term_id=-3832161533438347283 addr=127.0.0.1:43240 role=bridge cert=True in=1 out=0 last_seen=68s ago
+[  90.036]   term_id=-2013179216233766460 addr=127.0.0.1:50455 role=unknown cert=False in=6 out=0 last_seen=58s ago
+[  90.037]   term_id=8701787512178467621 addr=127.0.0.1:43240 role=unknown cert=False in=1 out=0 last_seen=65s ago
+[  90.037]   term_id=-224496160799250426 addr=127.0.0.1:43240 role=unknown cert=False in=1 out=0 last_seen=65s ago
+[  90.037]   term_id=5935852929749870487 addr=127.0.0.1:43240 role=unknown cert=False in=1 out=0 last_seen=64s ago
+[  90.037]   term_id=-4488153043257044280 addr=127.0.0.1:43240 role=unknown cert=False in=1 out=0 last_seen=63s ago
+[  90.038]   term_id=-1079958678096564147 addr=127.0.0.1:43240 role=unknown cert=False in=1 out=0 last_seen=61s ago
+[  90.038]   term_id=8636369458094918807 addr=127.0.0.1:50455 role=unknown cert=False in=1 out=0 last_seen=59s ago
+[  90.038]   term_id=-3530260611150020036 addr=127.0.0.1:50455 role=unknown cert=False in=1 out=0 last_seen=59s ago
+[  90.039]   term_id=5029563807601158143 addr=127.0.0.1:50455 role=unknown cert=False in=2 out=0 last_seen=58s ago
+[  90.039]   term_id=8950010405902759461 addr=127.0.0.1:50455 role=unknown cert=False in=1 out=0 last_seen=58s ago
+[  90.039]   term_id=7492960284956818666 addr=127.0.0.1:50455 role=unknown cert=False in=1 out=0 last_seen=58s ago
+[ 120.043] --- STATUS: 29 clients ---
+[ 120.044]   term_id=-2697608252815436935 addr=127.0.0.1:50455 role=unknown cert=False in=1 out=0 last_seen=115s ago
+[ 120.044]   term_id=4823779154985576288 addr=127.0.0.1:50455 role=unknown cert=False in=1 out=0 last_seen=115s ago
+[ 120.045]   term_id=7430385217595894046 addr=127.0.0.1:50455 role=bridge cert=True in=1 out=0 last_seen=115s ago
+[ 120.045]   term_id=-3883018214033362050 addr=127.0.0.1:50455 role=bridge cert=True in=1 out=0 last_seen=115s ago
+[ 120.045]   term_id=58820244361610603 addr=127.0.0.1:43240 role=unknown cert=False in=10 out=0 last_seen=97s ago
+[ 120.046]   term_id=-4467648361960945834 addr=127.0.0.1:43240 role=unknown cert=False in=27 out=0 last_seen=100s ago
+[ 120.046]   term_id=-3464462352050404084 addr=127.0.0.1:50455 role=unknown cert=False in=1 out=0 last_seen=114s ago
+[ 120.047]   term_id=1121277114035624920 addr=127.0.0.1:50455 role=unknown cert=False in=1 out=0 last_seen=113s ago
+[ 120.047]   term_id=2800886124315409127 addr=127.0.0.1:50455 role=unknown cert=False in=1 out=0 last_seen=112s ago
+[ 120.047]   term_id=739325381870747078 addr=127.0.0.1:50455 role=unknown cert=False in=1 out=0 last_seen=112s ago
+[ 120.048]   term_id=6176357058955938936 addr=127.0.0.1:50455 role=unknown cert=False in=1 out=0 last_seen=110s ago
+[ 120.048]   term_id=-7640991224128660827 addr=127.0.0.1:50455 role=unknown cert=False in=1 out=0 last_seen=108s ago
+[ 120.048]   term_id=-238824946723465159 addr=127.0.0.1:43240 role=unknown cert=False in=1 out=0 last_seen=103s ago
+[ 120.049]   term_id=7478001619592431247 addr=127.0.0.1:43240 role=unknown cert=False in=1 out=0 last_seen=101s ago
+[ 120.049]   term_id=5524712652511065019 addr=127.0.0.1:43240 role=unknown cert=False in=1 out=0 last_seen=98s ago
+[ 120.049]   term_id=-4665304433075157467 addr=127.0.0.1:36720 role=unknown cert=False in=1 out=0 last_seen=98s ago
+[ 120.050]   term_id=-9183530479762960293 addr=127.0.0.1:43240 role=bridge cert=True in=1 out=0 last_seen=98s ago
+[ 120.050]   term_id=-3832161533438347283 addr=127.0.0.1:43240 role=bridge cert=True in=1 out=0 last_seen=98s ago
+[ 120.050]   term_id=-2013179216233766460 addr=127.0.0.1:50455 role=unknown cert=False in=6 out=0 last_seen=88s ago
+[ 120.051]   term_id=8701787512178467621 addr=127.0.0.1:43240 role=unknown cert=False in=1 out=0 last_seen=95s ago
+[ 120.051]   term_id=-224496160799250426 addr=127.0.0.1:43240 role=unknown cert=False in=1 out=0 last_seen=95s ago
+[ 120.051]   term_id=5935852929749870487 addr=127.0.0.1:43240 role=unknown cert=False in=1 out=0 last_seen=94s ago
+[ 120.051]   term_id=-4488153043257044280 addr=127.0.0.1:43240 role=unknown cert=False in=1 out=0 last_seen=93s ago
+[ 120.052]   term_id=-1079958678096564147 addr=127.0.0.1:43240 role=unknown cert=False in=1 out=0 last_seen=91s ago
+[ 120.052]   term_id=8636369458094918807 addr=127.0.0.1:50455 role=unknown cert=False in=1 out=0 last_seen=89s ago
+[ 120.052]   term_id=-3530260611150020036 addr=127.0.0.1:50455 role=unknown cert=False in=1 out=0 last_seen=89s ago
+[ 120.052]   term_id=5029563807601158143 addr=127.0.0.1:50455 role=unknown cert=False in=2 out=0 last_seen=88s ago
+[ 120.052]   term_id=8950010405902759461 addr=127.0.0.1:50455 role=unknown cert=False in=1 out=0 last_seen=88s ago
+[ 120.053]   term_id=7492960284956818666 addr=127.0.0.1:50455 role=unknown cert=False in=1 out=0 last_seen=88s ago
+[ 150.055] --- STATUS: 29 clients ---
+[ 150.056]   term_id=-2697608252815436935 addr=127.0.0.1:50455 role=unknown cert=False in=1 out=0 last_seen=145s ago
+[ 150.056]   term_id=4823779154985576288 addr=127.0.0.1:50455 role=unknown cert=False in=1 out=0 last_seen=145s ago
+[ 150.057]   term_id=7430385217595894046 addr=127.0.0.1:50455 role=bridge cert=True in=1 out=0 last_seen=145s ago
+[ 150.057]   term_id=-3883018214033362050 addr=127.0.0.1:50455 role=bridge cert=True in=1 out=0 last_seen=145s ago
+[ 150.058]   term_id=58820244361610603 addr=127.0.0.1:43240 role=unknown cert=False in=10 out=0 last_seen=127s ago
+[ 150.058]   term_id=-4467648361960945834 addr=127.0.0.1:43240 role=unknown cert=False in=27 out=0 last_seen=130s ago
+[ 150.058]   term_id=-3464462352050404084 addr=127.0.0.1:50455 role=unknown cert=False in=1 out=0 last_seen=144s ago
+[ 150.059]   term_id=1121277114035624920 addr=127.0.0.1:50455 role=unknown cert=False in=1 out=0 last_seen=143s ago
+[ 150.059]   term_id=2800886124315409127 addr=127.0.0.1:50455 role=unknown cert=False in=1 out=0 last_seen=142s ago
+[ 150.060]   term_id=739325381870747078 addr=127.0.0.1:50455 role=unknown cert=False in=1 out=0 last_seen=142s ago
+[ 150.061]   term_id=6176357058955938936 addr=127.0.0.1:50455 role=unknown cert=False in=1 out=0 last_seen=140s ago
+[ 150.061]   term_id=-7640991224128660827 addr=127.0.0.1:50455 role=unknown cert=False in=1 out=0 last_seen=138s ago
+[ 150.061]   term_id=-238824946723465159 addr=127.0.0.1:43240 role=unknown cert=False in=1 out=0 last_seen=133s ago
+[ 150.062]   term_id=7478001619592431247 addr=127.0.0.1:43240 role=unknown cert=False in=1 out=0 last_seen=131s ago
+[ 150.062]   term_id=5524712652511065019 addr=127.0.0.1:43240 role=unknown cert=False in=1 out=0 last_seen=128s ago
+[ 150.062]   term_id=-4665304433075157467 addr=127.0.0.1:36720 role=unknown cert=False in=1 out=0 last_seen=128s ago
+[ 150.063]   term_id=-9183530479762960293 addr=127.0.0.1:43240 role=bridge cert=True in=1 out=0 last_seen=128s ago
+[ 150.063]   term_id=-3832161533438347283 addr=127.0.0.1:43240 role=bridge cert=True in=1 out=0 last_seen=128s ago
+[ 150.063]   term_id=-2013179216233766460 addr=127.0.0.1:50455 role=unknown cert=False in=6 out=0 last_seen=118s ago
+[ 150.064]   term_id=8701787512178467621 addr=127.0.0.1:43240 role=unknown cert=False in=1 out=0 last_seen=125s ago
+[ 150.064]   term_id=-224496160799250426 addr=127.0.0.1:43240 role=unknown cert=False in=1 out=0 last_seen=125s ago
+[ 150.064]   term_id=5935852929749870487 addr=127.0.0.1:43240 role=unknown cert=False in=1 out=0 last_seen=124s ago
+[ 150.065]   term_id=-4488153043257044280 addr=127.0.0.1:43240 role=unknown cert=False in=1 out=0 last_seen=123s ago
+[ 150.065]   term_id=-1079958678096564147 addr=127.0.0.1:43240 role=unknown cert=False in=1 out=0 last_seen=121s ago
+[ 150.065]   term_id=8636369458094918807 addr=127.0.0.1:50455 role=unknown cert=False in=1 out=0 last_seen=119s ago
+[ 150.067]   term_id=-3530260611150020036 addr=127.0.0.1:50455 role=unknown cert=False in=1 out=0 last_seen=119s ago
+[ 150.067]   term_id=5029563807601158143 addr=127.0.0.1:50455 role=unknown cert=False in=2 out=0 last_seen=118s ago
+[ 150.068]   term_id=8950010405902759461 addr=127.0.0.1:50455 role=unknown cert=False in=1 out=0 last_seen=118s ago
+[ 150.068]   term_id=7492960284956818666 addr=127.0.0.1:50455 role=unknown cert=False in=1 out=0 last_seen=118s ago
+[ 180.073] --- STATUS: 29 clients ---
+[ 180.074]   term_id=-2697608252815436935 addr=127.0.0.1:50455 role=unknown cert=False in=1 out=0 last_seen=175s ago
+[ 180.074]   term_id=4823779154985576288 addr=127.0.0.1:50455 role=unknown cert=False in=1 out=0 last_seen=175s ago
+[ 180.074]   term_id=7430385217595894046 addr=127.0.0.1:50455 role=bridge cert=True in=1 out=0 last_seen=175s ago
+[ 180.075]   term_id=-3883018214033362050 addr=127.0.0.1:50455 role=bridge cert=True in=1 out=0 last_seen=175s ago
+[ 180.075]   term_id=58820244361610603 addr=127.0.0.1:43240 role=unknown cert=False in=10 out=0 last_seen=157s ago
+[ 180.075]   term_id=-4467648361960945834 addr=127.0.0.1:43240 role=unknown cert=False in=27 out=0 last_seen=160s ago
+[ 180.075]   term_id=-3464462352050404084 addr=127.0.0.1:50455 role=unknown cert=False in=1 out=0 last_seen=174s ago
+[ 180.076]   term_id=1121277114035624920 addr=127.0.0.1:50455 role=unknown cert=False in=1 out=0 last_seen=173s ago
+[ 180.076]   term_id=2800886124315409127 addr=127.0.0.1:50455 role=unknown cert=False in=1 out=0 last_seen=172s ago
+[ 180.076]   term_id=739325381870747078 addr=127.0.0.1:50455 role=unknown cert=False in=1 out=0 last_seen=172s ago
+[ 180.076]   term_id=6176357058955938936 addr=127.0.0.1:50455 role=unknown cert=False in=1 out=0 last_seen=170s ago
+[ 180.077]   term_id=-7640991224128660827 addr=127.0.0.1:50455 role=unknown cert=False in=1 out=0 last_seen=168s ago
+[ 180.077]   term_id=-238824946723465159 addr=127.0.0.1:43240 role=unknown cert=False in=1 out=0 last_seen=163s ago
+[ 180.077]   term_id=7478001619592431247 addr=127.0.0.1:43240 role=unknown cert=False in=1 out=0 last_seen=161s ago
+[ 180.077]   term_id=5524712652511065019 addr=127.0.0.1:43240 role=unknown cert=False in=1 out=0 last_seen=158s ago
+[ 180.078]   term_id=-4665304433075157467 addr=127.0.0.1:36720 role=unknown cert=False in=1 out=0 last_seen=158s ago
+[ 180.078]   term_id=-9183530479762960293 addr=127.0.0.1:43240 role=bridge cert=True in=1 out=0 last_seen=158s ago
+[ 180.078]   term_id=-3832161533438347283 addr=127.0.0.1:43240 role=bridge cert=True in=1 out=0 last_seen=158s ago
+[ 180.078]   term_id=-2013179216233766460 addr=127.0.0.1:50455 role=unknown cert=False in=6 out=0 last_seen=148s ago
+[ 180.079]   term_id=8701787512178467621 addr=127.0.0.1:43240 role=unknown cert=False in=1 out=0 last_seen=155s ago
+[ 180.079]   term_id=-224496160799250426 addr=127.0.0.1:43240 role=unknown cert=False in=1 out=0 last_seen=155s ago
+[ 180.079]   term_id=5935852929749870487 addr=127.0.0.1:43240 role=unknown cert=False in=1 out=0 last_seen=154s ago
+[ 180.079]   term_id=-4488153043257044280 addr=127.0.0.1:43240 role=unknown cert=False in=1 out=0 last_seen=153s ago
+[ 180.079]   term_id=-1079958678096564147 addr=127.0.0.1:43240 role=unknown cert=False in=1 out=0 last_seen=151s ago
+[ 180.079]   term_id=8636369458094918807 addr=127.0.0.1:50455 role=unknown cert=False in=1 out=0 last_seen=149s ago
+[ 180.080]   term_id=-3530260611150020036 addr=127.0.0.1:50455 role=unknown cert=False in=1 out=0 last_seen=149s ago
+[ 180.080]   term_id=5029563807601158143 addr=127.0.0.1:50455 role=unknown cert=False in=2 out=0 last_seen=148s ago
+[ 180.080]   term_id=8950010405902759461 addr=127.0.0.1:50455 role=unknown cert=False in=1 out=0 last_seen=148s ago
+[ 180.080]   term_id=7492960284956818666 addr=127.0.0.1:50455 role=unknown cert=False in=1 out=0 last_seen=148s ago
+[ 210.085] --- STATUS: 29 clients ---
+[ 210.086]   term_id=-2697608252815436935 addr=127.0.0.1:50455 role=unknown cert=False in=1 out=0 last_seen=205s ago
+[ 210.086]   term_id=4823779154985576288 addr=127.0.0.1:50455 role=unknown cert=False in=1 out=0 last_seen=205s ago
+[ 210.087]   term_id=7430385217595894046 addr=127.0.0.1:50455 role=bridge cert=True in=1 out=0 last_seen=205s ago
+[ 210.087]   term_id=-3883018214033362050 addr=127.0.0.1:50455 role=bridge cert=True in=1 out=0 last_seen=205s ago
+[ 210.087]   term_id=58820244361610603 addr=127.0.0.1:43240 role=unknown cert=False in=10 out=0 last_seen=187s ago
+[ 210.088]   term_id=-4467648361960945834 addr=127.0.0.1:43240 role=unknown cert=False in=27 out=0 last_seen=190s ago
+[ 210.088]   term_id=-3464462352050404084 addr=127.0.0.1:50455 role=unknown cert=False in=1 out=0 last_seen=204s ago
+[ 210.088]   term_id=1121277114035624920 addr=127.0.0.1:50455 role=unknown cert=False in=1 out=0 last_seen=203s ago
+[ 210.089]   term_id=2800886124315409127 addr=127.0.0.1:50455 role=unknown cert=False in=1 out=0 last_seen=202s ago
+[ 210.089]   term_id=739325381870747078 addr=127.0.0.1:50455 role=unknown cert=False in=1 out=0 last_seen=202s ago
+[ 210.089]   term_id=6176357058955938936 addr=127.0.0.1:50455 role=unknown cert=False in=1 out=0 last_seen=200s ago
+[ 210.090]   term_id=-7640991224128660827 addr=127.0.0.1:50455 role=unknown cert=False in=1 out=0 last_seen=198s ago
+[ 210.090]   term_id=-238824946723465159 addr=127.0.0.1:43240 role=unknown cert=False in=1 out=0 last_seen=193s ago
+[ 210.090]   term_id=7478001619592431247 addr=127.0.0.1:43240 role=unknown cert=False in=1 out=0 last_seen=191s ago
+[ 210.091]   term_id=5524712652511065019 addr=127.0.0.1:43240 role=unknown cert=False in=1 out=0 last_seen=188s ago
+[ 210.091]   term_id=-4665304433075157467 addr=127.0.0.1:36720 role=unknown cert=False in=1 out=0 last_seen=188s ago
+[ 210.091]   term_id=-9183530479762960293 addr=127.0.0.1:43240 role=bridge cert=True in=1 out=0 last_seen=188s ago
+[ 210.091]   term_id=-3832161533438347283 addr=127.0.0.1:43240 role=bridge cert=True in=1 out=0 last_seen=188s ago
+[ 210.092]   term_id=-2013179216233766460 addr=127.0.0.1:50455 role=unknown cert=False in=6 out=0 last_seen=179s ago
+[ 210.092]   term_id=8701787512178467621 addr=127.0.0.1:43240 role=unknown cert=False in=1 out=0 last_seen=185s ago
+[ 210.092]   term_id=-224496160799250426 addr=127.0.0.1:43240 role=unknown cert=False in=1 out=0 last_seen=185s ago
+[ 210.093]   term_id=5935852929749870487 addr=127.0.0.1:43240 role=unknown cert=False in=1 out=0 last_seen=184s ago
+[ 210.093]   term_id=-4488153043257044280 addr=127.0.0.1:43240 role=unknown cert=False in=1 out=0 last_seen=183s ago
+[ 210.093]   term_id=-1079958678096564147 addr=127.0.0.1:43240 role=unknown cert=False in=1 out=0 last_seen=181s ago
+[ 210.094]   term_id=8636369458094918807 addr=127.0.0.1:50455 role=unknown cert=False in=1 out=0 last_seen=179s ago
+[ 210.095]   term_id=-3530260611150020036 addr=127.0.0.1:50455 role=unknown cert=False in=1 out=0 last_seen=179s ago
+[ 210.095]   term_id=5029563807601158143 addr=127.0.0.1:50455 role=unknown cert=False in=2 out=0 last_seen=178s ago
+[ 210.095]   term_id=8950010405902759461 addr=127.0.0.1:50455 role=unknown cert=False in=1 out=0 last_seen=178s ago
+[ 210.095]   term_id=7492960284956818666 addr=127.0.0.1:50455 role=unknown cert=False in=1 out=0 last_seen=178s ago
