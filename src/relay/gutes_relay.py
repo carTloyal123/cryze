@@ -432,11 +432,14 @@ class GutesRelay:
         
         server_key = os.urandom(32)
         
-        # Cache the REAL session key
+        # Derive actual session key: client_key XOR server_key (Gwell SDK standard)
+        session_key = bytes(a ^ b for a, b in zip(session_key, server_key))
+        
+        # Cache the XOR'd session key (matches what the SDK will compute)
         self.state.session_keys[term_id] = session_key
         self.state.addr_session_keys[addr] = session_key
         self._persist_session_key(term_id, session_key)
-        self.log(f"  [RELAY] Cached REAL session_key={session_key[:8].hex()}... for term_id={term_id}")
+        self.log(f"  [RELAY] Cached XOR'd session_key={session_key[:8].hex()}... for term_id={term_id}")
         
         # Track doorbell's source port as its MTP port
         role = _calling_identify_role(self, term_id, addr)
@@ -464,7 +467,7 @@ class GutesRelay:
         struct.pack_into('<I', resp, 0x10, req_sqnum)
         
         nonce = _rand.randint(0, 0x7FFF)
-        resp_opt_flags = (nonce << 1) | (1 << 21)
+        resp_opt_flags = (nonce << 1) | (1 << 16) | (1 << 21)  # encrypt=1, resp=1
         struct.pack_into('<I', resp, 0x14, resp_opt_flags)
         
         struct.pack_into('<H', resp, 0x18, 0x0001)
@@ -475,7 +478,18 @@ class GutesRelay:
         
         self.state.addr_session_id[addr] = client_session_id
         
-        self.log(f"  [RELAY] -> CERTIFY_RESP to {addr[0]}:{addr[1]} ({resp_len}B)")
+        # Per-frame encrypt the CERTIFY_RESP payload (real Mars does this)
+        pfk = derive_per_frame_key(bytes(resp[:0x18]))
+        rc5_pf = RC5(block_bytes=8, rounds=6).setkey(pfk)
+        payload_data = bytes(resp[0x18:])
+        enc_payload = rc5_pf.encrypt(payload_data)
+        resp[0x18:0x18+len(enc_payload)] = enc_payload
+        
+        # Per-frame encrypt sqnum+chkval (0x0C-0x13)
+        enc_sqchk = rc5_pf.encrypt_block(bytes(resp[0x0C:0x14]))
+        resp[0x0C:0x14] = enc_sqchk
+        
+        self.log(f"  [RELAY] -> CERTIFY_RESP to {addr[0]}:{addr[1]} ({resp_len}B) [per-frame encrypted]")
         return bytes(resp)
 
     def _persist_session_key(self, term_id: int, session_key: bytes):

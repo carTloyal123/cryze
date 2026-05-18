@@ -1,5 +1,6 @@
 """GUTES session key crypto — decryption, verification, and extraction helpers."""
 
+import base64
 import hashlib
 import json
 import os
@@ -41,12 +42,15 @@ def decrypt_session_key(encrypted_key: bytes) -> Optional[bytes]:
         log.info("  [RELAY] No mars_access_token available for session key decryption")
         return None
     
-    # mars_access_token: first 128 hex chars = 64 bytes
+    # mars_access_token: Base64 (from Wyze Mars API) or hex
     try:
-        token_bytes = bytes.fromhex(access_token[:128])
-    except ValueError:
-        log.info("  [RELAY] mars_access_token not valid hex")
-        return None
+        token_bytes = base64.b64decode(access_token)
+    except Exception:
+        try:
+            token_bytes = bytes.fromhex(access_token[:128])
+        except ValueError:
+            log.warning("  [RELAY] mars_access_token not valid Base64 or hex")
+            return None
     
     if len(token_bytes) < 0x40:
         log.info(f"  [RELAY] mars_access_token too short ({len(token_bytes)}B, need 64B)")

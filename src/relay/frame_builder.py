@@ -255,7 +255,7 @@ def build_init_info_resp(relay, req_data: bytes, addr: tuple, req_sqnum: int) ->
     frame_size = CRYPTO_HDR + len(payload)
     resp = bytearray(frame_size)
     resp[0] = 0x7E  # session proto
-    resp[1] = TYPE_INIT_INFO_MSG + 1  # 0xA7 response
+    resp[1] = TYPE_INIT_INFO_MSG  # 0xA6 — same as request, SDK matches via opt_resp
     struct.pack_into('<H', resp, 2, frame_size)
     
     # term_id — use session_id from CERTIFY
@@ -285,8 +285,7 @@ def build_init_info_resp(relay, req_data: bytes, addr: tuple, req_sqnum: int) ->
     
     if session_key and verify_session_key(session_key, req_data):
         # Session key verified — use session encryption
-        chkval = compute_chkval(resp)
-        struct.pack_into('<I', resp, 0x10, chkval)
+        # chkval = req_sqnum for response matching (SDK matches pending_req.sqnum == resp.chkval)
         struct.pack_into('<I', resp, 0x10, req_sqnum & 0xFFFFFFFF)
         
         # Session encrypt
@@ -427,7 +426,13 @@ def build_calling_ack(relay, calling_data: bytes, addr: tuple, sender_term_id: i
     try:
         with open(os.path.join(os.path.dirname(__file__), '..', 'cache', 'auth.json')) as f:
             auth_data = json.load(f)
-        certify_key = bytes.fromhex(auth_data['mars_access_token'][:128])[0x30:0x40]
+        import base64 as _b64
+        token = auth_data['mars_access_token']
+        try:
+            token_bytes = _b64.b64decode(token)
+        except Exception:
+            token_bytes = bytes.fromhex(token[:128])
+        certify_key = token_bytes[0x30:0x40]
     except Exception:
         certify_key = session_key[:16]
     
