@@ -1,30 +1,126 @@
+# Wyze Doorbell Bridge — Docker Compose Stack
+#
+# Usage: docker compose up
+#
+# Services:
+#   network-setup  - Init: iptables DNAT + ARP redirect (stays running for ARP)
+#   relay          - GUTES protocol relay (Python, native — no QEMU)
+#   go2rtc         - Stream server (RTSP/WebRTC/API — native)
+#   bridge-builder - One-shot: compiles arm64 bridge binary into shared volume
+#
+# Requires: Linux host with Docker, .env with Wyze credentials + DOORBELL_IP
+
 services:
-  bridge:
-    build: .
-    image: wyze-bridge:latest
-    container_name: wyze-bridge
-    platform: linux/arm64
-    working_dir: /work
+
+  # --- Network Setup (init, stays running for ARP redirect) ---
+  network-setup:
+    image: python:3.12-slim
+    container_name: wyze-network
+    network_mode: host
+    cap_add: [NET_ADMIN, NET_RAW]
     volumes:
-      - .:/work
-      - ../apk:/apk:ro
-    ports:
-      - "1984:1984"     # go2rtc Web UI + API
-      - "8554:8554"     # RTSP
-      - "8555:8555/udp" # WebRTC
-      - "8899:8899/udp" # P2P broadcast send
-      - "8900:8900/udp" # P2P broadcast listen
-    cap_add:
-      - NET_ADMIN
-      - NET_RAW
+      - ./scripts:/app/scripts:ro
+    env_file: .env
+    command: python3 /app/scripts/network_setup.py
     restart: unless-stopped
-    stop_grace_period: 15s
+    stop_grace_period: 5s
+
+  # --- GUTES Protocol Relay (Python, native) ---
+  relay:
+    image: python:3.12-slim
+    container_name: wyze-relay
+    network_mode: host
+    volumes:
+      - ./scripts:/app/scripts:ro
+      - ./cache:/app/cache
+    env_file: .env
+    environment:
+      - DOORBELL_IP=${DOORBELL_IP:-}
+      - CHIME_IP=${CHIME_IP:-}
+    command: >-
+      python3 /app/scripts/gutes_relay.py
+      --mode relay
+      --local-ip 0.0.0.0
+      --log-file /app/cache/relay.log
+      --session-cache /app/cache/session_keys.json
+      --keepalive
+      --mtp-port 23000
+    depends_on:
+      network-setup:
+        condition: service_started
+    restart: unless-stopped
     healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://localhost:1984/api"]
+      test: >-
+        python3 -c "
+        import socket;
+        s=socket.socket(socket.AF_INET,socket.SOCK_DGRAM);
+        s.settimeout(2);
+        s.sendto(b'\x7f\x01\x1c\x00'+b'\x00'*24,('127.0.0.1',28800));
+        d,a=s.recvfrom(256);
+        print('ok') if len(d)>0 else exit(1)"
       interval: 30s
       timeout: 5s
       retries: 3
-      start_period: 60s
-    # entrypoint.py: setup libs, build bridge, start relay + go2rtc
-    # .env loaded at runtime by entrypoint.py (not docker compose) to
-    # preserve literal $ in passwords. into.sh passes --env-file /dev/null.
+      start_period: 10s
+
+  # --- Stream Server (go2rtc, native) ---
+  go2rtc:
+    image: alexxit/go2rtc:latest
+    container_name: wyze-go2rtc
+    network_mode: host
+    volumes:
+      - ./go2rtc.yaml:/config/go2rtc.yaml:ro
+      - bridge-bin:/bridge:ro
+      - sdk-libs:/libs:ro
+      - apk-libs:/apk-libs:ro
+      - ./scripts:/scripts:ro
+      - ./cache:/cache
+      - ./.env:/config/.env:ro
+    depends_on:
+      relay:
+        condition: service_healthy
+      bridge-builder:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+  # --- Bridge Builder (arm64, one-shot) ---
+  # Compiles the bridge binary and copies it + SDK libs to shared volumes.
+  # Only runs once — cached until source changes.
+  bridge-builder:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: wyze-bridge-builder:latest
+    platform: linux/arm64
+    container_name: wyze-builder
+    volumes:
+      - .:/work
+      - ../apk:/apk:ro
+      - bridge-bin:/output
+      - sdk-libs:/output-libs
+      - apk-libs:/output-apk
+    entrypoint: /bin/sh
+    command: >-
+      -c "
+      python3 /work/scripts/entrypoint.py --build-only 2>&1 || (
+        cd /work &&
+        python3 -c 'import sys; sys.path.insert(0,\"scripts\"); from entrypoint import setup_libs, build_bridge; setup_libs(); build_bridge()'
+      ) &&
+      mkdir -p /output /output-libs /output-apk &&
+      cp /work/build/bridge /output/bridge &&
+      chmod +x /output/bridge &&
+      cp /work/scripts/run_bridge.sh /output/run_bridge.sh &&
+      chmod +x /output/run_bridge.sh &&
+      cp -r /work/libs/* /output-libs/ 2>/dev/null || true &&
+      cp -r /apk/xapk_contents/arm64_libs/lib/arm64-v8a/* /output-apk/ 2>/dev/null || true &&
+      echo 'Bridge binary + libs copied to volumes'
+      "
+    restart: "no"
+
+volumes:
+  bridge-bin:
+    name: wyze-bridge-bin
+  sdk-libs:
+    name: wyze-sdk-libs
+  apk-libs:
+    name: wyze-apk-libs

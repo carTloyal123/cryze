@@ -1,15 +1,16 @@
-# go2rtc — on-demand Wyze doorbell stream
+# go2rtc config — Wyze doorbell bridge
 #
-# Bridge is launched when a viewer connects and killed (SIGINT) when
-# the last viewer disconnects. H.264 Annex B flows via stdout pipe.
+# The bridge binary is launched on-demand when a viewer connects.
+# H.264 Annex B frames flow via stdout pipe to go2rtc.
+# Bridge is killed (SIGINT) when the last viewer disconnects.
 
 streams:
   doorbell:
-    - exec:/work/build/bridge --stdout#video=h264#killsignal=2#killtimeout=5
+    - exec:/bridge/run_bridge.sh#video=h264#killsignal=2#killtimeout=10
 
 rtsp:
   listen: ":8554"
-  default_query: "video"  # video only (doorbell has no audio track)
+  default_query: "video"
 
 webrtc:
   listen: ":8555"
@@ -18,4 +19,4 @@ api:
   listen: ":1984"
 
 log:
-  level: debug
+  level: info
