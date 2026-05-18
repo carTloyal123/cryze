@@ -33,17 +33,15 @@ open http://localhost:1984/stream.html?src=doorbell
 
 ## Configuration
 
-All settings via `.env` (see `.env.example`):
+All settings via `.env` (see `.env.example`). Three deployment tiers:
 
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `WYZE_EMAIL` | Yes | Wyze account email |
-| `WYZE_PASSWORD` | Yes | Wyze account password |
-| `WYZE_KEY_ID` | Yes | API key ID from developer console |
-| `WYZE_API_KEY` | Yes | API key secret |
-| `DOORBELL_IP` | Yes | Doorbell LAN IP (e.g. `192.168.1.81`) |
-| `SKIP_WAKEUP` | No | `1` to skip cloud wakeup (doorbell already on relay keepalive) |
-| `LAN_ONLY` | No | `1` to block cloud relay servers (force LAN video) |
+| Tier | Internet Use | Extra Setup |
+|------|-------------|-------------|
+| **Tier 1: Hybrid** (default) | Mars CALLING signaling only (~6KB/session) | None |
+| **Tier 2: Fully Offline** | First-run auth only | Router DNAT rule |
+| **Tier 3: Auto-Offline** | First-run auth only | Linux host + NET_ADMIN |
+
+See [docs/configuration.md](docs/configuration.md) for full variable reference and tier configs.
 
 ## Development
 
