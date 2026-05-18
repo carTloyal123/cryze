@@ -87,6 +87,9 @@ class GutesRelay:
         # For proxy mode: map upstream responses to clients
         self.upstream_to_client: dict[int, tuple] = {}  # upstream_sock_fd -> (client_addr, relay_port)
 
+        # Extra responses to send before the main response (e.g., ACK before RESP)
+        self._extra_responses: list[tuple[bytes, tuple]] = []
+
         # MTP relay subsystem
         self._mtp_relay = MtpRelay(self)
 
@@ -382,6 +385,117 @@ class GutesRelay:
                 self.log(f"  HEX: {self.hexdump(data, 256)}")
             return None
 
+    def _proxy_certify_to_mars(self, data: bytes, term_id: int, client_addr: tuple) -> Optional[bytes]:
+        """Proxy CERTIFY_REQ to real Mars, capture session key from response.
+        
+        Used when we can't decrypt the session key locally (RC5 16-byte block issue).
+        Sends the client's CERTIFY_REQ to Mars, waits for CERTIFY_RESP, extracts
+        the session key material, caches it, and returns the Mars response to the client.
+        """
+        # Resolve a Mars server to proxy to
+        mars_host = self.upstream_host
+        mars_port = self.upstream_port
+        if mars_host in ("127.0.0.1", "0.0.0.0", ""):
+            # P2P_URL points at us — resolve real Mars from DNS
+            try:
+                results = socket.getaddrinfo("wyze-mars-asrv.wyzecam.com", None, socket.AF_INET)
+                if results:
+                    mars_host = results[0][4][0]
+                    mars_port = 28800
+                    self.log(f"  [MARS-PROXY] Resolved Mars: {mars_host}:{mars_port}")
+            except Exception as e:
+                self.log(f"  [MARS-PROXY] DNS resolution failed: {e}")
+                return None
+        
+        self.log(f"  [MARS-PROXY] Forwarding CERTIFY_REQ to {mars_host}:{mars_port}")
+        
+        try:
+            sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            sock.settimeout(5.0)
+            sock.sendto(data, (mars_host, mars_port))
+            
+            # Wait for CERTIFY_RESP (and possibly CERTIFY_ACK first)
+            resp_data = None
+            for _ in range(10):  # up to 10 packets within timeout
+                try:
+                    pkt, from_addr = sock.recvfrom(4096)
+                except socket.timeout:
+                    break
+                if len(pkt) < 4:
+                    continue
+                ftype = pkt[1]
+                if ftype == TYPE_CERTIFY_RESP:
+                    resp_data = pkt
+                    self.log(f"  [MARS-PROXY] Got CERTIFY_RESP from Mars ({len(pkt)}B)")
+                    break
+                elif ftype == TYPE_CERTIFY_REQ and self.is_ack(struct.unpack_from('<I', pkt, 0x14)[0]):
+                    # CERTIFY_ACK — forward to client but keep waiting for RESP
+                    self.log(f"  [MARS-PROXY] Got CERTIFY_ACK from Mars, forwarding")
+                    # Queue the ACK to send to client
+                    self._extra_responses.append((pkt, client_addr))
+            
+            sock.close()
+            
+            if not resp_data:
+                self.log(f"  [MARS-PROXY] No CERTIFY_RESP from Mars (timeout)")
+                return None
+            
+            # Extract session key from the CERTIFY_RESP
+            # Mars's response contains server_key in payload[8:40] (per-frame encrypted)
+            self._capture_session_key_from_resp(resp_data, term_id)
+            
+            # Also need the client's key to derive the full session key
+            # The client_key was in the CERTIFY_REQ payload (already extracted above)
+            # Re-extract it from the original data
+            opt_flags = struct.unpack_from('<I', data, 0x14)[0]
+            encrypt_mode = (opt_flags >> 16) & 3
+            payload = data[0x18:]
+            if encrypt_mode == 1:
+                pfk = derive_per_frame_key(data[:0x18])
+                rc5 = RC5(block_bytes=8, rounds=6).setkey(pfk)
+                dec_len = (len(payload) // 8) * 8
+                if dec_len > 0:
+                    payload = rc5.decrypt(bytes(payload[:dec_len]))
+            
+            if len(payload) >= 40:
+                client_session_id = payload[0:8]
+                encrypted_client_key = payload[8:40]
+                
+                # Extract server_key from Mars CERTIFY_RESP
+                resp_opt = struct.unpack_from('<I', resp_data, 0x14)[0]
+                resp_enc = (resp_opt >> 16) & 3
+                resp_payload = resp_data[0x18:]
+                if resp_enc == 1:
+                    pfk_resp = derive_per_frame_key(resp_data[:0x18])
+                    rc5_resp = RC5(block_bytes=8, rounds=6).setkey(pfk_resp)
+                    dec_len_resp = (len(resp_payload) // 8) * 8
+                    if dec_len_resp > 0:
+                        resp_payload = rc5_resp.decrypt(bytes(resp_payload[:dec_len_resp]))
+                
+                if len(resp_payload) >= 40:
+                    server_key_from_mars = resp_payload[8:40]
+                    self.log(f"  [MARS-PROXY] Mars server_key={server_key_from_mars[:8].hex()}...")
+                    
+                    # The real session key = we can't compute it without decrypting
+                    # the client's key. But the SDK and Mars both know it.
+                    # Store the server_key_from_mars so we can try to derive later.
+                    # For now, store what we captured.
+                    
+                    # Cache session_id for this client
+                    self.state.addr_session_id[client_addr] = client_session_id
+                    
+                    # Mark client as certified
+                    if term_id in self.state.clients:
+                        self.state.clients[term_id].certified = True
+                        _calling_on_certified(self, term_id)
+            
+            self.log(f"  [MARS-PROXY] Returning Mars CERTIFY_RESP to client")
+            return resp_data
+            
+        except Exception as e:
+            self.log(f"  [MARS-PROXY] Error: {e}")
+            return None
+
     def _handle_certify_local(self, data: bytes, addr: tuple, term_id: int) -> Optional[bytes]:
         """Handle CERTIFY in standalone relay mode.
         
@@ -442,10 +556,14 @@ class GutesRelay:
             self._persist_session_key(term_id, session_key)
             self.log(f"  [RELAY] Cached XOR'd session_key={session_key[:8].hex()}...")
         else:
-            # Decryption failed — send all-zero server_key so SDK keeps its own key
-            # We won't know the session key, so responses use plaintext with bit25 bypass
+            # Session key decryption failed — proxy CERTIFY to Mars to get the real key
+            self.log(f"  [RELAY] Session key decryption failed, proxying CERTIFY to Mars...")
+            mars_resp = self._proxy_certify_to_mars(data, term_id, addr)
+            if mars_resp:
+                return mars_resp
+            # Mars proxy failed — use plaintext fallback
             server_key = bytes(32)
-            self.log(f"  [RELAY] Using plaintext mode (session key decryption failed)")
+            self.log(f"  [RELAY] Mars proxy failed, using plaintext fallback")
         
         # Track doorbell's source port as its MTP port
         role = _calling_identify_role(self, term_id, addr)
