@@ -49,18 +49,11 @@ services:
         condition: service_started
     restart: unless-stopped
     healthcheck:
-      test: >-
-        python3 -c "
-        import socket;
-        s=socket.socket(socket.AF_INET,socket.SOCK_DGRAM);
-        s.settimeout(2);
-        s.sendto(b'\x7f\x01\x1c\x00'+b'\x00'*24,('127.0.0.1',28800));
-        d,a=s.recvfrom(256);
-        print('ok') if len(d)>0 else exit(1)"
-      interval: 30s
+      test: ["CMD", "python3", "-c", "import socket;s=socket.socket(socket.AF_INET,socket.SOCK_DGRAM);s.settimeout(2);s.sendto(b'\\x7f\\x01\\x1c\\x00'+b'\\x00'*24,('127.0.0.1',28800));d,a=s.recvfrom(256);exit(0 if len(d)>0 else 1)"]
+      interval: 10s
       timeout: 5s
       retries: 3
-      start_period: 10s
+      start_period: 5s
 
   go2rtc:
     image: alexxit/go2rtc:latest
