@@ -104,10 +104,8 @@ services:
     entrypoint: /bin/sh
     command: >-
       -c "
-      python3 /work/scripts/entrypoint.py --build-only 2>&1 || (
-        cd /work &&
-        python3 -c 'import sys; sys.path.insert(0,\"scripts\"); from entrypoint import setup_libs, build_bridge; setup_libs(); build_bridge()'
-      ) &&
+      cd /work &&
+      python3 -c 'import sys; sys.path.insert(0,\"scripts\"); from entrypoint import setup_libs, build_bridge; setup_libs(); build_bridge()' &&
       mkdir -p /output /output-libs /output-apk &&
       cp /work/build/bridge /output/bridge &&
       chmod +x /output/bridge &&
