@@ -66,11 +66,35 @@ def detect_interface(relay_ip: str) -> str:
     """Find the network interface for the relay IP."""
     if INTERFACE:
         return INTERFACE
+    # Try ip command
     try:
         result = run(["ip", "-o", "addr", "show"])
         for line in result.stdout.splitlines():
             if relay_ip in line:
                 return line.split()[1]
+    except Exception:
+        pass
+    # Try reading /proc/net/route for default route interface
+    try:
+        with open("/proc/net/route") as f:
+            for line in f:
+                parts = line.split()
+                if parts[1] == "00000000":  # default route
+                    return parts[0]
+    except Exception:
+        pass
+    # Try netifaces approach via socket
+    try:
+        import fcntl
+        # Try common interface names
+        for name in ["eno1", "eth0", "enp0s3", "wlan0", "en0"]:
+            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            try:
+                fcntl.ioctl(s.fileno(), 0x8927, struct.pack("256s", name.encode()))
+                s.close()
+                return name
+            except OSError:
+                s.close()
     except Exception:
         pass
     return "eth0"
