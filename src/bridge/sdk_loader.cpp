@@ -8,8 +8,6 @@
 namespace sdk {
 
 SdkSymbols load(const std::string& path) {
-    // Ensure shim libs and APK libs are findable
-    setenv("LD_LIBRARY_PATH", "/work/libs:/apk/xapk_contents/arm64_libs/lib/arm64-v8a", 1);
 
     void* lib = dlopen(path.c_str(), RTLD_LAZY | RTLD_GLOBAL);
     if (!lib)
