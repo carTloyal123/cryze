@@ -1,6 +1,7 @@
 // wyze_auth.cpp — Wyze cloud auth with token caching.
 
 #include "wyze_auth.hpp"
+#include "log.hpp"
 
 #include <curl/curl.h>
 #include <openssl/md5.h>
@@ -172,12 +173,12 @@ static void save_cache(const StreamCreds& creds) {
 
     std::ofstream f(path);
     if (!f) {
-        std::fprintf(stderr, "[cache] failed to write %s\n", path.c_str());
+        LOG_ERROR("auth", "failed to write cache %s", path.c_str());
         return;
     }
     f << j.dump(2) << std::endl;
-    std::fprintf(stderr, "[cache] saved to %s (expires %lld)\n",
-                 path.c_str(), (long long)creds.expire_time);
+    LOG_DEBUG("auth", "cache saved to %s (expires %lld)",
+              path.c_str(), (long long)creds.expire_time);
 }
 
 static std::optional<StreamCreds> load_cache(const std::string& target_mac) {
@@ -189,7 +190,7 @@ static std::optional<StreamCreds> load_cache(const std::string& target_mac) {
     try {
         f >> j;
     } catch (...) {
-        std::fprintf(stderr, "[cache] corrupt cache file %s\n", path.c_str());
+        LOG_WARN("auth", "corrupt cache file %s", path.c_str());
         return std::nullopt;
     }
 
@@ -197,8 +198,8 @@ static std::optional<StreamCreds> load_cache(const std::string& target_mac) {
 
     std::string cached_mac = j.value("device_mac", std::string{});
     if (!target_mac.empty() && cached_mac != target_mac) {
-        std::fprintf(stderr, "[cache] MAC mismatch: cached=%s target=%s\n",
-                     cached_mac.c_str(), target_mac.c_str());
+        LOG_WARN("auth", "cache MAC mismatch: cached=%s target=%s",
+                 cached_mac.c_str(), target_mac.c_str());
         return std::nullopt;
     }
 
@@ -207,14 +208,14 @@ static std::optional<StreamCreds> load_cache(const std::string& target_mac) {
     int64_t margin = 3600; // 1 hour
     if (expire > 0 && now_s >= (expire - margin)) {
         int64_t hours_ago = (now_s - expire) / 3600;
-        std::fprintf(stderr, "[cache] Mars token expired %lld hours ago\n", hours_ago);
+        LOG_WARN("auth", "Mars token expired %lld hours ago", hours_ago);
         return std::nullopt;
     }
 
     std::string mars_id = j.value("mars_access_id", std::string{});
     std::string mars_token = j.value("mars_access_token", std::string{});
     if (mars_id.empty() || mars_token.empty()) {
-        std::fprintf(stderr, "[cache] missing Mars creds in cache\n");
+        LOG_WARN("auth", "missing Mars creds in cache");
         return std::nullopt;
     }
 
@@ -232,8 +233,8 @@ static std::optional<StreamCreds> load_cache(const std::string& target_mac) {
     creds.device_ip = j.value("device_ip", std::string{});
 
     int64_t remaining_h = (expire - now_s) / 3600;
-    std::fprintf(stderr, "[cache] loaded from %s (%lld hours remaining)\n",
-                 path.c_str(), remaining_h);
+    LOG_INFO("auth", "cache loaded from %s (%lld hours remaining)",
+             path.c_str(), remaining_h);
 
     return creds;
 }
@@ -280,9 +281,9 @@ void do_run_action_batch(Http& http, const std::string& device_id,
          "requestid: " + md5_hex(md5_hex(std::to_string(now_ms()))),
          "Signature2: " + sig2});
 
-    std::fprintf(stderr, "[auth] run_action_batch(%s/%s): %s\n",
-                 capability_name.c_str(), function_name.c_str(),
-                 resp.dump().substr(0, 200).c_str());
+    LOG_INFO("auth", "run_action_batch(%s/%s): %s",
+             capability_name.c_str(), function_name.c_str(),
+             resp.dump().substr(0, 200).c_str());
 }
 
 }  // namespace
@@ -290,17 +291,17 @@ void do_run_action_batch(Http& http, const std::string& device_id,
 StreamCreds bootstrap(const std::string& target_mac) {
     auto cached = load_cache(target_mac);
     if (cached) {
-        std::fprintf(stderr, "[auth] using cached Mars creds (access_id=%s)\n",
-                     cached->access_id.c_str());
+        LOG_INFO("auth", "using cached Mars creds (access_id=%s)",
+                 cached->access_id.c_str());
 
         const char* skip_wakeup = std::getenv("SKIP_WAKEUP");
         if (skip_wakeup && (std::string(skip_wakeup) == "1" || std::string(skip_wakeup) == "true")) {
-            std::fprintf(stderr, "[auth] skipping wakeup\n");
+            LOG_INFO("auth", "skipping wakeup");
         } else {
         try {
             wakeup(cached->device_mac, cached->product_model);
         } catch (const std::exception& e) {
-            std::fprintf(stderr, "[auth] wakeup token expired, re-authenticating\n");
+            LOG_WARN("auth", "wakeup token expired, re-authenticating");
 
             try {
                 auto email    = env_required("WYZE_EMAIL");
@@ -328,7 +329,7 @@ StreamCreds bootstrap(const std::string& target_mac) {
 
                 wakeup(cached->device_mac, cached->product_model);
             } catch (const std::exception& e2) {
-                std::fprintf(stderr, "[auth] fresh wakeup also failed (non-fatal): %s\n", e2.what());
+                LOG_WARN("auth", "fresh wakeup also failed (non-fatal): %s", e2.what());
             }
         }
         }  // end else (wakeup not skipped)
@@ -343,7 +344,7 @@ StreamCreds bootstrap(const std::string& target_mac) {
     auto api_key  = env_required("WYZE_API_KEY");
 
     Http http;
-    std::fprintf(stderr, "[auth] logging in as %s...\n", email.c_str());
+    LOG_INFO("auth", "logging in as %s...", email.c_str());
 
     nlohmann::json login_body = {
         {"email",    email},
@@ -361,7 +362,7 @@ StreamCreds bootstrap(const std::string& target_mac) {
     s_phone_id      = http.phone_id;
     if (s_access_token.empty())
         throw std::runtime_error("login failed: no access_token in response");
-    std::fprintf(stderr, "[auth] login OK, user_id=%s\n", s_user_id.c_str());
+    LOG_INFO("auth", "login OK, user_id=%s", s_user_id.c_str());
 
     nlohmann::json dev_body = {
         {"access_token", s_access_token},
@@ -396,8 +397,8 @@ StreamCreds bootstrap(const std::string& target_mac) {
     }
     if (device_mac.empty())
         throw std::runtime_error("no matching GW_ camera found on account");
-    std::fprintf(stderr, "[auth] selected device: %s (%s)\n",
-                 device_mac.c_str(), product_model.c_str());
+    LOG_INFO("auth", "selected device: %s (%s)",
+             device_mac.c_str(), product_model.c_str());
 
     nlohmann::json mars_body = {
         {"ttl_minutes", 10080},
@@ -456,7 +457,7 @@ StreamCreds bootstrap(const std::string& target_mac) {
     if (creds.access_id.empty() || creds.access_token.empty())
         throw std::runtime_error("register_mars_user: no creds in response: " + mars_resp.dump().substr(0, 500));
 
-    std::fprintf(stderr, "[auth] Mars creds OK: access_id=%s\n", creds.access_id.c_str());
+    LOG_INFO("auth", "Mars creds OK: access_id=%s", creds.access_id.c_str());
 
     save_cache(creds);
 
@@ -472,14 +473,14 @@ void wakeup(const std::string& device_mac, const std::string& product_model) {
     Http http;
     http.phone_id = s_phone_id;
 
-    std::fprintf(stderr, "[auth] sending wakeup to %s...\n", device_mac.c_str());
+    LOG_INFO("auth", "sending wakeup to %s...", device_mac.c_str());
     try {
         do_run_action_batch(http, device_mac, product_model,
                             "iot-device", "wakeup",
                             {{"wakeup-live-view", 1}});
-        std::fprintf(stderr, "[auth] wakeup sent\n");
+        LOG_INFO("auth", "wakeup sent");
     } catch (const std::exception& e) {
-        std::fprintf(stderr, "[auth] wakeup failed (non-fatal): %s\n", e.what());
+        LOG_WARN("auth", "wakeup failed (non-fatal): %s", e.what());
     }
 }
 

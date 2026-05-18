@@ -15,6 +15,9 @@ from pathlib import Path
 from typing import Optional
 
 sys.path.insert(0, str(Path(__file__).parent))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from log_config import get_logger
+log = get_logger('relay')
 from rc5 import RC5, GWELL_KEY, derive_per_frame_key, id_decrypt, id_encrypt
 
 TYPE_DETECT_REQ = 0x01
@@ -171,7 +174,6 @@ class GutesRelay:
         self.upstream_port = int(upstream.split(':')[1])
         self.state = RelayState(keepalive_enabled=keepalive)
         self.t0 = time.time()
-        self.log_fp = open(log_file, 'a') if log_file else None
         self.local_ip = local_ip or self._detect_local_ip()
         self.session_cache_path = Path(session_cache)
         
@@ -203,12 +205,7 @@ class GutesRelay:
             return "127.0.0.1"
 
     def log(self, msg: str):
-        elapsed = time.time() - self.t0
-        line = f"[{elapsed:8.3f}] {msg}"
-        print(line, flush=True)
-        if self.log_fp:
-            self.log_fp.write(line + "\n")
-            self.log_fp.flush()
+        log.info(msg)
 
     def decode_term_id(self, frame_data: bytes) -> int:
         """Decode term_id from frame header using static RC5 key."""
@@ -2786,6 +2783,15 @@ def main():
                        help='TCP port for MTP relay server (default: 23000)')
     args = parser.parse_args()
 
+    # If --log-file is specified, add a file handler to the module logger
+    # (LOG_FILE env var is also supported via log_config at import time)
+    if args.log_file and not os.environ.get('LOG_FILE'):
+        import logging
+        from log_config import BridgeFormatter
+        fh = logging.FileHandler(args.log_file, mode='a')
+        fh.setFormatter(BridgeFormatter('relay'))
+        log.addHandler(fh)
+
     ports = [int(p.strip()) for p in args.ports.split(',')]
 
     relay = GutesRelay(
@@ -2803,12 +2809,12 @@ def main():
     try:
         asyncio.run(relay.run())
     except KeyboardInterrupt:
-        print("\nRelay stopped.")
+        log.info("Relay stopped.")
         # Print final summary
         if relay.state.clients:
-            print(f"\nSession summary ({len(relay.state.clients)} clients):")
+            log.info("Session summary (%d clients):", len(relay.state.clients))
             for tid, c in relay.state.clients.items():
-                print(f"  {tid}: {c.addr} role={c.role} in={c.frames_in} out={c.frames_out}")
+                log.info("  %s: %s role=%s in=%d out=%d", tid, c.addr, c.role, c.frames_in, c.frames_out)
 
 
 if __name__ == "__main__":

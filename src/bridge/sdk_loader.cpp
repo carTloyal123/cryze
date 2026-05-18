@@ -1,8 +1,8 @@
 // sdk_loader.cpp — dlopen wrapper for libiotp2pav.so
 #include "sdk_loader.hpp"
+#include "log.hpp"
 #include <dlfcn.h>
 #include <stdexcept>
-#include <cstdio>
 #include <cstdlib>
 
 namespace sdk {
@@ -18,7 +18,7 @@ SdkSymbols load(const std::string& path) {
     auto resolve = [&](const char* name) -> void* {
         void* sym = dlsym(lib, name);
         if (!sym)
-            std::fprintf(stderr, "  warn: %s not found\n", name);
+            LOG_WARN("sdk", "%s not found", name);
         return sym;
     };
 
@@ -44,7 +44,7 @@ SdkSymbols load(const std::string& path) {
     if (!s.access_init || !s.subscribe_dev || !s.start_av_link)
         throw std::runtime_error("missing critical SDK symbols");
 
-    std::fprintf(stderr, "[sdk] loaded %s base=%p\n", path.c_str(), s.lib_base);
+    LOG_INFO("sdk", "loaded %s base=%p", path.c_str(), s.lib_base);
     return s;
 }
 

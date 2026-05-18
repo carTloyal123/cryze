@@ -9,6 +9,10 @@ import subprocess
 import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path('/work/src')))
+from log_config import get_logger
+log = get_logger('entrypoint')
+
 WORK       = Path("/work")
 APK_LIBS   = Path("/apk/xapk_contents/arm64_libs/lib/arm64-v8a")
 LIBS_DIR   = WORK / "libs"
@@ -27,15 +31,11 @@ relay_proc: subprocess.Popen | None = None
 shutting_down = False
 
 
-def log(msg: str) -> None:
-    print(f"[entrypoint] {msg}", flush=True)
-
-
 def load_env_file(path: Path = WORK / ".env") -> dict[str, str]:
 
     env: dict[str, str] = {}
     if not path.is_file():
-        log(f"No .env file at {path}, skipping.")
+        log.info("No .env file at %s, skipping.", path)
         return env
     for line in path.read_text().splitlines():
         line = line.strip()
@@ -47,7 +47,7 @@ def load_env_file(path: Path = WORK / ".env") -> dict[str, str]:
         if len(val) >= 2 and val[0] == val[-1] and val[0] in ('"', "'"):
             val = val[1:-1]
         env[key] = val
-    log(f"Loaded {len(env)} vars from {path}")
+    log.info("Loaded %d vars from %s", len(env), path)
     return env
 
 
@@ -60,7 +60,7 @@ def run(cmd: str | list[str], label: str | None = None) -> None:
         display = " ".join(cmd)
         rc = subprocess.call(cmd)
     if rc != 0:
-        log(f"FATAL: {label or display} failed (exit {rc})")
+        log.error("FATAL: %s failed (exit %d)", label or display, rc)
         sys.exit(rc)
 
 
@@ -73,7 +73,7 @@ def patch_init_fini_arraysz(path: Path) -> None:
 
     # Verify ELF64 little-endian
     if data[:4] != b"\x7fELF" or data[4] != 2 or data[5] != 1:
-        log(f"  {path.name}: not ELF64-LE, skipping init/fini patch")
+        log.info("  %s: not ELF64-LE, skipping init/fini patch", path.name)
         return
 
     # Parse ELF header
@@ -92,7 +92,7 @@ def patch_init_fini_arraysz(path: Path) -> None:
             break
 
     if not dyn_offset:
-        log(f"  {path.name}: no PT_DYNAMIC found")
+        log.info("  %s: no PT_DYNAMIC found", path.name)
         return
 
     # Scan dynamic entries, zero INIT_ARRAYSZ and FINI_ARRAYSZ
@@ -105,33 +105,33 @@ def patch_init_fini_arraysz(path: Path) -> None:
         if tag in (DT_INIT_ARRAYSZ, DT_FINI_ARRAYSZ):
             name = "INIT_ARRAYSZ" if tag == DT_INIT_ARRAYSZ else "FINI_ARRAYSZ"
             struct.pack_into("<Q", data, pos + 8, 0)
-            log(f"  {path.name}: zeroed {name}")
+            log.info("  %s: zeroed %s", path.name, name)
             patched += 1
         pos += 16
 
     if patched:
         path.write_bytes(data)
     else:
-        log(f"  {path.name}: no INIT/FINI_ARRAYSZ found")
+        log.info("  %s: no INIT/FINI_ARRAYSZ found", path.name)
 
 
 def setup_libs() -> None:
     """Compile shims and patch Android .so files for musl compatibility."""
     if (LIBS_DIR / "libiotp2pav.so").is_file():
-        log("libs/ already set up, skipping.")
+        log.info("libs/ already set up, skipping.")
         return
 
-    log("Setting up libraries...")
+    log.info("Setting up libraries...")
 
     # Clean slate
     if LIBS_DIR.exists():
         shutil.rmtree(LIBS_DIR)
     LIBS_DIR.mkdir()
 
-    log("Compiling bionic_interpose.so...")
+    log.info("Compiling bionic_interpose.so...")
     run(f"gcc -shared -o {LIBS_DIR}/bionic_interpose.so {SRC_DIR}/bridge/bionic_interpose.c -fPIC -ldl -lpthread")
 
-    log("Creating shim libraries...")
+    log.info("Creating shim libraries...")
 
     # liblog.so — weak stubs (bridge exe provides strong ones via -rdynamic)
     liblog_src = """
@@ -164,7 +164,7 @@ __attribute__((weak)) int __android_log_vprint(int p, const char* t, const char*
     for lib in SDK_LIBS:
         src = APK_LIBS / lib
         dst = LIBS_DIR / lib
-        log(f"Patching {lib}...")
+        log.info("Patching %s...", lib)
         shutil.copy2(src, dst)
 
         # Strip bionic DT_NEEDED entries
@@ -179,23 +179,23 @@ __attribute__((weak)) int __android_log_vprint(int p, const char* t, const char*
         # Zero INIT/FINI_ARRAYSZ to prevent musl SIGSEGV on NULL constructors
         patch_init_fini_arraysz(dst)
 
-    log("Verifying patched libraries:")
+    log.info("Verifying patched libraries:")
     for lib in SDK_LIBS:
         result = subprocess.run(
             ["patchelf", "--print-needed", str(LIBS_DIR / lib)],
             capture_output=True, text=True,
         )
-        log(f"  {lib}: {', '.join(result.stdout.strip().splitlines()) or '(none)'}")
+        log.info("  %s: %s", lib, ', '.join(result.stdout.strip().splitlines()) or '(none)')
 
-    log("Library setup complete.")
+    log.info("Library setup complete.")
 
 
 def build_bridge() -> None:
     """Compile the bridge and daemon binaries if not already built."""
     if BRIDGE_BIN.is_file() and (BUILD_DIR / "bridge-daemon").is_file():
-        log("Bridge binaries exist, skipping build.")
+        log.info("Bridge binaries exist, skipping build.")
         return
-    log("Building bridge + daemon...")
+    log.info("Building bridge + daemon...")
     run(f"cmake -B {BUILD_DIR} -G Ninja -DCMAKE_BUILD_TYPE=Release {WORK}", "cmake")
     run(f"ninja -C {BUILD_DIR}", "ninja")
 
@@ -208,15 +208,15 @@ def shutdown(signum: int, _frame) -> None:
     shutting_down = True
 
     name = signal.Signals(signum).name
-    log(f"Received {name}, shutting down...")
+    log.info("Received %s, shutting down...", name)
 
     if go2rtc_proc and go2rtc_proc.poll() is None:
         go2rtc_proc.terminate()
         try:
             go2rtc_proc.wait(timeout=8)
-            log("go2rtc stopped gracefully.")
+            log.info("go2rtc stopped gracefully.")
         except subprocess.TimeoutExpired:
-            log("go2rtc didn't stop in 8s, killing...")
+            log.warning("go2rtc didn't stop in 8s, killing...")
             go2rtc_proc.kill()
             go2rtc_proc.wait(timeout=3)
 
@@ -224,14 +224,14 @@ def shutdown(signum: int, _frame) -> None:
         relay_proc.terminate()
         try:
             relay_proc.wait(timeout=3)
-            log("Relay stopped.")
+            log.info("Relay stopped.")
         except subprocess.TimeoutExpired:
             relay_proc.kill()
 
     # Clean up iptables rules
     cleanup_iptables()
 
-    log("Shutdown complete.")
+    log.info("Shutdown complete.")
     sys.exit(0)
 
 
@@ -240,23 +240,23 @@ def setup_doorbell_dnat() -> bool:
     dotenv = load_env_file()
     doorbell_ip = dotenv.get("DOORBELL_IP", os.environ.get("DOORBELL_IP", ""))
     if not doorbell_ip:
-        log("DOORBELL_IP not set — skipping DNAT setup")
+        log.info("DOORBELL_IP not set — skipping DNAT setup")
         return False
 
     # Skip if LAN_ONLY / full offline mode is not requested
     lan_only = dotenv.get("LAN_ONLY", os.environ.get("LAN_ONLY", "0"))
     if lan_only not in ("1", "true", "yes"):
-        log("LAN_ONLY not enabled — skipping DNAT setup")
+        log.info("LAN_ONLY not enabled — skipping DNAT setup")
         return False
 
     # Check if iptables is available
     try:
         result = subprocess.run(["iptables", "-V"], capture_output=True, timeout=5)
         if result.returncode != 0:
-            log("iptables not available — skipping DNAT setup")
+            log.info("iptables not available — skipping DNAT setup")
             return False
     except (FileNotFoundError, subprocess.TimeoutExpired):
-        log("iptables not found — skipping DNAT setup")
+        log.info("iptables not found — skipping DNAT setup")
         return False
 
     # Determine local relay IP (the host's LAN IP)
@@ -269,9 +269,9 @@ def setup_doorbell_dnat() -> bool:
             s.connect((doorbell_ip, 1))  # Doesn't actually send
             relay_ip = s.getsockname()[0]
             s.close()
-            log(f"Auto-detected relay IP: {relay_ip}")
+            log.info("Auto-detected relay IP: %s", relay_ip)
         except Exception:
-            log("Cannot detect relay IP — skipping DNAT setup")
+            log.warning("Cannot detect relay IP — skipping DNAT setup")
             return False
 
     # Resolve current Mars IPs
@@ -287,8 +287,8 @@ def setup_doorbell_dnat() -> bool:
                      "18.118.90.161", "52.201.137.206", "3.13.212.24"})
 
     chain = "WYZE_DOORBELL_DNAT"
-    log(f"Setting up doorbell DNAT: {doorbell_ip} → {relay_ip}")
-    log(f"  Mars IPs: {', '.join(sorted(mars_ips))}")
+    log.info("Setting up doorbell DNAT: %s → %s", doorbell_ip, relay_ip)
+    log.info("  Mars IPs: %s", ', '.join(sorted(mars_ips)))
 
     # Clean up old rules
     subprocess.run(["iptables", "-t", "nat", "-D", "PREROUTING", "-j", chain],
@@ -317,10 +317,10 @@ def setup_doorbell_dnat() -> bool:
                    capture_output=True)
 
     if applied > 0:
-        log(f"  Applied {applied} DNAT rules (doorbell Mars traffic → local relay)")
+        log.info("  Applied %d DNAT rules (doorbell Mars traffic → local relay)", applied)
         return True
     else:
-        log("  WARNING: No DNAT rules applied (iptables may lack permissions)")
+        log.warning("  No DNAT rules applied (iptables may lack permissions)")
         return False
 
 
@@ -339,7 +339,7 @@ def setup_lan_only_firewall() -> bool:
         return False
 
     chain = "WYZE_BLOCK_RELAY"
-    log("Setting up LAN-only firewall (blocking cloud TCP relays)...")
+    log.info("Setting up LAN-only firewall (blocking cloud TCP relays)...")
 
     # Clean up old rules
     subprocess.run(["iptables", "-D", "OUTPUT", "-j", chain], capture_output=True)
@@ -370,7 +370,7 @@ def setup_lan_only_firewall() -> bool:
         subprocess.run(["iptables"] + rule, capture_output=True)
 
     subprocess.run(["iptables", "-I", "OUTPUT", "1", "-j", chain], capture_output=True)
-    log("  Cloud TCP relays blocked — video will be LAN-only")
+    log.info("  Cloud TCP relays blocked — video will be LAN-only")
     return True
 
 
@@ -404,9 +404,9 @@ def start_relay() -> subprocess.Popen | None:
             ips = list(set(r[4][0] for r in results))
             if ips:
                 upstream = f"{ips[0]}:28800"
-                log(f"Resolved Mars relay: {upstream} (from {len(ips)} IPs)")
+                log.info("Resolved Mars relay: %s (from %d IPs)", upstream, len(ips))
         except Exception:
-            log(f"DNS resolution failed, using default upstream: {upstream}")
+            log.warning("DNS resolution failed, using default upstream: %s", upstream)
 
     cmd = [
         sys.executable, str(WORK / "src" / "relay" / "gutes_relay.py"),
@@ -419,17 +419,17 @@ def start_relay() -> subprocess.Popen | None:
     if keepalive:
         cmd.append("--keepalive")
 
-    log(f"Starting GUTES relay ({mode} mode, upstream={upstream}, keepalive={keepalive})")
+    log.info("Starting GUTES relay (%s mode, upstream=%s, keepalive=%s)", mode, upstream, keepalive)
     proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
     # Give it a moment to bind ports
     import time
     time.sleep(0.3)
     if proc.poll() is not None:
-        log(f"WARNING: Relay exited immediately (rc={proc.returncode})")
+        log.warning("Relay exited immediately (rc=%s)", proc.returncode)
         return None
 
-    log(f"GUTES relay running (mode={mode}, keepalive={keepalive})")
+    log.info("GUTES relay running (mode=%s, keepalive=%s)", mode, keepalive)
     return proc
 
 
@@ -439,7 +439,7 @@ def main() -> None:
     signal.signal(signal.SIGINT, shutdown)
     signal.signal(signal.SIGTERM, shutdown)
 
-    log("Starting Wyze doorbell bridge...")
+    log.info("Starting Wyze doorbell bridge...")
 
     setup_libs()
     build_bridge()
@@ -459,9 +459,9 @@ def main() -> None:
         "P2P_URL": dotenv.get("P2P_URL", "|127.0.0.1"),
     }
 
-    log("Starting go2rtc...")
-    log("  RTSP:   rtsp://localhost:8554/doorbell")
-    log("  WebRTC: http://localhost:1984")
+    log.info("Starting go2rtc...")
+    log.info("  RTSP:   rtsp://localhost:8554/doorbell")
+    log.info("  WebRTC: http://localhost:1984")
 
     go2rtc_proc = subprocess.Popen(
         ["go2rtc", "-config", str(GO2RTC_CFG)],
@@ -470,7 +470,7 @@ def main() -> None:
 
     rc = go2rtc_proc.wait()
     if not shutting_down:
-        log(f"go2rtc exited unexpectedly (code {rc})")
+        log.error("go2rtc exited unexpectedly (code %d)", rc)
         # Also stop the relay
         if relay_proc and relay_proc.poll() is None:
             relay_proc.terminate()

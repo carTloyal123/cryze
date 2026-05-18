@@ -6,6 +6,7 @@
 #include "callbacks.hpp"
 #include "broadcast.hpp"
 #include "signal.hpp"
+#include "log.hpp"
 
 #include <atomic>
 #include <chrono>
@@ -33,7 +34,7 @@ static bool wait_for(std::atomic<bool>& flag, int timeout_sec, const char* label
     auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(timeout_sec);
     while (!flag.load() && !g_shutdown.load()) {
         if (std::chrono::steady_clock::now() >= deadline) {
-            std::fprintf(stderr, "[wait] %s timed out after %ds\n", label, timeout_sec);
+            LOG_WARN("bridge", "%s timed out after %ds", label, timeout_sec);
             return false;
         }
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
@@ -66,11 +67,12 @@ int main(int argc, char** argv) {
         else { fprintf(stderr, "unknown arg: %s\n", a.c_str()); return 2; }
     }
 
+    blog::init();
 
     if (use_stdout) {
         duration = 0;
         int h264_fd = ::dup(STDOUT_FILENO);
-        if (h264_fd < 0) { std::fprintf(stderr, "dup(stdout) failed\n"); return 1; }
+        if (h264_fd < 0) { LOG_ERROR("bridge", "dup(stdout) failed"); return 1; }
         ::dup2(STDERR_FILENO, STDOUT_FILENO);
         cb::g_h264_output_fd = h264_fd;
     }
@@ -78,28 +80,28 @@ int main(int argc, char** argv) {
     sig::install(g_shutdown);
     sig::print_network_interfaces();
 
-    std::fprintf(stderr, "\n=== Auth ===\n");
+    LOG_INFO("bridge", "authenticating...");
     wyze::StreamCreds creds;
     try {
         creds = wyze::bootstrap(device_mac);
     } catch (const std::exception& e) {
-        std::fprintf(stderr, "  auth failed: %s\n", e.what());
+        LOG_ERROR("bridge", "auth failed: %s", e.what());
         return 1;
     }
-    std::fprintf(stderr, "  device=%s access_id=%s\n",
-                 creds.device_mac.c_str(), creds.access_id.c_str());
+    LOG_INFO("bridge", "device=%s access_id=%s",
+             creds.device_mac.c_str(), creds.access_id.c_str());
 
-    std::fprintf(stderr, "\n=== SDK Init ===\n");
+    LOG_INFO("bridge", "initializing SDK...");
     sdk::SdkSymbols sdk;
     try { sdk = sdk::load(); }
     catch (const std::exception& e) {
-        std::fprintf(stderr, "  SDK load failed: %s\n", e.what());
+        LOG_ERROR("bridge", "SDK load failed: %s", e.what());
         return 1;
     }
 
     if (sdk.get_version) {
         int v = sdk.get_version();
-        std::fprintf(stderr, "  SDK version: %d.%d\n", v >> 8, v & 0xff);
+        LOG_INFO("bridge", "SDK version: %d.%d", v >> 8, v & 0xff);
     }
 
     sdk::InitParamBlob param{};
@@ -116,7 +118,7 @@ int main(int argc, char** argv) {
         const char* p2p_url = std::getenv("P2P_URL");
         if (!p2p_url) p2p_url = "|wyze-mars-asrv.wyzecam.com";
         std::strncpy(param.field_str(sdk::init_off::p2p_url_buf), p2p_url, 420);
-        std::fprintf(stderr, "  p2p_url: %s\n", p2p_url);
+        LOG_INFO("bridge", "p2p_url: %s", p2p_url);
     }
     param.field_i16(sdk::init_off::lang_code)     = 1;
     param.field_i16(sdk::init_off::dev_type)      = 3;
@@ -136,11 +138,11 @@ int main(int argc, char** argv) {
     std::thread([&] { init_rc.store(sdk.access_init(&param)); init_done.store(true); }).detach();
 
     if (!wait_for(init_done, 35, "iv_access_init")) return 1;
-    if (init_rc.load() != 0) { std::fprintf(stderr, "  init failed (rc=%d)\n", init_rc.load()); return 1; }
+    if (init_rc.load() != 0) { LOG_ERROR("bridge", "init failed (rc=%d)", init_rc.load()); return 1; }
     if (!wait_for(cb::g_app_online, 30, "APP_ONLINE")) return 1;
-    std::fprintf(stderr, "  SDK online!\n");
+    LOG_INFO("bridge", "SDK online!");
 
-    std::fprintf(stderr, "\n=== Subscribe ===\n");
+    LOG_INFO("bridge", "subscribing...");
     sdk.subscribe_dev(creds.access_token.c_str(), creds.device_mac.c_str(),
                       (uint32_t)creds.access_token.size());
     {
@@ -153,10 +155,10 @@ int main(int argc, char** argv) {
             std::this_thread::sleep_for(std::chrono::milliseconds(50));
         }
     }
-    if (cb::g_sub_success.load()) std::fprintf(stderr, "  subscribed OK\n");
-    else std::fprintf(stderr, "  subscribe timed out (proceeding)\n");
+    if (cb::g_sub_success.load()) LOG_INFO("bridge", "subscribed OK");
+    else LOG_WARN("bridge", "subscribe timed out (proceeding)");
 
-    std::fprintf(stderr, "\n=== AV Link ===\n");
+    LOG_INFO("bridge", "starting AV link...");
     {
         int64_t dst_id = broadcast::resolve_dst_id(sdk, creds.device_mac);
         const char* lan_wait_env = std::getenv("LAN_WAIT");
@@ -175,11 +177,11 @@ int main(int argc, char** argv) {
     }
 
     if (use_stdout) {
-        std::fprintf(stderr, "  output: stdout pipe (fd=%d)\n", cb::g_h264_output_fd);
+        LOG_INFO("bridge", "output: stdout pipe (fd=%d)", cb::g_h264_output_fd);
     } else {
         cb::g_h264_output_fd = ::open(output_path.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0644);
         if (cb::g_h264_output_fd < 0) {
-            std::fprintf(stderr, "  cannot open %s: %s\n", output_path.c_str(), strerror(errno));
+            LOG_ERROR("bridge", "cannot open %s: %s", output_path.c_str(), strerror(errno));
             return 1;
         }
     }
@@ -210,18 +212,18 @@ int main(int argc, char** argv) {
 
     int err_code = 0;
     int av_rc = sdk.start_av_link(av_req, &err_code);
-    std::fprintf(stderr, "  iv_start_av_link returned %d, err=%d\n", av_rc, err_code);
+    LOG_INFO("bridge", "iv_start_av_link returned %d, err=%d", av_rc, err_code);
     if (av_rc < 0) {
-        std::fprintf(stderr, "  AV link failed (0x%x)\n", err_code);
+        LOG_ERROR("bridge", "AV link failed (0x%x)", err_code);
         return 1;
     }
     int channel_id = av_rc;
-    std::fprintf(stderr, "  streaming on channel %d\n", channel_id);
+    LOG_INFO("bridge", "streaming on channel %d", channel_id);
 
     if (duration > 0)
-        std::fprintf(stderr, "\n=== Streaming (%ds) ===\n", duration);
+        LOG_INFO("bridge", "streaming for %ds", duration);
     else
-        std::fprintf(stderr, "\n=== Streaming (until SIGINT) ===\n");
+        LOG_INFO("bridge", "streaming until SIGINT");
 
     auto start = std::chrono::steady_clock::now();
     while (!g_shutdown.load()) {
@@ -232,15 +234,15 @@ int main(int argc, char** argv) {
             static int64_t last = -1;
             if (elapsed != last) {
                 last = elapsed;
-                std::fprintf(stderr, "  [%llds] frames=%d bytes=%zu\n",
-                             (long long)elapsed, cb::g_video_frames.load(), cb::g_video_bytes.load());
+                LOG_INFO("bridge", "[%llds] frames=%d bytes=%zu",
+                         (long long)elapsed, cb::g_video_frames.load(), cb::g_video_bytes.load());
             }
         }
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
 
-    std::fprintf(stderr, "\n=== Shutdown (%d frames, %zu bytes) ===\n",
-                 cb::g_video_frames.load(), cb::g_video_bytes.load());
+    LOG_INFO("bridge", "shutdown: %d frames, %zu bytes",
+             cb::g_video_frames.load(), cb::g_video_bytes.load());
     if (cb::g_h264_output_fd >= 0 && cb::g_h264_output_fd != STDOUT_FILENO && cb::g_h264_output_fd != STDERR_FILENO)
         ::close(cb::g_h264_output_fd);
     if (sdk.stop_av_link && channel_id >= 0)

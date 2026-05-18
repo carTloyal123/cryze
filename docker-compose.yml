@@ -1,7 +1,6 @@
-# Wyze Doorbell Bridge — Docker Compose Stack
-#
+# Wyze Doorbell Bridge
 # Usage: docker compose up
-# Requires: Linux host with Docker, .env with Wyze credentials + DOORBELL_IP
+# Requires: Linux host, .env with Wyze credentials + DOORBELL_IP
 
 services:
 
@@ -11,8 +10,12 @@ services:
     network_mode: host
     privileged: true
     volumes:
-      - ./src/network:/app/src/network:ro
+      - ./src:/app/src:ro
+      - ./logs:/app/logs
     env_file: .env
+    environment:
+      LOG_FILE: /app/logs/network.log
+      LOG_LEVEL: ${LOG_LEVEL:-info}
     command: >-
       sh -c "apt-get update -qq && apt-get install -y -qq iptables conntrack >/dev/null 2>&1;
              python3 /app/src/network/network_setup.py"
@@ -24,18 +27,20 @@ services:
     container_name: wyze-relay
     network_mode: host
     volumes:
-      - ./src/relay:/app/src/relay:ro
+      - ./src:/app/src:ro
       - ./cache:/app/cache
+      - ./logs:/app/logs
     env_file: .env
     environment:
-      - DOORBELL_IP=${DOORBELL_IP:-}
-      - CHIME_IP=${CHIME_IP:-}
-      - SESSION_CACHE=/app/cache/session_keys.json
+      DOORBELL_IP: ${DOORBELL_IP:-}
+      CHIME_IP: ${CHIME_IP:-}
+      SESSION_CACHE: /app/cache/session_keys.json
+      LOG_FILE: /app/logs/relay.log
+      LOG_LEVEL: ${LOG_LEVEL:-info}
     command: >-
       python3 /app/src/relay/gutes_relay.py
       --mode relay
       --local-ip 0.0.0.0
-      --log-file /app/cache/relay.log
       --session-cache /app/cache/session_keys.json
       --keepalive
       --mtp-port 23000
@@ -68,7 +73,11 @@ services:
       - apk-libs:/apk-libs:ro
       - ./scripts:/scripts:ro
       - ./cache:/cache
+      - ./logs:/logs
       - ./.env:/config/.env:ro
+    environment:
+      LOG_FILE: /logs/bridge.log
+      LOG_LEVEL: ${LOG_LEVEL:-info}
     depends_on:
       relay:
         condition: service_healthy

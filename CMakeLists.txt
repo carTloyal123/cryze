@@ -15,6 +15,7 @@ add_library(android_stubs STATIC src/bridge/android_stubs.c)
 target_compile_options(android_stubs PRIVATE -fPIC)
 
 set(BRIDGE_COMMON
+    src/bridge/log.cpp
     src/bridge/sdk_loader.cpp
     src/bridge/wyze_auth.cpp
     src/bridge/callbacks.cpp

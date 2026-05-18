@@ -1,6 +1,8 @@
 // signal.cpp — Signal handling and crash diagnostics
 #include "signal.hpp"
+#include "log.hpp"
 
+#include <cerrno>
 #include <cstdio>
 #include <cstring>
 #include <csignal>
@@ -72,10 +74,10 @@ void install(std::atomic<bool>& shutdown_flag) {
 }
 
 void print_network_interfaces() {
-    std::fprintf(stderr, "\n=== Network Interfaces ===\n");
+    LOG_INFO("net", "network interfaces:");
     struct ifaddrs* ifap = nullptr;
     if (getifaddrs(&ifap) != 0) {
-        std::fprintf(stderr, "  getifaddrs failed: %s\n", strerror(errno));
+        LOG_ERROR("net", "getifaddrs failed: %s", strerror(errno));
         return;
     }
     for (auto* ifa = ifap; ifa; ifa = ifa->ifa_next) {
@@ -83,11 +85,10 @@ void print_network_interfaces() {
         auto* sin = reinterpret_cast<struct sockaddr_in*>(ifa->ifa_addr);
         char buf[INET_ADDRSTRLEN];
         inet_ntop(AF_INET, &sin->sin_addr, buf, sizeof(buf));
-        std::fprintf(stderr, "  %-8s %s%s\n", ifa->ifa_name, buf,
-                     (ifa->ifa_flags & IFF_LOOPBACK) ? " (lo)" : "");
+        LOG_INFO("net", "%-8s %s%s", ifa->ifa_name, buf,
+                 (ifa->ifa_flags & IFF_LOOPBACK) ? " (lo)" : "");
     }
     freeifaddrs(ifap);
-    std::fprintf(stderr, "\n");
 }
 
 }  // namespace sig

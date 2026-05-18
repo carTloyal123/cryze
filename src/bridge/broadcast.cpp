@@ -1,8 +1,8 @@
 #include "broadcast.hpp"
+#include "log.hpp"
 
 #include <arpa/inet.h>
 #include <chrono>
-#include <cstdio>
 #include <cstring>
 #include <pthread.h>
 #include <unistd.h>
@@ -44,7 +44,7 @@ int64_t resolve_dst_id(const sdk::SdkSymbols& sdk, const std::string& device_mac
     if (!termunit || !sdk.find_device_id) return 0;
     std::string devid = "_@." + device_mac;
     int64_t id = sdk.find_device_id(reinterpret_cast<void*>(termunit), devid.c_str());
-    std::fprintf(stderr, "  [LAN] resolved dst_id=%lld\n", (long long)id);
+    LOG_INFO("lan", "resolved dst_id=%lld", (long long)id);
     return id;
 }
 
@@ -57,7 +57,7 @@ PollResult poll(const sdk::SdkSymbols& sdk, int64_t dst_id,
     uintptr_t list_head_ptr = bcast_mgr + mgr_offset::list_head;
     auto* mutex = reinterpret_cast<pthread_mutex_t*>(bcast_mgr + mgr_offset::mutex);
 
-    std::fprintf(stderr, "  [LAN] polling broadcast list (max %ds)...\n", max_wait_sec);
+    LOG_INFO("lan", "polling broadcast list (max %ds)...", max_wait_sec);
 
     for (int ms = 0; ms < max_wait_sec * 1000; ms += 500) {
         if (shutdown.load()) break;
@@ -81,18 +81,18 @@ PollResult poll(const sdk::SdkSymbols& sdk, int64_t dst_id,
 
         if (result.found) {
             uint8_t* b = reinterpret_cast<uint8_t*>(&result.ipv4_addr);
-            std::fprintf(stderr, "  [LAN] doorbell found! dst_id=%lld ip=%u.%u.%u.%u:%u (%.1fs)\n",
-                         (long long)result.device_id, b[0], b[1], b[2], b[3], result.port, result.elapsed_seconds);
+            LOG_INFO("lan", "doorbell found! dst_id=%lld ip=%u.%u.%u.%u:%u (%.1fs)",
+                     (long long)result.device_id, b[0], b[1], b[2], b[3], result.port, result.elapsed_seconds);
             return result;
         }
 
         if (ms % 10000 == 9500)
-            std::fprintf(stderr, "  [LAN] waiting... (%d/%ds)\n", (ms + 500) / 1000, max_wait_sec);
+            LOG_DEBUG("lan", "waiting... (%d/%ds)", (ms + 500) / 1000, max_wait_sec);
 
         usleep(500000);
     }
 
-    std::fprintf(stderr, "  [LAN] no broadcast response after %ds\n", max_wait_sec);
+    LOG_WARN("lan", "no broadcast response after %ds", max_wait_sec);
     return result;
 }
 
@@ -105,8 +105,8 @@ bool inject(const sdk::SdkSymbols& sdk, int64_t dst_id,
     struct in_addr addr;
     if (inet_pton(AF_INET, ip_str.c_str(), &addr) != 1) return false;
 
-    std::fprintf(stderr, "  [LAN] injecting: dst_id=%lld ip=%s port=%u\n",
-                 (long long)dst_id, ip_str.c_str(), port);
+    LOG_INFO("lan", "injecting: dst_id=%lld ip=%s port=%u",
+             (long long)dst_id, ip_str.c_str(), port);
 
     void* entry = std::calloc(1, kBroadcastEntrySize);
     if (!entry) return false;
@@ -132,7 +132,7 @@ bool inject(const sdk::SdkSymbols& sdk, int64_t dst_id,
     *list_tail_ptr = reinterpret_cast<uintptr_t*>(entry);
     pthread_mutex_unlock(mutex);
 
-    std::fprintf(stderr, "  [LAN] entry injected\n");
+    LOG_INFO("lan", "entry injected");
     return true;
 }
 

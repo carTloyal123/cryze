@@ -1,7 +1,7 @@
 #include "callbacks.hpp"
 #include "sdk_types.hpp"
+#include "log.hpp"
 
-#include <chrono>
 #include <cinttypes>
 #include <cstdio>
 #include <cstring>
@@ -22,18 +22,10 @@ std::atomic<int>      g_video_frames{0};
 std::atomic<size_t>   g_video_bytes{0};
 int                   g_h264_output_fd = -1;
 
-static auto g_start = std::chrono::steady_clock::now();
-
-static int64_t elapsed_ms() {
-    return std::chrono::duration_cast<std::chrono::milliseconds>(
-        std::chrono::steady_clock::now() - g_start).count();
-}
-
 // iv_access_init callbacks (16 slots)
 
 static int64_t generic_cb(int slot, uint64_t a0, uint64_t a1) {
-    std::fprintf(stderr, "  [cb slot=%d t+%lldms] a0=0x%" PRIx64 " a1=0x%" PRIx64 "\n",
-                 slot, (long long)elapsed_ms(), a0, a1);
+    LOG_DEBUG("sdk", "cb slot=%d a0=0x%" PRIx64 " a1=0x%" PRIx64, slot, a0, a1);
     return 0;
 }
 
@@ -41,8 +33,7 @@ static int64_t cb_app_state(uint64_t link_state, uint64_t, uint64_t,
                             uint64_t, uint64_t, uint64_t) {
     int s = (int)link_state;
     const char* name = s == 1 ? "ONLINE" : s == 2 ? "OFFLINE" : s == 3 ? "TOKEN_ERROR" : "?";
-    std::fprintf(stderr, "  [slot8 t+%lldms] APP_LINK_STATE=%d (%s)\n",
-                 (long long)elapsed_ms(), s, name);
+    LOG_INFO("sdk", "APP_LINK_STATE=%d (%s)", s, name);
     if (s == sdk::kAppOnline)
         g_app_online.store(true);
     return 0;
@@ -55,10 +46,9 @@ static int64_t cb_subscribe(uint64_t, uint64_t error_code, uint64_t,
     g_sub_error.store(err);
     if (err == 0) {
         g_sub_success.store(true);
-        std::fprintf(stderr, "  [slot12 t+%lldms] subscribe OK\n", (long long)elapsed_ms());
+        LOG_INFO("sdk", "subscribe OK");
     } else {
-        std::fprintf(stderr, "  [slot12 t+%lldms] subscribe error=0x%x\n",
-                     (long long)elapsed_ms(), err);
+        LOG_WARN("sdk", "subscribe error=0x%x", err);
     }
     return 0;
 }
@@ -94,7 +84,7 @@ static int64_t cb_get_local_ip(uint64_t ipv4_out_ptr, uint64_t ipv6_out_ptr,
 
     struct ifaddrs* ifap = nullptr;
     if (getifaddrs(&ifap) != 0) {
-        std::fprintf(stderr, "  [slot10] getifaddrs failed: %s\n", strerror(errno));
+        LOG_ERROR("sdk", "getifaddrs failed: %s", strerror(errno));
         return 0;
     }
 
@@ -113,7 +103,7 @@ static int64_t cb_get_local_ip(uint64_t ipv4_out_ptr, uint64_t ipv6_out_ptr,
 
         char buf[INET_ADDRSTRLEN];
         inet_ntop(AF_INET, &sin->sin_addr, buf, sizeof(buf));
-        std::fprintf(stderr, "  [slot10] candidate: %s = %s\n", ifa->ifa_name, buf);
+        LOG_DEBUG("sdk", "candidate: %s = %s", ifa->ifa_name, buf);
 
         if (selected_ipv4 == 0 || first == 192 || first == 10) {
             selected_ipv4 = ip;
@@ -125,9 +115,9 @@ static int64_t cb_get_local_ip(uint64_t ipv4_out_ptr, uint64_t ipv6_out_ptr,
         *ipv4_out = selected_ipv4;
         char buf[INET_ADDRSTRLEN];
         inet_ntop(AF_INET, &selected_ipv4, buf, sizeof(buf));
-        std::fprintf(stderr, "  [slot10] selected: %s = %s\n", selected_iface, buf);
+        LOG_INFO("sdk", "local IP selected: %s = %s", selected_iface, buf);
     } else {
-        std::fprintf(stderr, "  [slot10] no suitable interface found\n");
+        LOG_WARN("sdk", "no suitable interface found");
     }
 
     if (ipv6_out) {
@@ -157,7 +147,7 @@ static int64_t cb_p2p_log(uint64_t level, uint64_t file_ptr, uint64_t fmt_ptr,
         int n = snprintf(buf, sizeof(buf), fmt, a3, a4, a5);
         if (n > 0) {
             if (n > 0 && buf[n-1] == '\n') buf[n-1] = 0;
-            std::fprintf(stderr, "  [sdk L%d] %s\n", lvl, buf);
+            LOG_DEBUG("sdk", "[L%d] %s", lvl, buf);
         }
     }
     return 0;
@@ -189,8 +179,8 @@ static uint32_t* s_ring_buffer_base = nullptr;
 extern "C" {
 
 int bridge_init_decoder(uint32_t chn, void* output_frame_ctx, void* decoder_ctx_out) {
-    std::fprintf(stderr, "[av] init_decoder chn=%u output_ctx=%p decoder_out=%p\n",
-                 chn, output_frame_ctx, decoder_ctx_out);
+    LOG_INFO("av", "init_decoder chn=%u output_ctx=%p decoder_out=%p",
+             chn, output_frame_ctx, decoder_ctx_out);
     // Recover ring buffer base and set non-null sentinel for SDK.
     if (decoder_ctx_out)
         s_ring_buffer_base = reinterpret_cast<uint32_t*>(decoder_ctx_out) - kDecoderToRingBufferOffset;
@@ -211,7 +201,8 @@ int bridge_decode_video(uint32_t chn, void* ctx, uint8_t* h264_data,
     g_video_bytes += h264_len;
 
     if (n == 1 && h264_len >= 5) {
-        std::fprintf(stderr, "[av] first frame: len=%u NALs:", h264_len);
+        char nal_info[256] = {0};
+        int nal_pos = 0;
         for (uint32_t i = 0; i + 4 < h264_len; ++i) {
             if (h264_data[i] == 0 && h264_data[i+1] == 0 &&
                 ((h264_data[i+2] == 0 && h264_data[i+3] == 1) || h264_data[i+2] == 1)) {
@@ -221,21 +212,20 @@ int bridge_decode_video(uint32_t chn, void* ctx, uint8_t* h264_data,
                     const char* name = nal_type == 7 ? "SPS" : nal_type == 8 ? "PPS" :
                                        nal_type == 5 ? "IDR" : nal_type == 6 ? "SEI" :
                                        nal_type == 1 ? "SLICE" : "?";
-                    std::fprintf(stderr, " %s(%u)", name, nal_type);
+                    nal_pos += snprintf(nal_info + nal_pos, sizeof(nal_info) - nal_pos, " %s(%u)", name, nal_type);
                 }
             }
         }
-        std::fprintf(stderr, "\n");
+        LOG_INFO("av", "first frame: len=%u NALs:%s", h264_len, nal_info);
     }
 
     if (n <= 5 || n % 100 == 0)
-        std::fprintf(stderr, "[av] frame #%d chn=%u len=%u pts=%" PRIu64 "\n",
-                     n, chn, h264_len, pts);
+        LOG_DEBUG("av", "frame #%d chn=%u len=%u pts=%" PRIu64, n, chn, h264_len, pts);
 
     if (g_h264_output_fd >= 0) {
         ssize_t w = ::write(g_h264_output_fd, h264_data, h264_len);
         if (w < 0 && n <= 3)
-            std::fprintf(stderr, "[av] write error: %s\n", strerror(errno));
+            LOG_ERROR("av", "write error: %s", strerror(errno));
     }
 
     if (s_ring_buffer_base)
@@ -245,23 +235,23 @@ int bridge_decode_video(uint32_t chn, void* ctx, uint8_t* h264_data,
 }
 
 void bridge_destroy_decoder(uint32_t chn, void* ctx) {
-    std::fprintf(stderr, "[av] destroy_decoder chn=%u\n", chn);
+    LOG_INFO("av", "destroy_decoder chn=%u", chn);
 }
 
 void bridge_recv_av_data(uint32_t chn, void* ctx, void* av_data) {
     static int count = 0;
     if (++count <= 3)
-        std::fprintf(stderr, "[av] recv_av_data #%d chn=%u\n", count, chn);
+        LOG_DEBUG("av", "recv_av_data #%d chn=%u", count, chn);
 }
 
 void bridge_recv_user_data(uint32_t chn, void* ctx, void* user_data) {
     static int count = 0;
     if (++count <= 3)
-        std::fprintf(stderr, "[av] recv_user_data #%d chn=%u\n", count, chn);
+        LOG_DEBUG("av", "recv_user_data #%d chn=%u", count, chn);
 }
 
 void bridge_recv_avheader(uint32_t chn, void* ctx, void* av_header) {
-    std::fprintf(stderr, "[av] recv_avheader chn=%u header=%p\n", chn, av_header);
+    LOG_DEBUG("av", "recv_avheader chn=%u header=%p", chn, av_header);
 }
 
 }  // extern "C"

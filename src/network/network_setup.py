@@ -9,6 +9,11 @@ import sys
 import time
 import fcntl
 import signal
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from log_config import get_logger
+log = get_logger('network')
 
 DOORBELL_IP = os.environ.get("DOORBELL_IP", "")
 CHIME_IP = os.environ.get("CHIME_IP", "")
@@ -27,10 +32,6 @@ DNAT_CHAIN = "WYZE_DNAT"
 DNS_INTERCEPT_PORT = 5354  # NOT 5353 (mDNS) — avahi/homebridge may steal packets
 DNS_UPSTREAM = "8.8.8.8"
 MARS_HOSTNAME = b"wyze-mars-asrv.wyzecam.com"
-
-
-def log(msg: str):
-    print(f"[network-setup] {msg}", flush=True)
 
 
 def run(cmd: list[str], check: bool = False) -> subprocess.CompletedProcess:
@@ -142,7 +143,7 @@ def setup_iptables_dnat(relay_ip: str, mars_ips: set[str], device_ips: list[str]
 
     # Insert into PREROUTING
     run(["iptables", "-t", "nat", "-I", "PREROUTING", "1", "-j", DNAT_CHAIN])
-    log(f"  iptables: {count} DNAT rules for {len(device_ips)} device(s), {len(mars_ips)} Mars IPs")
+    log.info("  iptables: %d DNAT rules for %d device(s), %d Mars IPs", count, len(device_ips), len(mars_ips))
     return count
 
 
@@ -165,17 +166,17 @@ def disable_icmp_redirects():
         except (PermissionError, FileNotFoundError, OSError):
             pass
 
-    log("  ICMP send_redirects disabled")
+    log.info("  ICMP send_redirects disabled")
 
 
 def flush_conntrack():
     """Flush connection tracking to force re-evaluation of DNAT rules."""
     result = run(["conntrack", "-F"])
     if result.returncode == 0:
-        log("  conntrack flushed")
+        log.info("  conntrack flushed")
     else:
         # conntrack might not be installed
-        log("  conntrack flush skipped (not available)")
+        log.info("  conntrack flush skipped (not available)")
 
 
 def enable_ip_forwarding():
@@ -183,10 +184,10 @@ def enable_ip_forwarding():
     try:
         with open("/proc/sys/net/ipv4/ip_forward", "w") as f:
             f.write("1\n")
-        log("  IP forwarding enabled")
+        log.info("  IP forwarding enabled")
     except (PermissionError, FileNotFoundError, OSError) as e:
-        log(f"  WARNING: could not enable IP forwarding ({e})")
-        log(f"  Ensure host has: sysctl net.ipv4.ip_forward=1")
+        log.warning("  could not enable IP forwarding (%s)", e)
+        log.warning("  Ensure host has: sysctl net.ipv4.ip_forward=1")
 
 
 def get_mac(ifname: str) -> bytes:
@@ -231,7 +232,7 @@ def start_arp_redirect(device_ip: str, gateway_ip: str, iface: str):
     pid = os.fork()
     if pid > 0:
         mac_str = ":".join(f"{b:02x}" for b in our_mac)
-        log(f"  ARP redirect: {device_ip} -> {gateway_ip} is at {mac_str} (pid={pid})")
+        log.info("  ARP redirect: %s -> %s is at %s (pid=%d)", device_ip, gateway_ip, mac_str, pid)
         return pid
 
     # Child process — run forever sending ARP replies
@@ -357,7 +358,7 @@ def dns_responder_loop(relay_ip: str):
 
         if qname_lower == mars_lower:
             # Spoof: return our relay IP
-            log(f"  DNS intercept: {qname.decode(errors='replace')} -> {relay_ip} (from {addr[0]}:{addr[1]})")
+            log.info("  DNS intercept: %s -> %s (from %s:%d)", qname.decode(errors='replace'), relay_ip, addr[0], addr[1])
             resp = build_dns_response(data, relay_ip)
             try:
                 sock.sendto(resp, addr)
@@ -394,9 +395,9 @@ def setup_dns_iptables(device_ips: list[str]):
         ])
         if result.returncode == 0:
             count += 1
-            log(f"  iptables: DNS REDIRECT {dev_ip} udp/53 -> localhost:{DNS_INTERCEPT_PORT}")
+            log.info("  iptables: DNS REDIRECT %s udp/53 -> localhost:%d", dev_ip, DNS_INTERCEPT_PORT)
         else:
-            log(f"  iptables: DNS REDIRECT failed for {dev_ip}: {result.stderr.strip()}")
+            log.error("  iptables: DNS REDIRECT failed for %s: %s", dev_ip, result.stderr.strip())
     return count
 
 
@@ -421,7 +422,7 @@ def start_dns_intercept(device_ips: list[str], relay_ip: str) -> int:
     # 2. Fork a child to run the DNS responder
     pid = os.fork()
     if pid > 0:
-        log(f"  DNS responder listening on :{DNS_INTERCEPT_PORT} (pid={pid})")
+        log.info("  DNS responder listening on :%d (pid=%d)", DNS_INTERCEPT_PORT, pid)
         return pid
 
     # Child process
@@ -438,7 +439,7 @@ def start_dns_intercept(device_ips: list[str], relay_ip: str) -> int:
 
 def cleanup_on_exit(signum, frame):
     """Clean up iptables rules on SIGTERM/SIGINT."""
-    log("Cleaning up network rules...")
+    log.info("Cleaning up network rules...")
     # Clean up DNS REDIRECT rules
     device_ips = [DOORBELL_IP]
     if CHIME_IP:
@@ -448,32 +449,32 @@ def cleanup_on_exit(signum, frame):
     run(["iptables", "-t", "nat", "-D", "PREROUTING", "-j", DNAT_CHAIN])
     run(["iptables", "-t", "nat", "-F", DNAT_CHAIN])
     run(["iptables", "-t", "nat", "-X", DNAT_CHAIN])
-    log("Cleanup complete.")
+    log.info("Cleanup complete.")
     sys.exit(0)
 
 
 def main():
-    log("Starting network configuration...")
+    log.info("Starting network configuration...")
 
     if not DOORBELL_IP:
-        log("DOORBELL_IP not set. Skipping network setup (relay-only mode).")
-        log("Set DOORBELL_IP in .env for full offline operation.")
+        log.info("DOORBELL_IP not set. Skipping network setup (relay-only mode).")
+        log.info("Set DOORBELL_IP in .env for full offline operation.")
         return
 
     relay_ip = detect_relay_ip()
     if not relay_ip:
-        log("ERROR: Could not detect relay IP. Set RELAY_IP in .env.")
+        log.error("Could not detect relay IP. Set RELAY_IP in .env.")
         sys.exit(1)
 
     gateway_ip = detect_gateway()
     iface = detect_interface(relay_ip)
 
-    log(f"  Relay IP: {relay_ip}")
-    log(f"  Gateway: {gateway_ip}")
-    log(f"  Interface: {iface}")
-    log(f"  Doorbell: {DOORBELL_IP}")
+    log.info("  Relay IP: %s", relay_ip)
+    log.info("  Gateway: %s", gateway_ip)
+    log.info("  Interface: %s", iface)
+    log.info("  Doorbell: %s", DOORBELL_IP)
     if CHIME_IP:
-        log(f"  Chime: {CHIME_IP}")
+        log.info("  Chime: %s", CHIME_IP)
 
     # 1. Enable IP forwarding
     enable_ip_forwarding()
@@ -490,7 +491,7 @@ def main():
 
     # 3. Resolve Mars IPs (for DNAT fallback)
     mars_ips = resolve_mars_ips()
-    log(f"  Mars IPs: {len(mars_ips)} resolved")
+    log.info("  Mars IPs: %d resolved", len(mars_ips))
 
     # 4. Set up iptables DNAT (fallback for already-cached DNS)
     setup_iptables_dnat(relay_ip, mars_ips, device_ips)
@@ -508,8 +509,8 @@ def main():
         arp_pids.append(pid)
 
     child_pids = [dns_pid] + arp_pids
-    log(f"Network setup complete. Child pids: {child_pids} (dns={dns_pid}, arp={arp_pids})")
-    log("Waiting for SIGTERM to clean up...")
+    log.info("Network setup complete. Child pids: %s (dns=%d, arp=%s)", child_pids, dns_pid, arp_pids)
+    log.info("Waiting for SIGTERM to clean up...")
 
     # Keep parent alive so Docker doesn't kill the ARP redirect children
     signal.signal(signal.SIGTERM, cleanup_on_exit)

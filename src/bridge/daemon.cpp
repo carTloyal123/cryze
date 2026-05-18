@@ -6,6 +6,7 @@
 #include "callbacks.hpp"
 #include "broadcast.hpp"
 #include "signal.hpp"
+#include "log.hpp"
 
 #include <atomic>
 #include <chrono>
@@ -38,7 +39,7 @@ static bool wait_for(std::atomic<bool>& flag, int timeout_sec, const char* label
     auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(timeout_sec);
     while (!flag.load() && !g_shutdown.load()) {
         if (std::chrono::steady_clock::now() >= deadline) {
-            std::fprintf(stderr, "[daemon] %s timed out after %ds\n", label, timeout_sec);
+            LOG_WARN("daemon", "%s timed out after %ds", label, timeout_sec);
             return false;
         }
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
@@ -48,7 +49,7 @@ static bool wait_for(std::atomic<bool>& flag, int timeout_sec, const char* label
 
 static int start_stream(const std::string& device_mac) {
     if (g_streaming.load()) {
-        std::fprintf(stderr, "[daemon] already streaming\n");
+        LOG_WARN("daemon", "already streaming");
         return g_channel_id.load();
     }
 
@@ -91,18 +92,18 @@ static int start_stream(const std::string& device_mac) {
         set_u64(sdk::av_off::user_id_str_ptr, reinterpret_cast<uint64_t>(user_id.c_str()));
 
     int err_code = 0;
-    std::fprintf(stderr, "[daemon] calling iv_start_av_link...\n");
+    LOG_INFO("daemon", "calling iv_start_av_link...");
     int av_rc = g_sdk.start_av_link(av_req, &err_code);
-    std::fprintf(stderr, "[daemon] iv_start_av_link returned %d err=%d\n", av_rc, err_code);
+    LOG_INFO("daemon", "iv_start_av_link returned %d err=%d", av_rc, err_code);
 
     if (av_rc < 0) {
-        std::fprintf(stderr, "[daemon] AV link failed (err=0x%x)\n", err_code);
+        LOG_ERROR("daemon", "AV link failed (err=0x%x)", err_code);
         return -1;
     }
 
     g_channel_id.store(av_rc);
     g_streaming.store(true);
-    std::fprintf(stderr, "[daemon] streaming on channel %d\n", av_rc);
+    LOG_INFO("daemon", "streaming on channel %d", av_rc);
     return av_rc;
 }
 
@@ -114,7 +115,7 @@ static void stop_stream() {
     g_streaming.store(false);
     cb::g_video_frames.store(0);
     cb::g_video_bytes.store(0);
-    std::fprintf(stderr, "[daemon] stream stopped\n");
+    LOG_INFO("daemon", "stream stopped");
 }
 
 int main(int argc, char** argv) {
@@ -126,19 +127,20 @@ int main(int argc, char** argv) {
         else if (a == "--quiet" || a == "-q") cb::g_min_log_level = 7;
     }
 
+    blog::init();
 
     int h264_fd = ::dup(STDOUT_FILENO);
     ::dup2(STDERR_FILENO, STDOUT_FILENO);
     cb::g_h264_output_fd = h264_fd;
 
     sig::install(g_shutdown);
-    std::fprintf(stderr, "[daemon] starting\n");
+    LOG_INFO("daemon", "starting");
 
 
     wyze::StreamCreds creds;
     try { creds = wyze::bootstrap(device_mac); }
     catch (const std::exception& e) {
-        std::fprintf(stderr, "[daemon] auth failed: %s\n", e.what());
+        LOG_ERROR("daemon", "auth failed: %s", e.what());
         return 1;
     }
     g_sdk_device_id = "_@." + creds.device_mac;
@@ -146,7 +148,7 @@ int main(int argc, char** argv) {
 
     try { g_sdk = sdk::load(); }
     catch (const std::exception& e) {
-        std::fprintf(stderr, "[daemon] SDK load failed: %s\n", e.what());
+        LOG_ERROR("daemon", "SDK load failed: %s", e.what());
         return 1;
     }
 
@@ -185,14 +187,14 @@ int main(int argc, char** argv) {
     if (!wait_for(init_done, 35, "iv_access_init")) return 1;
     if (init_rc.load() != 0) return 1;
     if (!wait_for(cb::g_app_online, 30, "APP_ONLINE")) return 1;
-    std::fprintf(stderr, "[daemon] SDK online\n");
+    LOG_INFO("daemon", "SDK online");
 
 
     g_sdk.subscribe_dev(creds.access_token.c_str(), creds.device_mac.c_str(),
                         (uint32_t)creds.access_token.size());
     if (!wait_for(cb::g_sub_success, 20, "subscribe")) return 1;
-    std::fprintf(stderr, "[daemon] subscribed — READY\n");
-    std::fprintf(stderr, "[daemon] commands: start | stop | quit | status\n");
+    LOG_INFO("daemon", "subscribed — READY");
+    LOG_INFO("daemon", "commands: start | stop | quit | status");
 
 
     char cmd_buf[256];
@@ -218,17 +220,17 @@ int main(int argc, char** argv) {
 
         if (cmd == "start") {
             int rc = start_stream(creds.device_mac);
-            std::fprintf(stderr, "[daemon] %s start (chn=%d)\n", rc >= 0 ? "ACK" : "NAK", rc);
+            LOG_INFO("daemon", "%s start (chn=%d)", rc >= 0 ? "ACK" : "NAK", rc);
         } else if (cmd == "stop") {
             stop_stream();
         } else if (cmd == "quit" || cmd == "exit") {
             break;
         } else if (cmd == "status") {
-            std::fprintf(stderr, "[daemon] streaming=%d chn=%d frames=%d bytes=%zu\n",
-                         g_streaming.load(), g_channel_id.load(),
-                         cb::g_video_frames.load(), cb::g_video_bytes.load());
+            LOG_INFO("daemon", "streaming=%d chn=%d frames=%d bytes=%zu",
+                     g_streaming.load(), g_channel_id.load(),
+                     cb::g_video_frames.load(), cb::g_video_bytes.load());
         } else if (!cmd.empty()) {
-            std::fprintf(stderr, "[daemon] unknown: '%s'\n", cmd.c_str());
+            LOG_WARN("daemon", "unknown command: '%s'", cmd.c_str());
         }
     }
 
