@@ -297,23 +297,28 @@ class GutesRelay:
             if term_id in self.state.clients:
                 self.state.clients[term_id].certified = True
                 _calling_on_certified(self, term_id)
-            # Send INIT_INFO_RESP (response, not just ACK)
             if not ack and not is_resp:
-                # Try to extract sqnum from the frame
                 has_session_key = addr in self.state.addr_session_keys
                 if has_session_key:
                     req_sqnum = self._extract_req_sqnum(data, addr)
                     self.log(f"  [DEBUG] Extracted real sqnum={req_sqnum} from INIT_INFO")
+                    resp = self._build_init_info_resp(data, addr, req_sqnum)
+                    self.log(f"  → INIT_INFO_RESP to {addr[0]}:{addr[1]} ({len(resp)}B) chkval={req_sqnum}")
+                    self.state.addr_last_sqnum[addr] = req_sqnum
+                    return resp
                 else:
-                    # No session key — predict sqnum from CERTIFY (certify_sqnum + 1)
+                    # No session key — proxy INIT_INFO to Mars too
+                    mars_resp = self._proxy_frame_to_mars(data, "INIT_INFO")
+                    if mars_resp:
+                        self.log(f"  [MARS-PROXY] → INIT_INFO_RESP from Mars ({len(mars_resp)}B)")
+                        return mars_resp
+                    # Fallback to predicted sqnum
                     base = self.state.addr_last_sqnum.get(addr, 0)
                     req_sqnum = (base + 1) & 0xFFFFFFFF
-                    self.log(f"  [DEBUG] Predicted sqnum={req_sqnum} (no session key, base={base})")
-                resp = self._build_init_info_resp(data, addr, req_sqnum)
-                self.log(f"  → INIT_INFO_RESP to {addr[0]}:{addr[1]} ({len(resp)}B) chkval={req_sqnum}")
-                self.log(f"  [DEBUG] RESP hex: {resp[:24].hex()}")
-                self.state.addr_last_sqnum[addr] = req_sqnum
-                return resp
+                    self.log(f"  [DEBUG] Predicted sqnum={req_sqnum} (no session key)")
+                    resp = self._build_init_info_resp(data, addr, req_sqnum)
+                    self.state.addr_last_sqnum[addr] = req_sqnum
+                    return resp
             return None
 
         # --- CALLING: log and handle wakeup routing ---
@@ -495,6 +500,46 @@ class GutesRelay:
         except Exception as e:
             self.log(f"  [MARS-PROXY] Error: {e}")
             return None
+
+    def _proxy_frame_to_mars(self, data: bytes, frame_name: str) -> Optional[bytes]:
+        """Proxy a single frame to Mars and return the first response."""
+        mars_host = self.upstream_host
+        mars_port = self.upstream_port
+        if mars_host in ("127.0.0.1", "0.0.0.0", ""):
+            try:
+                results = socket.getaddrinfo("wyze-mars-asrv.wyzecam.com", None, socket.AF_INET)
+                if results:
+                    mars_host = results[0][4][0]
+                    mars_port = 28800
+            except Exception:
+                return None
+
+        try:
+            sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            sock.settimeout(5.0)
+            sock.sendto(data, (mars_host, mars_port))
+            self.log(f"  [MARS-PROXY] Forwarding {frame_name} to {mars_host}:{mars_port}")
+
+            for _ in range(10):
+                try:
+                    pkt, _ = sock.recvfrom(4096)
+                except socket.timeout:
+                    break
+                if len(pkt) < 4:
+                    continue
+                pkt_type = pkt[1]
+                pkt_opt = struct.unpack_from('<I', pkt, 0x14)[0] if len(pkt) >= 0x18 else 0
+                is_resp_pkt = bool(pkt_opt & (1 << 21))
+                is_ack_pkt = bool(pkt_opt & (1 << 20))
+                if is_resp_pkt or (not is_ack_pkt and pkt_type != data[1]):
+                    self.log(f"  [MARS-PROXY] Got {frame_name} response from Mars ({len(pkt)}B)")
+                    sock.close()
+                    return pkt
+                # ACKs are intermediate — keep waiting
+            sock.close()
+        except Exception as e:
+            self.log(f"  [MARS-PROXY] Error proxying {frame_name}: {e}")
+        return None
 
     def _handle_certify_local(self, data: bytes, addr: tuple, term_id: int) -> Optional[bytes]:
         """Handle CERTIFY in standalone relay mode.
