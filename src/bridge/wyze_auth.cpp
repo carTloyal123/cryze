@@ -208,7 +208,7 @@ static std::optional<StreamCreds> load_cache(const std::string& target_mac) {
     int64_t margin = 3600; // 1 hour
     if (expire > 0 && now_s >= (expire - margin)) {
         int64_t hours_ago = (now_s - expire) / 3600;
-        LOG_WARN("auth", "Mars token expired %lld hours ago", hours_ago);
+        LOG_WARN("auth", "Mars token expired %lld hours ago", (long long)hours_ago);
         return std::nullopt;
     }
 
@@ -234,7 +234,7 @@ static std::optional<StreamCreds> load_cache(const std::string& target_mac) {
 
     int64_t remaining_h = (expire - now_s) / 3600;
     LOG_INFO("auth", "cache loaded from %s (%lld hours remaining)",
-             path.c_str(), remaining_h);
+             path.c_str(), (long long)remaining_h);
 
     return creds;
 }
