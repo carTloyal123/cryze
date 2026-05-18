@@ -1,25 +1,5 @@
 #!/usr/bin/env python3
-"""GUTES Local Relay Server / UDP MitM Proxy.
-
-Modes:
-  --proxy    Forward all traffic to real Mars relay (capture + learn)
-  --relay    Standalone local relay (no internet needed)
-
-Architecture:
-  - Listens on multiple ports (28800, 8443, 8000, 443, 51701)
-  - Routes frames between clients using term_id (decrypted with static RC5 key)
-  - In proxy mode: intercepts DETECT locally, forwards everything else to Mars
-  - In relay mode: handles all signaling locally (CERTIFY, CALLING routing, GDM)
-
-Usage:
-  # Proxy mode (capture chime + bridge traffic, learn the protocol):
-  python3 gutes_relay.py --proxy --upstream 3.13.212.24:28800
-
-  # Standalone relay mode (fully offline):
-  python3 gutes_relay.py --relay
-
-  # Then point DNS: wyze-mars-asrv.wyzecam.com → this machine's IP
-"""
+"""GUTES protocol relay for local Wyze doorbell P2P signaling."""
 
 import argparse
 import asyncio
@@ -37,7 +17,6 @@ from typing import Optional
 sys.path.insert(0, str(Path(__file__).parent))
 from rc5 import RC5, GWELL_KEY, derive_per_frame_key, id_decrypt, id_encrypt
 
-# --- Frame type constants (verified from pcap) ---
 TYPE_DETECT_REQ = 0x01
 TYPE_DETECT_RESP = 0x02
 TYPE_CERTIFY_REQ = 0x0C

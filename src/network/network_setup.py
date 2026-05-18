@@ -1,16 +1,5 @@
 #!/usr/bin/env python3
-"""network_setup.py — One-shot network configuration for offline doorbell bridge.
-
-Runs as an init container before the relay starts. Sets up:
-  1. DNS interception — redirects doorbell's DNS queries to a local responder
-     that spoofs wyze-mars-asrv.wyzecam.com → relay IP
-  2. iptables DNAT — redirects doorbell's Mars-bound UDP to the local relay
-  3. ARP redirect — spoofs the gateway MAC so doorbell routes through us
-  4. ICMP redirect disable — prevents host from telling doorbell to bypass us
-  5. conntrack flush — clears stale NAT entries
-
-Requires: network_mode=host, cap_add=[NET_ADMIN, NET_RAW]
-"""
+"""Network setup: iptables DNAT and ARP redirect for offline doorbell bridge."""
 
 import os
 import socket
@@ -21,15 +10,12 @@ import time
 import fcntl
 import signal
 
-# --- Configuration from environment ---
-
 DOORBELL_IP = os.environ.get("DOORBELL_IP", "")
 CHIME_IP = os.environ.get("CHIME_IP", "")
 RELAY_IP = os.environ.get("RELAY_IP", "")
 GATEWAY_IP = os.environ.get("GATEWAY_IP", "192.168.1.1")
 INTERFACE = os.environ.get("NET_INTERFACE", "")
 
-# Known Mars IPs (fallback if DNS fails)
 MARS_IPS_FALLBACK = {
     "3.19.80.22", "35.85.21.174", "34.215.36.59", "18.118.90.161",
     "52.201.137.206", "3.13.212.24", "3.131.23.11", "35.81.136.54",

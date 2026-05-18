@@ -1,12 +1,5 @@
 #!/usr/bin/env python3
-"""entrypoint.py — Wyze doorbell bridge lifecycle manager.
-
-Runs inside the Docker container as PID 1. Handles:
-  1. First-run setup (compile shims, patch Android .so files)
-  2. Bridge compilation (cmake + ninja)
-  3. Starting go2rtc (which manages bridge on-demand via exec source)
-  4. Graceful shutdown on SIGINT/SIGTERM (Docker stop / Ctrl+C)
-"""
+# Docker entrypoint: lib setup, bridge build, relay, go2rtc lifecycle.
 
 import os
 import shutil
@@ -16,8 +9,6 @@ import subprocess
 import sys
 from pathlib import Path
 
-# ── Configuration ──────────────────────────────────────────────────
-
 WORK       = Path("/work")
 APK_LIBS   = Path("/apk/xapk_contents/arm64_libs/lib/arm64-v8a")
 LIBS_DIR   = WORK / "libs"
@@ -26,12 +17,9 @@ BRIDGE_BIN = BUILD_DIR / "bridge"
 GO2RTC_CFG = WORK / "go2rtc.yaml"
 SRC_DIR    = WORK / "src"
 
-# Bionic DT_NEEDED entries to strip from Android .so files
 BIONIC_REMOVE = ["libc.so", "libm.so", "libdl.so", "liblog.so"]
-# Rename libstdc++.so -> libstdc++.so.6 to match Alpine's naming
 STDCPP_RENAME = ("libstdc++.so", "libstdc++.so.6")
 
-# Android .so files to copy and patch from APK
 SDK_LIBS = ["libiotp2pav.so", "libmbedtls.so"]
 
 go2rtc_proc: subprocess.Popen | None = None
@@ -39,21 +27,12 @@ relay_proc: subprocess.Popen | None = None
 shutting_down = False
 
 
-# ── Logging ────────────────────────────────────────────────────────
-
 def log(msg: str) -> None:
     print(f"[entrypoint] {msg}", flush=True)
 
 
-# ── .env loader ────────────────────────────────────────────────────
-
 def load_env_file(path: Path = WORK / ".env") -> dict[str, str]:
-    """Parse a .env file into a dict without shell expansion.
 
-    Dollar signs are kept literal — docker compose corrupts passwords
-    containing $ when it does variable substitution, so we load .env
-    ourselves at runtime instead.
-    """
     env: dict[str, str] = {}
     if not path.is_file():
         log(f"No .env file at {path}, skipping.")
@@ -72,8 +51,6 @@ def load_env_file(path: Path = WORK / ".env") -> dict[str, str]:
     return env
 
 
-# ── Shell helper ───────────────────────────────────────────────────
-
 def run(cmd: str | list[str], label: str | None = None) -> None:
     """Run a command, streaming output. Exit on failure."""
     if isinstance(cmd, str):
@@ -87,16 +64,8 @@ def run(cmd: str | list[str], label: str | None = None) -> None:
         sys.exit(rc)
 
 
-# ── ELF patcher ───────────────────────────────────────────────────
-
 def patch_init_fini_arraysz(path: Path) -> None:
-    """Zero out DT_INIT_ARRAYSZ and DT_FINI_ARRAYSZ in an ELF64 binary.
-
-    Android's bionic linker skips NULL entries in INIT_ARRAY/FINI_ARRAY,
-    but musl calls them unconditionally -> SIGSEGV at pc=0. The Android
-    .so files have NULL placeholder entries with no relocation to fill
-    them, so we set the array sizes to 0 to tell musl to skip them.
-    """
+    """Zero DT_INIT_ARRAYSZ/DT_FINI_ARRAYSZ to prevent musl SIGSEGV on NULL constructors."""
     DT_INIT_ARRAYSZ = 0x1B
     DT_FINI_ARRAYSZ = 0x1C
 
@@ -146,8 +115,6 @@ def patch_init_fini_arraysz(path: Path) -> None:
         log(f"  {path.name}: no INIT/FINI_ARRAYSZ found")
 
 
-# ── Library setup ──────────────────────────────────────────────────
-
 def setup_libs() -> None:
     """Compile shims and patch Android .so files for musl compatibility."""
     if (LIBS_DIR / "libiotp2pav.so").is_file():
@@ -161,7 +128,6 @@ def setup_libs() -> None:
         shutil.rmtree(LIBS_DIR)
     LIBS_DIR.mkdir()
 
-    # -- Compile shim libraries --
     log("Compiling bionic_interpose.so...")
     run(f"gcc -shared -o {LIBS_DIR}/bionic_interpose.so {SRC_DIR}/bridge/bionic_interpose.c -fPIC -ldl -lpthread")
 
@@ -195,7 +161,6 @@ __attribute__((weak)) int __android_log_vprint(int p, const char* t, const char*
     # libstdc++.so — point to system
     (LIBS_DIR / "libstdc++.so").symlink_to("/usr/lib/libstdc++.so.6")
 
-    # -- Copy and patch Android .so files --
     for lib in SDK_LIBS:
         src = APK_LIBS / lib
         dst = LIBS_DIR / lib
@@ -214,7 +179,6 @@ __attribute__((weak)) int __android_log_vprint(int p, const char* t, const char*
         # Zero INIT/FINI_ARRAYSZ to prevent musl SIGSEGV on NULL constructors
         patch_init_fini_arraysz(dst)
 
-    # -- Verify --
     log("Verifying patched libraries:")
     for lib in SDK_LIBS:
         result = subprocess.run(
@@ -226,8 +190,6 @@ __attribute__((weak)) int __android_log_vprint(int p, const char* t, const char*
     log("Library setup complete.")
 
 
-# ── Bridge build ───────────────────────────────────────────────────
-
 def build_bridge() -> None:
     """Compile the bridge and daemon binaries if not already built."""
     if BRIDGE_BIN.is_file() and (BUILD_DIR / "bridge-daemon").is_file():
@@ -237,8 +199,6 @@ def build_bridge() -> None:
     run(f"cmake -B {BUILD_DIR} -G Ninja -DCMAKE_BUILD_TYPE=Release {WORK}", "cmake")
     run(f"ninja -C {BUILD_DIR}", "ninja")
 
-
-# ── Signal handling ────────────────────────────────────────────────
 
 def shutdown(signum: int, _frame) -> None:
     """Graceful shutdown: forward signal to go2rtc, wait, exit."""
@@ -275,23 +235,8 @@ def shutdown(signum: int, _frame) -> None:
     sys.exit(0)
 
 
-# ── Doorbell DNAT (Linux host networking) ──────────────────────────
-
 def setup_doorbell_dnat() -> bool:
-    """Set up iptables DNAT to redirect doorbell's Mars traffic to local relay.
-
-    On a Linux host with host networking + NET_ADMIN, the container's
-    iptables rules affect the physical LAN. This intercepts the doorbell's
-    UDP traffic to Mars and redirects it to our local relay, eliminating
-    the need for any router configuration.
-
-    Requirements:
-      - DOORBELL_IP env var set (e.g., 192.168.1.81)
-      - Container runs with --network host --cap-add NET_ADMIN
-      - Linux host (not macOS/Colima — VM network is isolated)
-
-    Returns True if rules were applied successfully.
-    """
+    """DNAT doorbell's Mars traffic to local relay. Requires NET_ADMIN."""
     dotenv = load_env_file()
     doorbell_ip = dotenv.get("DOORBELL_IP", os.environ.get("DOORBELL_IP", ""))
     if not doorbell_ip:
@@ -380,13 +325,7 @@ def setup_doorbell_dnat() -> bool:
 
 
 def setup_lan_only_firewall() -> bool:
-    """Block outbound TCP to cloud relay servers (force LAN-only video).
-
-    The SDK uses both LAN UDP and cloud TCP relays simultaneously;
-    blocking non-LAN TCP traffic eliminates the cloud relay path entirely.
-
-    Returns True if rules were applied successfully.
-    """
+    """Block outbound TCP to cloud relay servers."""
     dotenv = load_env_file()
     lan_only = dotenv.get("LAN_ONLY", os.environ.get("LAN_ONLY", "0"))
     if lan_only not in ("1", "true", "yes"):
@@ -449,21 +388,8 @@ def cleanup_iptables() -> None:
             subprocess.run(["iptables", "-X", chain], capture_output=True)
 
 
-# ── GUTES Relay ────────────────────────────────────────────────────
-
 def start_relay() -> subprocess.Popen | None:
-    """Start the GUTES relay server as a background process.
-
-    The relay intercepts the SDK's Mars signaling (LIST, DETECT, CERTIFY)
-    and proxies it to the real Mars cloud.  By running locally, we:
-      - Respond to DETECT instantly (wins the server-selection race)
-      - Cache CERTIFY session keys for offline operation
-      - Keep the doorbell awake via periodic KEEPALIVE frames
-      - Route CALLING frames locally (full offline mode)
-      - Avoid DNAT complexity on the router
-
-    The bridge's P2P_URL env is set to |127.0.0.1 so the SDK talks to us.
-    """
+    """Start GUTES relay as a background process."""
     dotenv = load_env_file()
     upstream = dotenv.get("RELAY_UPSTREAM", "3.13.212.24:28800")
     mode = dotenv.get("RELAY_MODE", "proxy")
@@ -503,19 +429,9 @@ def start_relay() -> subprocess.Popen | None:
         log(f"WARNING: Relay exited immediately (rc={proc.returncode})")
         return None
 
-    features = ["LIST+DETECT local"]
-    if mode == "relay":
-        features.append("CERTIFY local")
-        features.append("CALLING routing")
-    else:
-        features.append("CERTIFY proxy+cache")
-    if keepalive:
-        features.append("doorbell keepalive")
-    log(f"GUTES relay running ({', '.join(features)})")
+    log(f"GUTES relay running (mode={mode}, keepalive={keepalive})")
     return proc
 
-
-# ── Main ───────────────────────────────────────────────────────────
 
 def main() -> None:
     global go2rtc_proc
@@ -525,18 +441,14 @@ def main() -> None:
 
     log("Starting Wyze doorbell bridge...")
 
-    # Phase 1: Setup and build
     setup_libs()
     build_bridge()
 
-    # Phase 2: Network setup (iptables for LAN-only mode)
     setup_doorbell_dnat()
     setup_lan_only_firewall()
 
-    # Phase 3: Start GUTES relay (local proxy for Mars signaling)
     relay_proc = start_relay()
 
-    # Phase 4: Start go2rtc with .env and LD_PRELOAD/LD_LIBRARY_PATH
     dotenv = load_env_file()
     env = {
         **os.environ,
@@ -556,7 +468,6 @@ def main() -> None:
         env=env,
     )
 
-    # Phase 4: Wait for go2rtc (or signal)
     rc = go2rtc_proc.wait()
     if not shutting_down:
         log(f"go2rtc exited unexpectedly (code {rc})")

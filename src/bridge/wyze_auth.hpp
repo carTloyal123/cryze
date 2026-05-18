@@ -1,7 +1,4 @@
-// wyze_auth.hpp — Wyze cloud auth: login + device discovery + Mars token
-//
-// Supports caching Mars creds (7-day TTL) and Wyze login tokens to disk.
-// Set CACHE_FILE env var to control cache path (default: cache/auth.json).
+// wyze_auth.hpp — Wyze cloud auth, device discovery, Mars token registration.
 #pragma once
 
 #include <string>
@@ -28,17 +25,8 @@ struct StreamCreds {
     std::string device_ip;       // LAN IP from GDM (e.g. "192.168.1.81")
 };
 
-// Full auth flow: checks cache first, does fresh auth if needed.
-//   1. Try loading cached creds from CACHE_FILE (default: cache/auth.json)
-//   2. If cache valid: use cached Mars creds + Wyze token for wakeup
-//   3. If cache miss/expired: login → get_devices → register_mars_user → save cache
-//   4. Send wakeup command to doorbell
-// Returns ready-to-use StreamCreds. Throws on any failure.
 StreamCreds bootstrap(const std::string& device_mac = "");
 
-// Send wakeup command to a battery doorbell so it starts responding to P2P.
-// Requires valid Wyze login tokens. Called automatically by bootstrap().
-// Can also be called separately if you want to re-wake.
 void wakeup(const std::string& device_mac, const std::string& product_model);
 
 }  // namespace wyze

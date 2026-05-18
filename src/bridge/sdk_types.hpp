@@ -1,11 +1,4 @@
 // sdk_types.hpp — ABI definitions for libiotp2pav.so
-//
-// All struct layouts verified against Ghidra decompilation of:
-//   - iv_access_init (libiotp2pav.c:11647)
-//   - iv_start_av_link (libiotp2pav.c:11647)
-//   - start_av_enc_dec (libiotp2pav.c:11545)
-//   - IoTVideoPlayerImpl::play() (libiotvideo.c:23996)
-//   - IoTVideoPlayerImpl::setDataResource() (libiotvideo.c:23654)
 
 #pragma once
 
@@ -15,9 +8,7 @@
 
 namespace sdk {
 
-// ---------------------------------------------------------------------------
 // iv_access_init param blob (0x1c0 = 448 bytes)
-// ---------------------------------------------------------------------------
 
 constexpr size_t kInitParamSize = 0x1c0;
 
@@ -25,17 +16,17 @@ struct InitParamBlob {
     uint8_t bytes[kInitParamSize];
 
     void zero()                { std::memset(bytes, 0, sizeof(bytes)); }
-    int32_t& i32(size_t off)   { return *reinterpret_cast<int32_t*>(bytes + off); }
-    int16_t& i16(size_t off)   { return *reinterpret_cast<int16_t*>(bytes + off); }
-    uint64_t& u64(size_t off)  { return *reinterpret_cast<uint64_t*>(bytes + off); }
-    void*& ptr(size_t off)     { return *reinterpret_cast<void**>(bytes + off); }
-    char* cstr(size_t off)     { return reinterpret_cast<char*>(bytes + off); }
+    int32_t& field_i32(size_t off)   { return *reinterpret_cast<int32_t*>(bytes + off); }
+    int16_t& field_i16(size_t off)   { return *reinterpret_cast<int16_t*>(bytes + off); }
+    uint64_t& field_u64(size_t off)  { return *reinterpret_cast<uint64_t*>(bytes + off); }
+    void*& field_ptr(size_t off)     { return *reinterpret_cast<void**>(bytes + off); }
+    char* field_str(size_t off)     { return reinterpret_cast<char*>(bytes + off); }
 };
 
 // Field offsets within InitParamBlob.
 namespace init_off {
-    constexpr size_t marker_a         = 0x000;  // int32 = 2
-    constexpr size_t marker_b         = 0x004;  // int32 = 1
+    constexpr size_t sdk_mode         = 0x000;  // int32 = 2
+    constexpr size_t net_mode         = 0x004;  // int32 = 1
     constexpr size_t access_id        = 0x008;  // uint64
     constexpr size_t access_token_ptr = 0x010;  // const char*
     constexpr size_t access_token_len = 0x018;  // int32
@@ -48,12 +39,12 @@ namespace init_off {
     constexpr size_t user_ctx_b       = 0x1b8;  // void*
 
     // 16 callback slots (8 bytes each, gap at 0x15c skipped)
-    constexpr size_t cb[16] = {
+    constexpr size_t callback_slots[16] = {
         0x124, 0x12c, 0x134, 0x13c, 0x144, 0x14c, 0x154, 0x164,
         0x16c, 0x174, 0x17c, 0x184, 0x18c, 0x194, 0x19c, 0x1a4,
     };
 
-    constexpr const char* cb_names[16] = {
+    constexpr const char* callback_names[16] = {
         "iv_discon_av_link",              // 0
         "set_mode_callback",              // 1
         "event_callback",                 // 2
@@ -62,12 +53,12 @@ namespace init_off {
         "send_pass_through_ack_callback", // 5
         "get_mode_callback",              // 6
         "p2p_log_callback",               // 7
-        "app_access_srv_callback",        // 8  ★ APP_ONLINE
+        "app_access_srv_callback",              // 8  APP_ONLINE
         "onlmesg_callback",               // 9
         "getCurrentLocalIp",              // 10
         "rcv_speed_test_result",          // 11
         "subscribe_with_devid_resp_cb",   // 12
-        "common_get_cb_sdk",              // 13 ★ must return -1
+        "common_get_cb_sdk",              // 13 must return -1
         "common_set_cb_sdk",              // 14
         "iv_notify_connect_state_cb",     // 15
     };
@@ -78,16 +69,7 @@ constexpr int kAppOnline           = 1;
 constexpr int kAppOffline          = 2;
 constexpr int kAccessTokenError    = 3;
 
-// ---------------------------------------------------------------------------
 // av_req struct for iv_start_av_link (0xc0 = 192 bytes)
-//
-// Verified from:
-//   libiotvideo.c:24049  memcpy(auStack_108, this+0xa8, 0xc0)
-//   libiotp2pav.c:11850  memcpy(local_140+0x13c, param_1, 0xc0)
-//   libiotp2pav.c:11571  start_av_enc_dec reads callbacks at +0x48..+0xa0
-//   libiotp2pav.c:11848  context_ptr stored from param_1[0x15] (offset 0xa8)
-//   libiotp2pav.c:11851  user_id_str read from (long)param_1+0xb4
-// ---------------------------------------------------------------------------
 
 constexpr size_t kAvReqSize = 0xc0;
 
@@ -104,30 +86,22 @@ namespace av_off {
     // Decoder callbacks — passed to avctl_start_recv_and_dec via start_av_enc_dec
     constexpr size_t init_decoder     = 0x48;  // fn(chn, ctx, av_header) -> int
     constexpr size_t decode_audio     = 0x50;  // fn(chn, ctx, data, len, pts, frame)
-    constexpr size_t decode_video     = 0x58;  // fn(chn, ctx, data, len, pts, frame) ★
+    constexpr size_t decode_video     = 0x58;  // fn(chn, ctx, data, len, pts, frame)
     constexpr size_t destroy_decoder  = 0x60;  // fn(chn, ctx)
     constexpr size_t recv_av_data     = 0x68;  // fn(chn, ctx, av_data)
-    constexpr size_t cb_slot_5        = 0x70;  // (unused for receive)
+    constexpr size_t recv_user_data   = 0x70;  // fn(chn, ctx, user_data)
     constexpr size_t recv_avheader    = 0x78;  // fn(chn, ctx, av_header)
-    constexpr size_t cb_slot_7        = 0x80;  // (unused for receive)
+    constexpr size_t encoder_slot_7   = 0x80;  // (unused for receive)
 
-    // Encoder callbacks — 0x88..0xa0 — not needed for receive-only
-
-    // ★ CRITICAL — context pointer stored at channel+0x20 by iv_start_av_link
-    constexpr size_t context_ptr      = 0xa8;  // void* — must be non-NULL valid memory
+    // Must be non-NULL valid memory
+    constexpr size_t context_ptr      = 0xa8;  // void*
     constexpr size_t definition       = 0xb0;  // int32 — video definition config
     constexpr size_t user_id_str_ptr  = 0xb4;  // const char* — user ID string (optional)
     constexpr size_t flags            = 0xbc;  // byte — additional flags
 }
 
-// Fake context struct. The SDK dereferences context_ptr to check:
-//   *(long*)(ctx + 0x20) != 0 && *(long*)(*(long*)(ctx+0x10) + 0x1270) != 0
-// An all-zeros buffer ensures both checks fail and callbacks are skipped.
+// Zeroed buffer satisfying SDK null checks on context_ptr
 constexpr size_t kFakeContextSize = 0x2000;
-
-// ---------------------------------------------------------------------------
-// Function pointer typedefs
-// ---------------------------------------------------------------------------
 
 using fn_iv_access_init       = int  (*)(void* param);
 using fn_iv_access_destroy    = void (*)(void);
@@ -138,8 +112,8 @@ using fn_iv_stop_av_link      = int  (*)(uint32_t chn_id, int reason, uint16_t f
 using fn_get_sdk_version      = int  (*)(void);
 using fn_iv_get_connect_mode  = int  (*)(uint32_t chn_id, uint32_t* mode, uint32_t* sub_mode);
 using fn_iv_lan_connectable   = int  (*)(const char* dev_id);
-using fn_iv_find_dstid        = int64_t (*)(void* termunit, const char* dev_id);
-using fn_getTickCount64       = uint32_t (*)(void);
+using fn_find_device_id       = int64_t (*)(void* termunit, const char* dev_id);
+using fn_get_tick_count       = uint32_t (*)(void);
 
 // SDK symbol bundle
 struct SdkSymbols {
@@ -150,10 +124,10 @@ struct SdkSymbols {
     fn_iv_start_av_link     start_av_link;
     fn_iv_stop_av_link      stop_av_link;
     fn_get_sdk_version      get_version;
-    fn_iv_get_connect_mode  get_connect_mode;   // iv_get_connect_mode_link_chn
-    fn_iv_lan_connectable   lan_connectable;    // iv_lan_device_connectable
-    fn_iv_find_dstid        find_dstid;         // iv_find_dstid_from_tid_key_map
-    fn_getTickCount64       get_tick;            // getTickCount64
+    fn_iv_get_connect_mode  get_connect_mode;
+    fn_iv_lan_connectable   lan_connectable;
+    fn_find_device_id       find_device_id;
+    fn_get_tick_count       get_tick;
     void*                   lib_handle;
     void*                   lib_base;
 };

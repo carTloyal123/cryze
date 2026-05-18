@@ -1,6 +1,4 @@
 // wyze_auth.cpp — Wyze cloud auth with token caching.
-//
-// Flow: try_cache → (login → get_devices → register_mars_user → save_cache) → wakeup
 
 #include "wyze_auth.hpp"
 
@@ -37,7 +35,6 @@ constexpr const char* kSvGetObjList   = "c86fa16fc99d4d6580f4efeae8b4b13c";
 constexpr const char* kIotAppId       = "9319141212m2ik";
 constexpr const char* kIotSecret      = "wyze_app_secret_key_132";
 
-// DMS (Device Management Service) for run_action_batch
 constexpr const char* kDmsBase            = "https://devicemgmt-service.wyze.com";
 constexpr const char* kPathRunActionBatch = "/device-management/api/action/run_action_batch";
 
@@ -47,8 +44,6 @@ constexpr const char* kAppVer     = "com.hualai___3.13.0.784";
 constexpr const char* kAppVersion = "3.13.0.784";
 constexpr const char* kPhoneSys   = "1";
 constexpr const char* kUserAgent  = "wyze_android_3.13.0";
-
-// --- helpers ---
 
 std::string md5_hex(const std::string& data) {
     unsigned char d[MD5_DIGEST_LENGTH];
@@ -98,8 +93,6 @@ std::string env_required(const char* name) {
     return v;
 }
 
-// --- HTTP ---
-
 struct Http {
     CURL* c;
     std::string phone_id;
@@ -142,12 +135,9 @@ struct Http {
     }
 };
 
-// Module-level state (populated by bootstrap, used by wakeup)
 static std::string s_access_token;
 static std::string s_user_id;
 static std::string s_phone_id;
-
-// --- Cache ---
 
 static std::string cache_path() {
     const char* p = std::getenv("CACHE_FILE");
@@ -162,7 +152,6 @@ static void ensure_parent_dir(const std::string& path) {
     }
 }
 
-// Save all auth state to disk as JSON.
 static void save_cache(const StreamCreds& creds) {
     std::string path = cache_path();
     ensure_parent_dir(path);
@@ -191,7 +180,6 @@ static void save_cache(const StreamCreds& creds) {
                  path.c_str(), (long long)creds.expire_time);
 }
 
-// Load cached creds. Returns nullopt if cache missing, corrupted, or expired.
 static std::optional<StreamCreds> load_cache(const std::string& target_mac) {
     std::string path = cache_path();
     std::ifstream f(path);
@@ -207,7 +195,6 @@ static std::optional<StreamCreds> load_cache(const std::string& target_mac) {
 
     if (!j.contains("version") || j["version"] != 1) return std::nullopt;
 
-    // Check device MAC matches (if specified)
     std::string cached_mac = j.value("device_mac", std::string{});
     if (!target_mac.empty() && cached_mac != target_mac) {
         std::fprintf(stderr, "[cache] MAC mismatch: cached=%s target=%s\n",
@@ -215,7 +202,6 @@ static std::optional<StreamCreds> load_cache(const std::string& target_mac) {
         return std::nullopt;
     }
 
-    // Check Mars token expiry (with 1-hour safety margin)
     int64_t expire = j.value("mars_expire_time", (int64_t)0);
     int64_t now_s = now_ms() / 1000;
     int64_t margin = 3600; // 1 hour
@@ -225,7 +211,6 @@ static std::optional<StreamCreds> load_cache(const std::string& target_mac) {
         return std::nullopt;
     }
 
-    // Validate required fields
     std::string mars_id = j.value("mars_access_id", std::string{});
     std::string mars_token = j.value("mars_access_token", std::string{});
     if (mars_id.empty() || mars_token.empty()) {
@@ -233,7 +218,6 @@ static std::optional<StreamCreds> load_cache(const std::string& target_mac) {
         return std::nullopt;
     }
 
-    // Restore module-level state for wakeup
     s_access_token = j.value("wyze_access_token", std::string{});
     s_user_id = j.value("user_id", std::string{});
     s_phone_id = j.value("phone_id", std::string{});
@@ -253,8 +237,6 @@ static std::optional<StreamCreds> load_cache(const std::string& target_mac) {
 
     return creds;
 }
-
-// --- run_action_batch helper ---
 
 void do_run_action_batch(Http& http, const std::string& device_id,
                          const std::string& product_model,
@@ -305,29 +287,21 @@ void do_run_action_batch(Http& http, const std::string& device_id,
 
 }  // namespace
 
-// --- public API ---
-
 StreamCreds bootstrap(const std::string& target_mac) {
-    // --- Try cache first ---
     auto cached = load_cache(target_mac);
     if (cached) {
         std::fprintf(stderr, "[auth] using cached Mars creds (access_id=%s)\n",
                      cached->access_id.c_str());
 
-        // Wakeup still needed — doorbell sleeps between sessions.
-        // Skip if SKIP_WAKEUP=1 (doorbell connected to local relay via keepalive).
         const char* skip_wakeup = std::getenv("SKIP_WAKEUP");
         if (skip_wakeup && (std::string(skip_wakeup) == "1" || std::string(skip_wakeup) == "true")) {
-            std::fprintf(stderr, "[auth] SKIP_WAKEUP=1 — skipping cloud wakeup (doorbell on local relay)\n");
+            std::fprintf(stderr, "[auth] skipping wakeup\n");
         } else {
-        // Try with cached Wyze token; if it fails, wakeup is non-fatal.
         try {
             wakeup(cached->device_mac, cached->product_model);
         } catch (const std::exception& e) {
-            std::fprintf(stderr, "[auth] cached wakeup failed: %s\n", e.what());
-            std::fprintf(stderr, "[auth] Wyze token may be expired — doing fresh login for wakeup\n");
+            std::fprintf(stderr, "[auth] wakeup token expired, re-authenticating\n");
 
-            // Re-login just for wakeup token
             try {
                 auto email    = env_required("WYZE_EMAIL");
                 auto password = env_required("WYZE_PASSWORD");
@@ -350,7 +324,6 @@ StreamCreds bootstrap(const std::string& target_mac) {
                 s_user_id = login_resp.value("user_id", std::string{});
                 s_phone_id = http.phone_id;
 
-                // Update cache with fresh Wyze token
                 save_cache(*cached);
 
                 wakeup(cached->device_mac, cached->product_model);
@@ -364,7 +337,6 @@ StreamCreds bootstrap(const std::string& target_mac) {
     }
 
     // --- Full fresh auth ---
-    std::fprintf(stderr, "[auth] no valid cache — doing fresh auth\n");
     auto email    = env_required("WYZE_EMAIL");
     auto password = env_required("WYZE_PASSWORD");
     auto key_id   = env_required("WYZE_KEY_ID");
@@ -373,7 +345,6 @@ StreamCreds bootstrap(const std::string& target_mac) {
     Http http;
     std::fprintf(stderr, "[auth] logging in as %s...\n", email.c_str());
 
-    // 1. Login
     nlohmann::json login_body = {
         {"email",    email},
         {"password", scramble_password(password)},
@@ -392,7 +363,6 @@ StreamCreds bootstrap(const std::string& target_mac) {
         throw std::runtime_error("login failed: no access_token in response");
     std::fprintf(stderr, "[auth] login OK, user_id=%s\n", s_user_id.c_str());
 
-    // 2. Get devices
     nlohmann::json dev_body = {
         {"access_token", s_access_token},
         {"app_name",     kAppName},
@@ -413,14 +383,11 @@ StreamCreds bootstrap(const std::string& target_mac) {
     std::string device_mac, product_model;
     const auto& dev_list = dev_resp["data"]["device_list"];
     std::string device_ip;
-    for (const auto& d : dev_list) {
-        std::string mac   = d.value("mac", std::string{});
-        std::string model = d.value("product_model", std::string{});
-        std::string type  = d.value("product_type", std::string{});
-        std::string name  = d.value("nickname", std::string{});
-        std::string ip    = d.value("ip", std::string{});
-        std::fprintf(stderr, "[auth] device: %s (%s, model=%s, type=%s, ip=%s)\n",
-                     mac.c_str(), name.c_str(), model.c_str(), type.c_str(), ip.c_str());
+    for (const auto& device : dev_list) {
+        std::string mac   = device.value("mac", std::string{});
+        std::string model = device.value("product_model", std::string{});
+        std::string type  = device.value("product_type", std::string{});
+        std::string ip    = device.value("ip", std::string{});
         if (type != "Camera" || model.rfind("GW_", 0) != 0) continue;
         if (!target_mac.empty() && mac != target_mac) continue;
         device_mac    = mac;
@@ -432,7 +399,6 @@ StreamCreds bootstrap(const std::string& target_mac) {
     std::fprintf(stderr, "[auth] selected device: %s (%s)\n",
                  device_mac.c_str(), product_model.c_str());
 
-    // 3. Register Mars user
     nlohmann::json mars_body = {
         {"ttl_minutes", 10080},
         {"nonce",       std::to_string(now_ms())},
@@ -492,10 +458,8 @@ StreamCreds bootstrap(const std::string& target_mac) {
 
     std::fprintf(stderr, "[auth] Mars creds OK: access_id=%s\n", creds.access_id.c_str());
 
-    // 4. Save cache
     save_cache(creds);
 
-    // 5. Wakeup doorbell
     wakeup(device_mac, product_model);
 
     return creds;
@@ -513,7 +477,7 @@ void wakeup(const std::string& device_mac, const std::string& product_model) {
         do_run_action_batch(http, device_mac, product_model,
                             "iot-device", "wakeup",
                             {{"wakeup-live-view", 1}});
-        std::fprintf(stderr, "[auth] wakeup sent (doorbell wakes async while SDK initializes)\n");
+        std::fprintf(stderr, "[auth] wakeup sent\n");
     } catch (const std::exception& e) {
         std::fprintf(stderr, "[auth] wakeup failed (non-fatal): %s\n", e.what());
     }

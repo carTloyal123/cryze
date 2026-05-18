@@ -1,4 +1,3 @@
-// broadcast.cpp — SDK broadcast list polling and LAN injection
 #include "broadcast.hpp"
 
 #include <arpa/inet.h>
@@ -10,25 +9,41 @@
 
 namespace broadcast {
 
-// SDK ELF offsets for broadcast manager globals
-static constexpr uintptr_t kBcastMgrOff = 0x0f0438;
-static constexpr uintptr_t kTermunitOff = 0x0f0430;
+static constexpr uintptr_t kBroadcastManagerOffset = 0x0f0438;
+static constexpr uintptr_t kTerminalUnitOffset     = 0x0f0430;
 
-static uintptr_t get_bcast_mgr(const sdk::SdkSymbols& sdk) {
-    uintptr_t base = reinterpret_cast<uintptr_t>(sdk.lib_base);
-    return *reinterpret_cast<uintptr_t*>(base + kBcastMgrOff);
+namespace entry_offset {
+    constexpr size_t timestamp_general = 0x10;
+    constexpr size_t timestamp_ipv4    = 0x14;
+    constexpr size_t device_id         = 0x1c;
+    constexpr size_t port              = 0x2c;
+    constexpr size_t ipv4_addr         = 0x2e;
+    constexpr size_t lan_flag          = 0x66;
+    constexpr size_t device_string     = 0x6a;
+}
+constexpr size_t kBroadcastEntrySize = 0x8e;
+
+namespace mgr_offset {
+    constexpr size_t mutex             = 0x1c;
+    constexpr size_t list_head         = 0x5c;
+    constexpr size_t list_tail         = 0x64;
 }
 
-static uintptr_t get_termunit(const sdk::SdkSymbols& sdk) {
+static uintptr_t get_broadcast_manager(const sdk::SdkSymbols& sdk) {
     uintptr_t base = reinterpret_cast<uintptr_t>(sdk.lib_base);
-    return *reinterpret_cast<uintptr_t*>(base + kTermunitOff);
+    return *reinterpret_cast<uintptr_t*>(base + kBroadcastManagerOffset);
+}
+
+static uintptr_t get_terminal_unit(const sdk::SdkSymbols& sdk) {
+    uintptr_t base = reinterpret_cast<uintptr_t>(sdk.lib_base);
+    return *reinterpret_cast<uintptr_t*>(base + kTerminalUnitOffset);
 }
 
 int64_t resolve_dst_id(const sdk::SdkSymbols& sdk, const std::string& device_mac) {
-    uintptr_t termunit = get_termunit(sdk);
-    if (!termunit || !sdk.find_dstid) return 0;
+    uintptr_t termunit = get_terminal_unit(sdk);
+    if (!termunit || !sdk.find_device_id) return 0;
     std::string devid = "_@." + device_mac;
-    int64_t id = sdk.find_dstid(reinterpret_cast<void*>(termunit), devid.c_str());
+    int64_t id = sdk.find_device_id(reinterpret_cast<void*>(termunit), devid.c_str());
     std::fprintf(stderr, "  [LAN] resolved dst_id=%lld\n", (long long)id);
     return id;
 }
@@ -36,11 +51,11 @@ int64_t resolve_dst_id(const sdk::SdkSymbols& sdk, const std::string& device_mac
 PollResult poll(const sdk::SdkSymbols& sdk, int64_t dst_id,
                 int max_wait_sec, std::atomic<bool>& shutdown) {
     PollResult result{};
-    uintptr_t bcast_mgr = get_bcast_mgr(sdk);
+    uintptr_t bcast_mgr = get_broadcast_manager(sdk);
     if (!bcast_mgr || max_wait_sec <= 0) return result;
 
-    uintptr_t sentinel = bcast_mgr + 0x5c;
-    auto* mutex = reinterpret_cast<pthread_mutex_t*>(bcast_mgr + 0x1c);
+    uintptr_t list_head_ptr = bcast_mgr + mgr_offset::list_head;
+    auto* mutex = reinterpret_cast<pthread_mutex_t*>(bcast_mgr + mgr_offset::mutex);
 
     std::fprintf(stderr, "  [LAN] polling broadcast list (max %ds)...\n", max_wait_sec);
 
@@ -48,26 +63,26 @@ PollResult poll(const sdk::SdkSymbols& sdk, int64_t dst_id,
         if (shutdown.load()) break;
 
         pthread_mutex_lock(mutex);
-        uintptr_t* node = *reinterpret_cast<uintptr_t**>(sentinel);
-        while (reinterpret_cast<uintptr_t>(node) != sentinel) {
-            uint32_t ip = *reinterpret_cast<uint32_t*>(reinterpret_cast<uintptr_t>(node) + 0x2e);
-            int64_t nid = *reinterpret_cast<int64_t*>(reinterpret_cast<uintptr_t>(node) + 0x1c);
-            if (ip != 0 && (dst_id == 0 || nid == dst_id)) {
+        uintptr_t* current_entry = *reinterpret_cast<uintptr_t**>(list_head_ptr);
+        while (reinterpret_cast<uintptr_t>(current_entry) != list_head_ptr) {
+            uint32_t ipv4_addr = *reinterpret_cast<uint32_t*>(reinterpret_cast<uintptr_t>(current_entry) + entry_offset::ipv4_addr);
+            int64_t entry_device_id = *reinterpret_cast<int64_t*>(reinterpret_cast<uintptr_t>(current_entry) + entry_offset::device_id);
+            if (ipv4_addr != 0 && (dst_id == 0 || entry_device_id == dst_id)) {
                 result.found = true;
-                result.dst_id = nid;
-                result.ip = ip;
-                result.port = *reinterpret_cast<uint16_t*>(reinterpret_cast<uintptr_t>(node) + 0x2c);
-                result.wait_secs = ms / 1000.0;
+                result.device_id = entry_device_id;
+                result.ipv4_addr = ipv4_addr;
+                result.port = *reinterpret_cast<uint16_t*>(reinterpret_cast<uintptr_t>(current_entry) + entry_offset::port);
+                result.elapsed_seconds = ms / 1000.0;
                 break;
             }
-            node = *reinterpret_cast<uintptr_t**>(node);
+            current_entry = *reinterpret_cast<uintptr_t**>(current_entry);
         }
         pthread_mutex_unlock(mutex);
 
         if (result.found) {
-            uint8_t* b = reinterpret_cast<uint8_t*>(&result.ip);
+            uint8_t* b = reinterpret_cast<uint8_t*>(&result.ipv4_addr);
             std::fprintf(stderr, "  [LAN] doorbell found! dst_id=%lld ip=%u.%u.%u.%u:%u (%.1fs)\n",
-                         (long long)result.dst_id, b[0], b[1], b[2], b[3], result.port, result.wait_secs);
+                         (long long)result.device_id, b[0], b[1], b[2], b[3], result.port, result.elapsed_seconds);
             return result;
         }
 
@@ -84,7 +99,7 @@ PollResult poll(const sdk::SdkSymbols& sdk, int64_t dst_id,
 bool inject(const sdk::SdkSymbols& sdk, int64_t dst_id,
             const std::string& ip_str, uint16_t port,
             const std::string& device_mac) {
-    uintptr_t bcast_mgr = get_bcast_mgr(sdk);
+    uintptr_t bcast_mgr = get_broadcast_manager(sdk);
     if (!bcast_mgr || dst_id == 0) return false;
 
     struct in_addr addr;
@@ -93,30 +108,28 @@ bool inject(const sdk::SdkSymbols& sdk, int64_t dst_id,
     std::fprintf(stderr, "  [LAN] injecting: dst_id=%lld ip=%s port=%u\n",
                  (long long)dst_id, ip_str.c_str(), port);
 
-    // Broadcast list entry: 0x8e bytes (layout from Ghidra RE)
-    void* entry = std::calloc(1, 0x8e);
+    void* entry = std::calloc(1, kBroadcastEntrySize);
     if (!entry) return false;
 
-    auto e = reinterpret_cast<uintptr_t>(entry);
+    auto entry_addr = reinterpret_cast<uintptr_t>(entry);
     uint32_t now = sdk.get_tick ? sdk.get_tick() : 0;
-    *reinterpret_cast<uint32_t*>(e + 0x10) = now;
-    *reinterpret_cast<uint32_t*>(e + 0x14) = now;
-    *reinterpret_cast<int64_t*>(e + 0x1c)  = dst_id;
-    *reinterpret_cast<uint32_t*>(e + 0x2e) = addr.s_addr;
-    *reinterpret_cast<uint16_t*>(e + 0x2c) = port;
-    *reinterpret_cast<uint8_t*>(e + 0x66)  = 1;
-    std::strncpy(reinterpret_cast<char*>(e + 0x6a), device_mac.c_str(), 0x23);
+    *reinterpret_cast<uint32_t*>(entry_addr + entry_offset::timestamp_general) = now;
+    *reinterpret_cast<uint32_t*>(entry_addr + entry_offset::timestamp_ipv4)    = now;
+    *reinterpret_cast<int64_t*>(entry_addr + entry_offset::device_id)          = dst_id;
+    *reinterpret_cast<uint32_t*>(entry_addr + entry_offset::ipv4_addr)         = addr.s_addr;
+    *reinterpret_cast<uint16_t*>(entry_addr + entry_offset::port)              = port;
+    *reinterpret_cast<uint8_t*>(entry_addr + entry_offset::lan_flag)           = 1;
+    std::strncpy(reinterpret_cast<char*>(entry_addr + entry_offset::device_string), device_mac.c_str(), 0x23);
 
-    // Insert into doubly-linked list under mutex
-    auto* mutex = reinterpret_cast<pthread_mutex_t*>(bcast_mgr + 0x1c);
-    uintptr_t sentinel_addr = bcast_mgr + 0x5c;
-    auto** sentinel_prev = reinterpret_cast<uintptr_t**>(bcast_mgr + 0x64);
+    auto* mutex = reinterpret_cast<pthread_mutex_t*>(bcast_mgr + mgr_offset::mutex);
+    uintptr_t list_head_addr = bcast_mgr + mgr_offset::list_head;
+    auto** list_tail_ptr = reinterpret_cast<uintptr_t**>(bcast_mgr + mgr_offset::list_tail);
 
     pthread_mutex_lock(mutex);
-    *reinterpret_cast<uintptr_t*>(e + 0x00) = sentinel_addr;
-    *reinterpret_cast<uintptr_t*>(e + 0x08) = reinterpret_cast<uintptr_t>(*sentinel_prev);
-    **sentinel_prev = reinterpret_cast<uintptr_t>(entry);
-    *sentinel_prev = reinterpret_cast<uintptr_t*>(entry);
+    *reinterpret_cast<uintptr_t*>(entry_addr + 0x00) = list_head_addr;
+    *reinterpret_cast<uintptr_t*>(entry_addr + 0x08) = reinterpret_cast<uintptr_t>(*list_tail_ptr);
+    **list_tail_ptr = reinterpret_cast<uintptr_t>(entry);
+    *list_tail_ptr = reinterpret_cast<uintptr_t*>(entry);
     pthread_mutex_unlock(mutex);
 
     std::fprintf(stderr, "  [LAN] entry injected\n");

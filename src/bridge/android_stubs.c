@@ -1,27 +1,5 @@
-/*
- * android_stubs.c
- *
- * Bionic-libc compatibility shim so that Android-built shared libraries
- * (libiotp2pav.so from the Wyze APK) can be dlopen()ed against glibc.
- *
- * The Tencent IoTVideo P2P core needs four classes of bionic glue:
- *
- *   1. Logging      — __android_log_print  (route to stderr)
- *   2. Errno API    — __errno              (bionic's "get TLS errno *" name;
- *                                           glibc spells it __errno_location)
- *   3. BSD strings  — strlcpy              (BSDism shipped by bionic; glibc
- *                                           on Ubuntu 22.04 lacks it)
- *   4. Stdio        — __sF                 (bionic's stdin/stdout/stderr are
- *                                           macros that take addresses inside
- *                                           an array of 3 FILE objects named
- *                                           __sF. We expose a dummy array and
- *                                           wrap fprintf/fputc/fclose so that
- *                                           any FILE* falling inside __sF gets
- *                                           re-routed to the real glibc stream)
- *
- * Linked into the bridge executable as a static library; -rdynamic exports the
- * symbols so the loader resolves libiotp2pav.so's imports against them.
- */
+// android_stubs.c — Bionic libc shims for loading Android .so files on musl/glibc.
+// Linked statically; -rdynamic exports symbols for the SDK's dynamic resolver.
 
 #define _GNU_SOURCE
 #include <dlfcn.h>
@@ -30,8 +8,6 @@
 #include <stddef.h>
 #include <stdio.h>
 #include <string.h>
-
-/* ------------------------------------------------------------------ logging */
 
 enum {
     ANDROID_LOG_VERBOSE = 2, ANDROID_LOG_DEBUG, ANDROID_LOG_INFO,
@@ -61,11 +37,7 @@ int __android_log_print(int prio, const char *tag, const char *fmt, ...) {
     return n;
 }
 
-/* -------------------------------------------------------------------- errno */
-
 int *__errno(void) { return __errno_location(); }
-
-/* ------------------------------------------------------------------- strlcpy */
 
 size_t strlcpy(char *dst, const char *src, size_t size) {
     size_t srclen = strlen(src);
@@ -77,11 +49,6 @@ size_t strlcpy(char *dst, const char *src, size_t size) {
     return srclen;
 }
 
-/* ------------------------------------------------------------- arc4random */
-/*
- * BSD/bionic arc4random API. Added to glibc only in 2.36; Ubuntu 22.04 ships
- * glibc 2.35, so we provide shims backed by getrandom(2).
- */
 #include <stdint.h>
 #include <sys/random.h>
 #include <sys/syscall.h>
@@ -93,7 +60,6 @@ static void _fill_rand(void *buf, size_t n) {
         ssize_t r = getrandom(p, n, 0);
         if (r < 0) {
             if (errno == EINTR) continue;
-            /* Fallback to /dev/urandom on truly bizarre failure modes. */
             FILE *f = fopen("/dev/urandom", "rb");
             if (f) { fread(p, 1, n, f); fclose(f); }
             return;
@@ -113,21 +79,9 @@ void arc4random_buf(void *buf, size_t n) {
     _fill_rand(buf, n);
 }
 
-/* ---------------------------------------------------------------- __sF stdio
- * __sF and fprintf/vfprintf/fputc/fclose/pthread_create interposition are now
- * in bionic_interpose.c (compiled as a separate .so and LD_PRELOAD'd) to avoid
- * re-entrancy in musl's dynamic linker during dlopen.
- */
-
-/* ----------------------------------------- additional bionic-only symbols
- * Needed by libgwbase.so / libc++_shared.so / libiotvideo.so. Most are
- * thin shims around their glibc/musl counterparts. */
-
 #include <stdlib.h>
 #include <locale.h>
 
-/* FORTIFY: __vsnprintf_chk is bionic's checked vsnprintf. We just ignore
- * the buf-size hint and forward to vsnprintf. */
 int __vsnprintf_chk(char *s, size_t n, int flags, size_t bos,
                     const char *fmt, va_list ap) {
     (void)flags; (void)bos;
@@ -142,7 +96,6 @@ int __snprintf_chk(char *s, size_t n, int flags, size_t bos,
     return r;
 }
 
-/* More FORTIFY helpers. */
 size_t __strlen_chk(const char *s, size_t bos) { (void)bos; return strlen(s); }
 char  *__strcpy_chk(char *dst, const char *src, size_t bos) { (void)bos; return strcpy(dst, src); }
 char  *__strcat_chk(char *dst, const char *src, size_t bos) { (void)bos; return strcat(dst, src); }
@@ -166,11 +119,7 @@ int __vsprintf_chk(char *s, int flags, size_t bos, const char *fmt, va_list ap) 
     return vsprintf(s, fmt, ap);
 }
 
-/* bionic exposes _ctype_[c]: a 257-element table (one byte per char + sentinel)
- * used by the inline tolower/toupper/isspace etc. macros. musl/glibc don't
- * have it. Build a usable table at startup so SDK code that touches
- * _ctype_[c] gets the right classification flags. Flag bits taken from
- * bionic <ctype.h>: _U=0x01 _L=0x02 _N=0x04 _S=0x08 _P=0x10 _C=0x20 _X=0x40 _B=0x80. */
+// Bionic _ctype_ table for inline ctype macros.
 #include <ctype.h>
 unsigned char _ctype_[257];
 __attribute__((constructor)) static void _init_ctype(void) {
@@ -189,7 +138,6 @@ __attribute__((constructor)) static void _init_ctype(void) {
     }
 }
 
-/* Locale-aware strtoll/strtoull. We ignore the locale parameter. */
 long long strtoll_l(const char *s, char **end, int base, locale_t loc) {
     (void)loc; return strtoll(s, end, base);
 }
@@ -197,7 +145,6 @@ unsigned long long strtoull_l(const char *s, char **end, int base, locale_t loc)
     (void)loc; return strtoull(s, end, base);
 }
 
-/* bionic-only abort/property APIs — no-op stubs are fine. */
 void android_set_abort_message(const char *msg) {
     fprintf(stderr, "[android-abort] %s\n", msg ? msg : "(null)");
 }
@@ -207,11 +154,7 @@ int __system_property_get(const char *name, char *value) {
     return 0;
 }
 
-/* bionic's pthread cleanup ABI is different from glibc/musl. Provide no-op
- * stubs so the SDK can register/unregister cleanup handlers. These are
- * called by macros expanded inside SDK functions; the real-life behavior
- * is "run handler if thread cancels", but since we never cancel SDK
- * threads, no-ops are safe. */
+// Bionic pthread cleanup stubs (no-op; we never cancel SDK threads).
 void __pthread_cleanup_push(void *r, void (*fn)(void*), void *arg) {
     (void)r; (void)fn; (void)arg;
 }
@@ -219,7 +162,6 @@ void __pthread_cleanup_pop(void *r, int execute) {
     (void)r; (void)execute;
 }
 
-/* bionic logging variants. Forward to stderr. */
 int __android_log_write(int prio, const char *tag, const char *msg) {
     return fprintf(stderr, "[android:%s %s] %s\n", prio_str(prio),
                    tag ? tag : "-", msg ? msg : "");
@@ -240,7 +182,6 @@ void __android_log_assert(const char *cond, const char *tag, const char *fmt, ..
     abort();
 }
 
-/* Additional bionic-only FORTIFY / FD / file helpers. */
 #include <sys/socket.h>
 #include <sys/select.h>
 #include <fcntl.h>
@@ -256,12 +197,9 @@ char *__strchr_chk(const char *s, int c, size_t bos) { (void)bos; return strchr(
 char *__strrchr_chk(const char *s, int c, size_t bos) { (void)bos; return strrchr((char*)s, c); }
 int __get_h_errno(void) { return 0; }
 
-/* glibc-private fork helper. musl doesn't export it; provide a no-op (we
- * never fork after dlopen anyway, so cleanup handlers are unused). */
+// No-op atfork (never fork after dlopen).
 int __register_atfork(void (*prepare)(void), void (*parent)(void),
                       void (*child)(void), void *dso_handle) {
     (void)prepare; (void)parent; (void)child; (void)dso_handle;
     return 0;
 }
-
-/* pthread_create stack enlargement is in bionic_interpose.c (LD_PRELOAD'd) */
