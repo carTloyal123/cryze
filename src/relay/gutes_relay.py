@@ -302,6 +302,14 @@ class GutesRelay:
                 _calling_on_certified(self, term_id)
             if not ack and not is_resp:
                 has_session_key = addr in self.state.addr_session_keys
+                if not has_session_key:
+                    # Try loading bridge-captured session key (written after CERTIFY completes)
+                    captured = load_bridge_captured_session_key()
+                    if captured:
+                        self.log(f"  [RELAY] Loaded bridge-captured session key for INIT_INFO")
+                        self.state.session_keys[term_id] = captured
+                        self.state.addr_session_keys[addr] = captured
+                        has_session_key = True
                 if has_session_key:
                     req_sqnum = self._extract_req_sqnum(data, addr)
                     self.log(f"  [DEBUG] Extracted real sqnum={req_sqnum} from INIT_INFO")

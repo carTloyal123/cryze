@@ -77,14 +77,17 @@ def load_bridge_captured_session_key() -> Optional[bytes]:
     The bridge C++ code hooks the SDK's RC5 key setup and writes the 32-byte
     session key to a file after CERTIFY completes. The relay reads it here.
     """
-    key_path = os.environ.get("SESSION_KEY_PATH", "/cache/session_key_extracted.bin")
-    try:
-        data = Path(key_path).read_bytes()
-        if len(data) == 32 and data != bytes(32):
-            log.info(f"loaded bridge-captured session key from {key_path}")
-            return data
-    except (FileNotFoundError, OSError):
-        pass
+    key_path = os.environ.get("SESSION_KEY_PATH", "/app/cache/session_key_extracted.bin")
+    # Also check alternate paths for different container mount points
+    alt_paths = [key_path, "/cache/session_key_extracted.bin", "cache/session_key_extracted.bin"]
+    for path in alt_paths:
+        try:
+            data = Path(path).read_bytes()
+            if len(data) == 32 and data != bytes(32):
+                log.info(f"loaded bridge-captured session key from {path}")
+                return data
+        except (FileNotFoundError, OSError):
+            continue
     return None
 
 
