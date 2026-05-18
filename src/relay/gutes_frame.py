@@ -25,30 +25,15 @@ opt_flags bitfield:
   bit 25:     relay_flag (1=through relay server)
 """
 
+import sys
 import struct
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Optional
+
+sys.path.insert(0, str(Path(__file__).parent))
 from rc5 import RC5, GWELL_KEY, derive_per_frame_key, id_decrypt
-
-
-# Frame type constants (from giot_on_rcvpkt dispatch table)
-FRAME_TYPES = {
-    0x01: "DETECT_REQ",
-    0x02: "DETECT_RESP",
-    0x0C: "CERTIFY_REQ",
-    0x0D: "CERTIFY_RESP",  # assumed from flow
-    0xA2: "MTP_RES_RESPONSE",
-    0xA4: "CALLING_REQ",
-    0xA6: "INIT_INFO_MSG",
-    0xAA: "CALLING_ERR",
-    0xAC: "MTP_RES_VARIANT",
-    0xB2: "ON_RCV_CALLING",
-    0xB4: "ONLINE_MSG",
-    0xB7: "MTP_RES_ACK",
-    0xBD: "PASSTHROUGH_MSG",
-    0xC0: "UNKNOWN_C0",
-    0xDC: "SPECIAL_DC",
-}
+from constants import FRAME_TYPES, HEADER_SIZE
 
 
 @dataclass
@@ -110,7 +95,7 @@ class GutesFrame:
                 f"enc={enc_str} qos={qos_str} flags={flags_str}")
 
 
-HEADER_SIZE = 0x1C  # 28 bytes minimum header
+# HEADER_SIZE imported from constants (0x1C = 28 bytes)
 
 
 def parse_frame(data: bytes, direction: str = "", session_key: Optional[bytes] = None) -> Optional[GutesFrame]:

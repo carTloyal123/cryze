@@ -29,6 +29,7 @@ MARS_IPS_FALLBACK = {
 MARS_PORTS = [28800, 51701, 8443, 8000]
 
 DNAT_CHAIN = "WYZE_DNAT"
+BLOCK_CHAIN = "WYZE_BLOCK_RELAY"
 DNS_INTERCEPT_PORT = 5354  # NOT 5353 (mDNS) — avahi/homebridge may steal packets
 DNS_UPSTREAM = "8.8.8.8"
 MARS_HOSTNAME = b"wyze-mars-asrv.wyzecam.com"
@@ -435,6 +436,81 @@ def start_dns_intercept(device_ips: list[str], relay_ip: str) -> int:
         pass
     finally:
         sys.exit(0)
+
+
+def check_iptables() -> bool:
+    """Return True if iptables is available and functional."""
+    try:
+        result = subprocess.run(["iptables", "-V"], capture_output=True, timeout=5)
+        return result.returncode == 0
+    except (FileNotFoundError, subprocess.TimeoutExpired):
+        return False
+
+
+def setup_lan_only_firewall() -> bool:
+    """Block outbound TCP to cloud relay servers, allowing LAN/signaling/DNS."""
+    if not check_iptables():
+        log.info("iptables not available — skipping LAN-only firewall")
+        return False
+
+    log.info("Setting up LAN-only firewall (blocking cloud TCP relays)...")
+
+    # Clean up old rules
+    run(["iptables", "-D", "OUTPUT", "-j", BLOCK_CHAIN])
+    run(["iptables", "-F", BLOCK_CHAIN])
+    run(["iptables", "-X", BLOCK_CHAIN])
+
+    # Create chain
+    run(["iptables", "-N", BLOCK_CHAIN])
+
+    rules = [
+        # Allow LAN/localhost
+        ["-A", BLOCK_CHAIN, "-d", "192.168.0.0/16", "-j", "RETURN"],
+        ["-A", BLOCK_CHAIN, "-d", "10.0.0.0/8", "-j", "RETURN"],
+        ["-A", BLOCK_CHAIN, "-d", "172.16.0.0/12", "-j", "RETURN"],
+        ["-A", BLOCK_CHAIN, "-d", "127.0.0.0/8", "-j", "RETURN"],
+        # Allow UDP to Mars signaling ports
+        ["-A", BLOCK_CHAIN, "-p", "udp", "--dport", "28800", "-j", "RETURN"],
+        ["-A", BLOCK_CHAIN, "-p", "udp", "--dport", "51701", "-j", "RETURN"],
+        # Allow HTTPS (wakeup API) and DNS
+        ["-A", BLOCK_CHAIN, "-p", "tcp", "--dport", "443", "-j", "RETURN"],
+        ["-A", BLOCK_CHAIN, "-p", "udp", "--dport", "53", "-j", "RETURN"],
+        ["-A", BLOCK_CHAIN, "-p", "tcp", "--dport", "53", "-j", "RETURN"],
+        # Block all other TCP to external IPs
+        ["-A", BLOCK_CHAIN, "-p", "tcp", "-j", "REJECT"],
+    ]
+
+    for rule in rules:
+        run(["iptables"] + rule)
+
+    run(["iptables", "-I", "OUTPUT", "1", "-j", BLOCK_CHAIN])
+    log.info("  Cloud TCP relays blocked — video will be LAN-only")
+    return True
+
+
+def cleanup_all_iptables(device_ips: list[str] | None = None) -> None:
+    """Remove all iptables rules added by the bridge (DNAT + block + DNS).
+
+    Safe to call even if rules were never created.
+    Does NOT call sys.exit — suitable for use from entrypoint shutdown.
+    """
+    log.info("Cleaning up network iptables rules...")
+
+    # DNAT chain
+    run(["iptables", "-t", "nat", "-D", "PREROUTING", "-j", DNAT_CHAIN])
+    run(["iptables", "-t", "nat", "-F", DNAT_CHAIN])
+    run(["iptables", "-t", "nat", "-X", DNAT_CHAIN])
+
+    # LAN-only block chain
+    run(["iptables", "-D", "OUTPUT", "-j", BLOCK_CHAIN])
+    run(["iptables", "-F", BLOCK_CHAIN])
+    run(["iptables", "-X", BLOCK_CHAIN])
+
+    # DNS redirect rules
+    if device_ips:
+        cleanup_dns_iptables(device_ips)
+
+    log.info("  iptables cleanup complete")
 
 
 def cleanup_on_exit(signum, frame):

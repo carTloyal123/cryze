@@ -10,7 +10,16 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path('/work/src')))
+sys.path.insert(0, str(Path('/work/src/network')))
 from log_config import get_logger
+from network_setup import (
+    check_iptables,
+    cleanup_all_iptables,
+    detect_relay_ip,
+    resolve_mars_ips,
+    setup_iptables_dnat,
+    setup_lan_only_firewall as _network_setup_lan_only_firewall,
+)
 log = get_logger('entrypoint')
 
 WORK       = Path("/work")
@@ -236,88 +245,41 @@ def shutdown(signum: int, _frame) -> None:
 
 
 def setup_doorbell_dnat() -> bool:
-    """DNAT doorbell's Mars traffic to local relay. Requires NET_ADMIN."""
+    """DNAT doorbell's Mars traffic to local relay. Delegates to network_setup."""
     dotenv = load_env_file()
     doorbell_ip = dotenv.get("DOORBELL_IP", os.environ.get("DOORBELL_IP", ""))
     if not doorbell_ip:
         log.info("DOORBELL_IP not set — skipping DNAT setup")
         return False
 
-    # Skip if LAN_ONLY / full offline mode is not requested
     lan_only = dotenv.get("LAN_ONLY", os.environ.get("LAN_ONLY", "0"))
     if lan_only not in ("1", "true", "yes"):
         log.info("LAN_ONLY not enabled — skipping DNAT setup")
         return False
 
-    # Check if iptables is available
-    try:
-        result = subprocess.run(["iptables", "-V"], capture_output=True, timeout=5)
-        if result.returncode != 0:
-            log.info("iptables not available — skipping DNAT setup")
-            return False
-    except (FileNotFoundError, subprocess.TimeoutExpired):
-        log.info("iptables not found — skipping DNAT setup")
+    if not check_iptables():
+        log.info("iptables not available — skipping DNAT setup")
         return False
 
-    # Determine local relay IP (the host's LAN IP)
-    relay_ip = dotenv.get("RELAY_IP", os.environ.get("RELAY_IP", ""))
+    # Push .env values into environ so network_setup picks them up
+    os.environ["DOORBELL_IP"] = doorbell_ip
+    relay_ip_env = dotenv.get("RELAY_IP", os.environ.get("RELAY_IP", ""))
+    if relay_ip_env:
+        os.environ["RELAY_IP"] = relay_ip_env
+
+    relay_ip = detect_relay_ip()
     if not relay_ip:
-        # Auto-detect: use the IP on the same subnet as the doorbell
-        import socket as _sock
-        try:
-            s = _sock.socket(_sock.AF_INET, _sock.SOCK_DGRAM)
-            s.connect((doorbell_ip, 1))  # Doesn't actually send
-            relay_ip = s.getsockname()[0]
-            s.close()
-            log.info("Auto-detected relay IP: %s", relay_ip)
-        except Exception:
-            log.warning("Cannot detect relay IP — skipping DNAT setup")
-            return False
+        log.warning("Cannot detect relay IP — skipping DNAT setup")
+        return False
+    log.info("Relay IP: %s", relay_ip)
 
-    # Resolve current Mars IPs
-    mars_ips = set()
-    import socket as _sock
-    try:
-        results = _sock.getaddrinfo("wyze-mars-asrv.wyzecam.com", None, _sock.AF_INET)
-        mars_ips = set(r[4][0] for r in results)
-    except Exception:
-        pass
-    # Add known Mars IPs as fallback
-    mars_ips.update({"3.19.80.22", "35.85.21.174", "34.215.36.59",
-                     "18.118.90.161", "52.201.137.206", "3.13.212.24"})
+    mars_ips = resolve_mars_ips()
+    log.info("Setting up doorbell DNAT: %s → %s (%d Mars IPs)",
+             doorbell_ip, relay_ip, len(mars_ips))
 
-    chain = "WYZE_DOORBELL_DNAT"
-    log.info("Setting up doorbell DNAT: %s → %s", doorbell_ip, relay_ip)
-    log.info("  Mars IPs: %s", ', '.join(sorted(mars_ips)))
-
-    # Clean up old rules
-    subprocess.run(["iptables", "-t", "nat", "-D", "PREROUTING", "-j", chain],
-                   capture_output=True)
-    subprocess.run(["iptables", "-t", "nat", "-F", chain], capture_output=True)
-    subprocess.run(["iptables", "-t", "nat", "-X", chain], capture_output=True)
-
-    # Create chain
-    subprocess.run(["iptables", "-t", "nat", "-N", chain], capture_output=True)
-
-    # Add DNAT rules for each Mars IP (UDP port 28800 + 51701)
-    applied = 0
-    for mars_ip in sorted(mars_ips):
-        for port in (28800, 51701):
-            result = subprocess.run([
-                "iptables", "-t", "nat", "-A", chain,
-                "-s", doorbell_ip, "-d", mars_ip,
-                "-p", "udp", "--dport", str(port),
-                "-j", "DNAT", "--to-destination", f"{relay_ip}:{port}"
-            ], capture_output=True)
-            if result.returncode == 0:
-                applied += 1
-
-    # Insert chain into PREROUTING
-    subprocess.run(["iptables", "-t", "nat", "-I", "PREROUTING", "1", "-j", chain],
-                   capture_output=True)
-
-    if applied > 0:
-        log.info("  Applied %d DNAT rules (doorbell Mars traffic → local relay)", applied)
+    count = setup_iptables_dnat(relay_ip, mars_ips, [doorbell_ip])
+    if count > 0:
+        log.info("  Applied %d DNAT rules (doorbell Mars traffic → local relay)", count)
         return True
     else:
         log.warning("  No DNAT rules applied (iptables may lack permissions)")
@@ -325,67 +287,17 @@ def setup_doorbell_dnat() -> bool:
 
 
 def setup_lan_only_firewall() -> bool:
-    """Block outbound TCP to cloud relay servers."""
+    """Block outbound TCP to cloud relay servers. Delegates to network_setup."""
     dotenv = load_env_file()
     lan_only = dotenv.get("LAN_ONLY", os.environ.get("LAN_ONLY", "0"))
     if lan_only not in ("1", "true", "yes"):
         return False
-
-    try:
-        result = subprocess.run(["iptables", "-V"], capture_output=True, timeout=5)
-        if result.returncode != 0:
-            return False
-    except (FileNotFoundError, subprocess.TimeoutExpired):
-        return False
-
-    chain = "WYZE_BLOCK_RELAY"
-    log.info("Setting up LAN-only firewall (blocking cloud TCP relays)...")
-
-    # Clean up old rules
-    subprocess.run(["iptables", "-D", "OUTPUT", "-j", chain], capture_output=True)
-    subprocess.run(["iptables", "-F", chain], capture_output=True)
-    subprocess.run(["iptables", "-X", chain], capture_output=True)
-
-    # Create chain
-    subprocess.run(["iptables", "-N", chain], capture_output=True)
-
-    rules = [
-        # Allow LAN/localhost
-        ["-A", chain, "-d", "192.168.0.0/16", "-j", "RETURN"],
-        ["-A", chain, "-d", "10.0.0.0/8", "-j", "RETURN"],
-        ["-A", chain, "-d", "172.16.0.0/12", "-j", "RETURN"],
-        ["-A", chain, "-d", "127.0.0.0/8", "-j", "RETURN"],
-        # Allow UDP to Mars signaling ports
-        ["-A", chain, "-p", "udp", "--dport", "28800", "-j", "RETURN"],
-        ["-A", chain, "-p", "udp", "--dport", "51701", "-j", "RETURN"],
-        # Allow HTTPS (wakeup API) and DNS
-        ["-A", chain, "-p", "tcp", "--dport", "443", "-j", "RETURN"],
-        ["-A", chain, "-p", "udp", "--dport", "53", "-j", "RETURN"],
-        ["-A", chain, "-p", "tcp", "--dport", "53", "-j", "RETURN"],
-        # Block all other TCP to external IPs
-        ["-A", chain, "-p", "tcp", "-j", "REJECT"],
-    ]
-
-    for rule in rules:
-        subprocess.run(["iptables"] + rule, capture_output=True)
-
-    subprocess.run(["iptables", "-I", "OUTPUT", "1", "-j", chain], capture_output=True)
-    log.info("  Cloud TCP relays blocked — video will be LAN-only")
-    return True
+    return _network_setup_lan_only_firewall()
 
 
 def cleanup_iptables() -> None:
-    """Remove all iptables rules added by the bridge."""
-    for chain in ("WYZE_DOORBELL_DNAT", "WYZE_BLOCK_RELAY"):
-        if chain == "WYZE_DOORBELL_DNAT":
-            subprocess.run(["iptables", "-t", "nat", "-D", "PREROUTING", "-j", chain],
-                           capture_output=True)
-            subprocess.run(["iptables", "-t", "nat", "-F", chain], capture_output=True)
-            subprocess.run(["iptables", "-t", "nat", "-X", chain], capture_output=True)
-        else:
-            subprocess.run(["iptables", "-D", "OUTPUT", "-j", chain], capture_output=True)
-            subprocess.run(["iptables", "-F", chain], capture_output=True)
-            subprocess.run(["iptables", "-X", chain], capture_output=True)
+    """Remove all iptables rules added by the bridge. Delegates to network_setup."""
+    cleanup_all_iptables()
 
 
 def start_relay() -> subprocess.Popen | None:
