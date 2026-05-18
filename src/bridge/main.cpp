@@ -140,6 +140,19 @@ int main(int argc, char** argv) {
 
     if (!wait_for(init_done, 35, "iv_access_init")) return 1;
     if (init_rc.load() != 0) { LOG_ERROR("bridge", "init failed (rc=%d)", init_rc.load()); return 1; }
+
+    // Clear the subscribe-required flag so APP_ONLINE fires immediately
+    // after INIT_INFO_RESP instead of waiting for a subscribe round.
+    // unit + 0x3bc controls this in gat_rcv_init_info_msg_resp.
+    {
+        uintptr_t base = reinterpret_cast<uintptr_t>(sdk.lib_base);
+        uintptr_t unit = *reinterpret_cast<uintptr_t*>(base + 0x0f0430);
+        if (unit) {
+            *reinterpret_cast<int32_t*>(unit + 0x3bc) = 0;
+            LOG_INFO("bridge", "cleared subscribe gate at unit+0x3bc");
+        }
+    }
+
     if (!wait_for(cb::g_app_online, 30, "APP_ONLINE")) return 1;
     LOG_INFO("bridge", "SDK online!");
 
