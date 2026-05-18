@@ -136,7 +136,7 @@ static int64_t cb_get_local_ip(uint64_t ipv4_out_ptr, uint64_t ipv6_out_ptr,
 }
 
 // SDK log callback. Filtered by g_min_log_level.
-int g_min_log_level = 5;
+int g_min_log_level = 0;
 
 static int64_t cb_p2p_log(uint64_t level, uint64_t file_ptr, uint64_t fmt_ptr,
                           uint64_t a3, uint64_t a4, uint64_t a5) {
