@@ -324,7 +324,13 @@ class GutesRelay:
         # --- CALLING: log and handle wakeup routing ---
         elif ftype == TYPE_CALLING_REQ:
             self.log(f"← CALLING_REQ from {addr[0]}:{addr[1]} term_id={term_id} ({frm_len}B)")
-            self.log(f"  HEX: {self.hexdump(data, 256)}")
+            has_session_key = addr in self.state.addr_session_keys
+            if not has_session_key:
+                # No session key — proxy CALLING to Mars for proper routing
+                mars_resp = self._proxy_frame_to_mars(data, "CALLING")
+                if mars_resp:
+                    self.log(f"  [MARS-PROXY] → CALLING response from Mars ({len(mars_resp)}B)")
+                    return mars_resp
             mtp_resp = _calling_handle(self, data, addr, term_id)
             if mtp_resp:
                 return mtp_resp
