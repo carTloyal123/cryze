@@ -39,6 +39,7 @@ services:
     environment:
       - DOORBELL_IP=${DOORBELL_IP:-}
       - CHIME_IP=${CHIME_IP:-}
+      - SESSION_CACHE=/app/cache/session_keys.json
     command: >-
       python3 /app/scripts/gutes_relay.py
       --mode relay
