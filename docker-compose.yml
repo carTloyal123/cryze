@@ -21,7 +21,9 @@ services:
     volumes:
       - ./scripts:/app/scripts:ro
     env_file: .env
-    command: python3 /app/scripts/network_setup.py
+    command: >-
+      sh -c "apt-get update -qq && apt-get install -y -qq iptables conntrack >/dev/null 2>&1;
+             python3 /app/scripts/network_setup.py"
     restart: unless-stopped
     stop_grace_period: 5s
 
