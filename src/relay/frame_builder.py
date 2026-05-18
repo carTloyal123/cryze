@@ -408,7 +408,7 @@ def build_calling_ack(relay, calling_data: bytes, addr: tuple, sender_term_id: i
         certify_key = session_key[:16]
     
     doorbell_ip_str = os.environ.get('DOORBELL_IP', '192.168.1.81')
-    doorbell_port = 8899
+    doorbell_port = 51850
     
     # Extract request's plaintext sqnum
     req_sqnum = extract_request_sequence_number(calling_data, addr, state)
@@ -522,7 +522,7 @@ def build_mtp_res_resp(relay, calling_data: bytes, addr: tuple, sender_term_id: 
         state.mtp_link_counter += 1
     
     doorbell_ip = os.environ.get('DOORBELL_IP', '192.168.1.81')
-    doorbell_port = state.doorbell_mtp_port or int(os.environ.get('DOORBELL_PORT', '8899'))
+    doorbell_port = state.doorbell_mtp_port or int(os.environ.get('DOORBELL_PORT', '51850'))
     if state.doorbell_mtp_port:
         log.info(f"  [MTP] Using broadcast-discovered port {doorbell_port}")
     else:
