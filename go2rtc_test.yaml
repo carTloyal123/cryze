@@ -1,0 +1,16 @@
+streams:
+  doorbell:
+    - exec:/work/scripts/run_bridge_mac.sh#video=h264#killsignal=2#killtimeout=10
+
+rtsp:
+  listen: ":8554"
+  default_query: "video"
+
+webrtc:
+  listen: ":8555"
+
+api:
+  listen: ":1984"
+
+log:
+  level: debug
