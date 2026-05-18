@@ -38,7 +38,7 @@ MARS_IPS_FALLBACK = {
 MARS_PORTS = [28800, 51701, 8443, 8000]
 
 DNAT_CHAIN = "WYZE_DNAT"
-DNS_INTERCEPT_PORT = 5353
+DNS_INTERCEPT_PORT = 5354  # NOT 5353 (mDNS) — avahi/homebridge may steal packets
 DNS_UPSTREAM = "8.8.8.8"
 MARS_HOSTNAME = b"wyze-mars-asrv.wyzecam.com"
 
