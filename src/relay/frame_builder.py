@@ -310,6 +310,7 @@ def build_init_info_resp(relay, req_data: bytes, addr: tuple, req_sqnum: int) ->
         resp[4:12] = enc_id
         
         log.info(f"  [DEBUG] INIT_INFO_RESP session-encrypted with key={session_key[:8].hex()}...")
+        log.info(f"  [DEBUG] FULL RESP ({len(resp)}B): {resp.hex()}")
     else:
         # No session key — use opt_encrypt=0 fallback (works for bridge SDK)
         opt_flags = (1 << 21) | (1 << 25)  # opt_resp=1, bit25
