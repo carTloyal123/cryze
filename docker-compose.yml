@@ -103,6 +103,12 @@ services:
       chmod +x /output/run_bridge.sh &&
       cp -r /work/libs/* /output-libs/ 2>/dev/null || true &&
       cp /lib/ld-musl-aarch64.so.1 /output-libs/ 2>/dev/null || true &&
+      for lib in libcurl.so.4 libcrypto.so.3 libssl.so.3 libuuid.so.1 libz.so.1; do
+        cp /lib/$lib /output-libs/ 2>/dev/null || cp /usr/lib/$lib /output-libs/ 2>/dev/null || true;
+      done &&
+      for lib in libstdc++.so.6 libgcc_s.so.1 libcares.so.2 libnghttp2.so.14 libidn2.so.0 libpsl.so.5 libzstd.so.1 libbrotlidec.so.1 libbrotlicommon.so.1 libunistring.so.5; do
+        cp /usr/lib/$lib /output-libs/ 2>/dev/null || true;
+      done &&
       cp -r /apk/xapk_contents/arm64_libs/lib/arm64-v8a/* /output-apk/ 2>/dev/null || true &&
       echo 'Bridge binary + libs copied to volumes'
       "
