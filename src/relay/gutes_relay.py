@@ -296,12 +296,16 @@ class GutesRelay:
                 _calling_on_certified(self, term_id)
             # Send INIT_INFO_RESP (response, not just ACK)
             if not ack and not is_resp:
-                req_sqnum = self._extract_req_sqnum(data, addr)
-                if req_sqnum is not None:
+                # Try to extract sqnum from the frame
+                has_session_key = addr in self.state.addr_session_keys
+                if has_session_key:
+                    req_sqnum = self._extract_req_sqnum(data, addr)
                     self.log(f"  [DEBUG] Extracted real sqnum={req_sqnum} from INIT_INFO")
                 else:
-                    req_sqnum = self.state.addr_last_sqnum.get(addr, 0) + 1
-                    self.log(f"  [DEBUG] Using predicted sqnum={req_sqnum} for INIT_INFO_RESP")
+                    # No session key — predict sqnum from CERTIFY (certify_sqnum + 1)
+                    base = self.state.addr_last_sqnum.get(addr, 0)
+                    req_sqnum = (base + 1) & 0xFFFFFFFF
+                    self.log(f"  [DEBUG] Predicted sqnum={req_sqnum} (no session key, base={base})")
                 resp = self._build_init_info_resp(data, addr, req_sqnum)
                 self.log(f"  → INIT_INFO_RESP to {addr[0]}:{addr[1]} ({len(resp)}B) chkval={req_sqnum}")
                 self.log(f"  [DEBUG] RESP hex: {resp[:24].hex()}")
@@ -417,29 +421,31 @@ class GutesRelay:
         self.log(f"  [DEBUG] hash_checksum=0x{hash_checksum:08x} enc_key={encrypted_session_key.hex()}")
         
         session_key = self._decrypt_session_key(encrypted_session_key)
+        hash_verified = False
         if session_key:
             computed_hash = self._giot_hash_string(session_key)
             if computed_hash == hash_checksum:
                 self.log(f"  [RELAY] Session key VERIFIED! hash={hash_checksum:#x}")
+                hash_verified = True
             else:
                 self.log(f"  [RELAY] Session key hash mismatch: computed={computed_hash:#x} expected={hash_checksum:#x}")
-        else:
-            session_key = os.urandom(32)
-            self.log(f"  [RELAY] Could not decrypt session key, using random (WILL NOT WORK for session frames)")
+                session_key = None
         
         client_session_id = payload[0:8]
-        self.log(f"  [RELAY] CERTIFY session_key={session_key[:8].hex()}... session_id={client_session_id.hex()}")
         
-        server_key = os.urandom(32)
-        
-        # Derive actual session key: client_key XOR server_key (Gwell SDK standard)
-        session_key = bytes(a ^ b for a, b in zip(session_key, server_key))
-        
-        # Cache the XOR'd session key (matches what the SDK will compute)
-        self.state.session_keys[term_id] = session_key
-        self.state.addr_session_keys[addr] = session_key
-        self._persist_session_key(term_id, session_key)
-        self.log(f"  [RELAY] Cached XOR'd session_key={session_key[:8].hex()}... for term_id={term_id}")
+        if session_key and hash_verified:
+            # Correct session key — generate random server_key and XOR
+            server_key = os.urandom(32)
+            session_key = bytes(a ^ b for a, b in zip(session_key, server_key))
+            self.state.session_keys[term_id] = session_key
+            self.state.addr_session_keys[addr] = session_key
+            self._persist_session_key(term_id, session_key)
+            self.log(f"  [RELAY] Cached XOR'd session_key={session_key[:8].hex()}...")
+        else:
+            # Decryption failed — send all-zero server_key so SDK keeps its own key
+            # We won't know the session key, so responses use plaintext with bit25 bypass
+            server_key = bytes(32)
+            self.log(f"  [RELAY] Using plaintext mode (session key decryption failed)")
         
         # Track doorbell's source port as its MTP port
         role = _calling_identify_role(self, term_id, addr)
