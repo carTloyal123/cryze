@@ -138,7 +138,7 @@ def disable_icmp_redirects():
         try:
             with open(path, "w") as f:
                 f.write("0\n")
-        except (PermissionError, FileNotFoundError):
+        except (PermissionError, FileNotFoundError, OSError):
             pass
 
     # Also disable for the specific interface
@@ -147,7 +147,7 @@ def disable_icmp_redirects():
         try:
             with open(path, "w") as f:
                 f.write("0\n")
-        except (PermissionError, FileNotFoundError):
+        except (PermissionError, FileNotFoundError, OSError):
             pass
 
     log("  ICMP send_redirects disabled")
@@ -169,8 +169,9 @@ def enable_ip_forwarding():
         with open("/proc/sys/net/ipv4/ip_forward", "w") as f:
             f.write("1\n")
         log("  IP forwarding enabled")
-    except (PermissionError, FileNotFoundError):
-        log("  WARNING: could not enable IP forwarding")
+    except (PermissionError, FileNotFoundError, OSError) as e:
+        log(f"  WARNING: could not enable IP forwarding ({e})")
+        log(f"  Ensure host has: sysctl net.ipv4.ip_forward=1")
 
 
 def get_mac(ifname: str) -> bytes:

@@ -17,7 +17,7 @@ services:
     image: python:3.12-slim
     container_name: wyze-network
     network_mode: host
-    cap_add: [NET_ADMIN, NET_RAW]
+    privileged: true
     volumes:
       - ./scripts:/app/scripts:ro
     env_file: .env
