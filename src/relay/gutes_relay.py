@@ -309,24 +309,22 @@ class GutesRelay:
                         self.state.session_keys[term_id] = captured
                         self.state.addr_session_keys[addr] = captured
 
-                # Strategy: proxy INIT_INFO to Mars and cache the raw response.
-                # On subsequent calls with the same data, return the cached response.
-                # Mars responses are already encrypted for the current session.
-                mars_resp = self._proxy_frame_to_mars(data, "INIT_INFO", addr)
-                if mars_resp:
-                    self.log(f"  [MARS-PROXY] → INIT_INFO_RESP from Mars ({len(mars_resp)}B)")
-                    return mars_resp
-
-                # Mars unreachable — try local response with session key
                 has_session_key = addr in self.state.addr_session_keys
                 if has_session_key:
+                    # Respond locally — fast path (no Mars proxy delay)
                     req_sqnum = self._extract_req_sqnum(data, addr)
                     self.log(f"  [DEBUG] Extracted real sqnum={req_sqnum} from INIT_INFO")
                     resp = self._build_init_info_resp(data, addr, req_sqnum)
-                    self.log(f"  → INIT_INFO_RESP to {addr[0]}:{addr[1]} ({len(resp)}B)")
+                    self.log(f"  -> INIT_INFO_RESP to {addr[0]}:{addr[1]} ({len(resp)}B)")
                     self.state.addr_last_sqnum[addr] = req_sqnum
                     return resp
                 else:
+                    # No session key — proxy to Mars
+                    mars_resp = self._proxy_frame_to_mars(data, "INIT_INFO", addr)
+                    if mars_resp:
+                        self.log(f"  [MARS-PROXY] -> INIT_INFO_RESP from Mars ({len(mars_resp)}B)")
+                        return mars_resp
+                    # Fallback: local with predicted sqnum
                     base = self.state.addr_last_sqnum.get(addr, 0)
                     req_sqnum = (base + 1) & 0xFFFFFFFF
                     resp = self._build_init_info_resp(data, addr, req_sqnum)
