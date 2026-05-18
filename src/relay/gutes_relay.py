@@ -301,39 +301,47 @@ class GutesRelay:
                 self.state.clients[term_id].certified = True
                 _calling_on_certified(self, term_id)
             if not ack and not is_resp:
-                # Always try to load bridge-captured session key (most accurate)
+                # Load bridge-captured session key if available
                 captured = load_bridge_captured_session_key()
                 if captured:
                     if addr not in self.state.addr_session_keys or self.state.addr_session_keys[addr] != captured:
                         self.log(f"  [RELAY] Using bridge-captured session key={captured[:8].hex()}...")
                         self.state.session_keys[term_id] = captured
                         self.state.addr_session_keys[addr] = captured
+
+                # Strategy: proxy INIT_INFO to Mars and cache the raw response.
+                # On subsequent calls with the same data, return the cached response.
+                # Mars responses are already encrypted for the current session.
+                mars_resp = self._proxy_frame_to_mars(data, "INIT_INFO", addr)
+                if mars_resp:
+                    self.log(f"  [MARS-PROXY] → INIT_INFO_RESP from Mars ({len(mars_resp)}B)")
+                    return mars_resp
+
+                # Mars unreachable — try local response with session key
                 has_session_key = addr in self.state.addr_session_keys
                 if has_session_key:
                     req_sqnum = self._extract_req_sqnum(data, addr)
                     self.log(f"  [DEBUG] Extracted real sqnum={req_sqnum} from INIT_INFO")
                     resp = self._build_init_info_resp(data, addr, req_sqnum)
-                    self.log(f"  → INIT_INFO_RESP to {addr[0]}:{addr[1]} ({len(resp)}B) chkval={req_sqnum}")
+                    self.log(f"  → INIT_INFO_RESP to {addr[0]}:{addr[1]} ({len(resp)}B)")
                     self.state.addr_last_sqnum[addr] = req_sqnum
                     return resp
                 else:
-                    # No session key — proxy INIT_INFO to Mars too
-                    mars_resp = self._proxy_frame_to_mars(data, "INIT_INFO", addr)
-                    if mars_resp:
-                        self.log(f"  [MARS-PROXY] → INIT_INFO_RESP from Mars ({len(mars_resp)}B)")
-                        return mars_resp
-                    # Fallback to predicted sqnum
                     base = self.state.addr_last_sqnum.get(addr, 0)
                     req_sqnum = (base + 1) & 0xFFFFFFFF
-                    self.log(f"  [DEBUG] Predicted sqnum={req_sqnum} (no session key)")
                     resp = self._build_init_info_resp(data, addr, req_sqnum)
                     self.state.addr_last_sqnum[addr] = req_sqnum
                     return resp
             return None
 
-        # --- CALLING: local handling with MTP_RES_RESP ---
+        # --- CALLING: local with captured session key, or proxy to Mars ---
         elif ftype == TYPE_CALLING_REQ:
             self.log(f"← CALLING_REQ from {addr[0]}:{addr[1]} term_id={term_id} ({frm_len}B)")
+            # Ensure we have the bridge-captured session key
+            captured = load_bridge_captured_session_key()
+            if captured and addr not in self.state.addr_session_keys:
+                self.state.session_keys[term_id] = captured
+                self.state.addr_session_keys[addr] = captured
             mtp_resp = _calling_handle(self, data, addr, term_id)
             if mtp_resp:
                 return mtp_resp
