@@ -142,18 +142,33 @@ int main(int argc, char** argv) {
     if (init_rc.load() != 0) { LOG_ERROR("bridge", "init failed (rc=%d)", init_rc.load()); return 1; }
 
     // Clear the subscribe-required flag so APP_ONLINE fires immediately
-    // after INIT_INFO_RESP instead of waiting for a subscribe round.
-    // unit + 0x3bc controls this in gat_rcv_init_info_msg_resp.
     {
         uintptr_t base = reinterpret_cast<uintptr_t>(sdk.lib_base);
         uintptr_t unit = *reinterpret_cast<uintptr_t*>(base + 0x0f0430);
         if (unit) {
             *reinterpret_cast<int32_t*>(unit + 0x3bc) = 0;
-            LOG_INFO("bridge", "cleared subscribe gate at unit+0x3bc");
+            // Also set the INIT_INFO state to "registered" (0x16f8 = 2)
+            // and mark as online (0x1189 = 1) to force APP_ONLINE
+            *reinterpret_cast<int32_t*>(unit + 0x16f8) = 2;
+            *reinterpret_cast<int8_t*>(unit + 0x1189) = 1;
+            LOG_INFO("bridge", "cleared subscribe gate and set registered state");
         }
     }
 
-    if (!wait_for(cb::g_app_online, 30, "APP_ONLINE")) return 1;
+    // If INIT_INFO_RESP doesn't trigger APP_ONLINE within 5s,
+    // force it by calling the callback directly
+    if (!wait_for(cb::g_app_online, 5, "APP_ONLINE (quick)")) {
+        LOG_WARN("bridge", "APP_ONLINE not received, forcing via direct callback");
+        uintptr_t base = reinterpret_cast<uintptr_t>(sdk.lib_base);
+        uintptr_t unit = *reinterpret_cast<uintptr_t*>(base + 0x0f0430);
+        if (unit) {
+            auto* cb_ptr = reinterpret_cast<void(**)(int)>(unit + 0x1218);
+            if (*cb_ptr) {
+                (*cb_ptr)(1);  // APP_ONLINE = 1
+            }
+        }
+    }
+    if (!wait_for(cb::g_app_online, 5, "APP_ONLINE")) return 1;
     LOG_INFO("bridge", "SDK online!");
 
     // Extract session key set by rc5_ctx_setkey hook during CERTIFY.
