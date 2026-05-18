@@ -109,6 +109,7 @@ services:
       cp /work/scripts/run_bridge.sh /output/run_bridge.sh &&
       chmod +x /output/run_bridge.sh &&
       cp -r /work/libs/* /output-libs/ 2>/dev/null || true &&
+      cp /lib/ld-musl-aarch64.so.1 /output-libs/ 2>/dev/null || true &&
       cp -r /apk/xapk_contents/arm64_libs/lib/arm64-v8a/* /output-apk/ 2>/dev/null || true &&
       echo 'Bridge binary + libs copied to volumes'
       "

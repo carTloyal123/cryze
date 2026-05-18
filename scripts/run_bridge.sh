@@ -9,7 +9,11 @@
 
 set -e
 
-# ARM64 SDK environment
+# ARM64 musl linker for QEMU on x86 hosts
+if [ -f /libs/ld-musl-aarch64.so.1 ] && [ ! -f /lib/ld-musl-aarch64.so.1 ]; then
+    ln -sf /libs/ld-musl-aarch64.so.1 /lib/ld-musl-aarch64.so.1 2>/dev/null || true
+fi
+
 export LD_PRELOAD=/libs/bionic_interpose.so
 export LD_LIBRARY_PATH=/libs:/apk-libs
 
