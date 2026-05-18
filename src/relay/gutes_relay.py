@@ -24,6 +24,7 @@ from session_crypto import (
     decrypt_session_key, giot_hash_string, extract_request_sequence_number,
     verify_session_key, extract_calling_link_id, persist_session_key,
     capture_session_key_from_response, get_session_key,
+    load_bridge_captured_session_key,
 )
 from frame_builder import (
     next_sqnum as _fb_next_sqnum,
@@ -607,14 +608,24 @@ class GutesRelay:
             self._persist_session_key(term_id, session_key)
             self.log(f"  [RELAY] Cached XOR'd session_key={session_key[:8].hex()}...")
         else:
-            # Session key decryption failed — proxy CERTIFY to Mars to get the real key
-            self.log(f"  [RELAY] Session key decryption failed, proxying CERTIFY to Mars...")
-            mars_resp = self._proxy_certify_to_mars(data, term_id, addr)
-            if mars_resp:
-                return mars_resp
-            # Mars proxy failed — use plaintext fallback
-            server_key = bytes(32)
-            self.log(f"  [RELAY] Mars proxy failed, using plaintext fallback")
+            # RC5 decryption failed — try bridge-captured session key first
+            captured_key = load_bridge_captured_session_key()
+            if captured_key:
+                self.log(f"  [RELAY] Using bridge-captured session key={captured_key[:8].hex()}...")
+                # SDK has this key already (it generated it). Send all-zero server_key
+                # so SDK session key stays as: captured_key XOR 0 = captured_key
+                server_key = bytes(32)
+                self.state.session_keys[term_id] = captured_key
+                self.state.addr_session_keys[addr] = captured_key
+                self._persist_session_key(term_id, captured_key)
+            else:
+                # No captured key — proxy CERTIFY to Mars
+                self.log(f"  [RELAY] Session key decryption failed, proxying CERTIFY to Mars...")
+                mars_resp = self._proxy_certify_to_mars(data, term_id, addr)
+                if mars_resp:
+                    return mars_resp
+                server_key = bytes(32)
+                self.log(f"  [RELAY] Mars proxy failed, using plaintext fallback")
         
         # Track doorbell's source port as its MTP port
         role = _calling_identify_role(self, term_id, addr)

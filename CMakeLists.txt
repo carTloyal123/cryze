@@ -20,6 +20,7 @@ set(BRIDGE_COMMON
     src/bridge/wyze_auth.cpp
     src/bridge/callbacks.cpp
     src/bridge/broadcast.cpp
+    src/bridge/session_key.cpp
     src/bridge/signal.cpp)
 
 add_executable(bridge
@@ -47,3 +48,7 @@ target_link_options(bridge PRIVATE -rdynamic)
 
 target_link_libraries(bridge-daemon PRIVATE ${BRIDGE_LIBS})
 target_link_options(bridge-daemon PRIVATE -rdynamic)
+
+add_library(bionic_interpose SHARED src/bridge/bionic_interpose.c)
+target_compile_options(bionic_interpose PRIVATE -fPIC)
+target_link_libraries(bionic_interpose PRIVATE dl pthread)

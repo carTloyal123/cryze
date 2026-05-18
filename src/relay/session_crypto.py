@@ -71,6 +71,23 @@ def decrypt_session_key(encrypted_key: bytes) -> Optional[bytes]:
     return block1 + block2
 
 
+def load_bridge_captured_session_key() -> Optional[bytes]:
+    """Load session key captured by the bridge's rc5_ctx_setkey interpose hook.
+    
+    The bridge C++ code hooks the SDK's RC5 key setup and writes the 32-byte
+    session key to a file after CERTIFY completes. The relay reads it here.
+    """
+    key_path = os.environ.get("SESSION_KEY_PATH", "/cache/session_key_extracted.bin")
+    try:
+        data = Path(key_path).read_bytes()
+        if len(data) == 32 and data != bytes(32):
+            log.info(f"loaded bridge-captured session key from {key_path}")
+            return data
+    except (FileNotFoundError, OSError):
+        pass
+    return None
+
+
 def giot_hash_string(data: bytes) -> int:
     """Compute the hash checksum used to verify the session key.
     

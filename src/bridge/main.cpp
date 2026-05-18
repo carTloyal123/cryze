@@ -6,6 +6,7 @@
 #include "callbacks.hpp"
 #include "broadcast.hpp"
 #include "signal.hpp"
+#include "session_key.hpp"
 #include "log.hpp"
 
 #include <atomic>
@@ -141,6 +142,20 @@ int main(int argc, char** argv) {
     if (init_rc.load() != 0) { LOG_ERROR("bridge", "init failed (rc=%d)", init_rc.load()); return 1; }
     if (!wait_for(cb::g_app_online, 30, "APP_ONLINE")) return 1;
     LOG_INFO("bridge", "SDK online!");
+
+    // Extract session key set by rc5_ctx_setkey hook during CERTIFY.
+    // The key may already be available (hook fires synchronously during
+    // the CERTIFY exchange that precedes APP_ONLINE), but we allow a
+    // short grace period in case of thread scheduling delays.
+    {
+        uint8_t sk[32];
+        if (session_key::wait_for(sk, 5)) {
+            LOG_INFO("bridge", "session key: %s", session_key::to_hex(sk).c_str());
+            session_key::write_to_file(sk);
+        } else {
+            LOG_WARN("bridge", "session key not captured (hook may not have fired)");
+        }
+    }
 
     LOG_INFO("bridge", "subscribing...");
     sdk.subscribe_dev(creds.access_token.c_str(), creds.device_mac.c_str(),

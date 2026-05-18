@@ -8,14 +8,19 @@
  * Provides:
  *   - __sF array + fprintf/vfprintf/fputc/fclose translation
  *   - pthread_create with enlarged stack size
+ *   - rc5_ctx_setkey hook for session key extraction
  */
 
 #define _GNU_SOURCE
 #include <dlfcn.h>
 #include <stdio.h>
 #include <stdarg.h>
+#include <stdint.h>
+#include <stdlib.h>
 #include <pthread.h>
 #include <string.h>
+#include <fcntl.h>
+#include <unistd.h>
 
 /* ---------------------------------------------------------------- __sF stdio
  *
@@ -104,4 +109,76 @@ int pthread_create(pthread_t *t, const pthread_attr_t *a,
     int rc = _real_pthread_create(t, &my, fn, arg);
     pthread_attr_destroy(&my);
     return rc;
+}
+
+/* ----------------------------------------------- rc5_ctx_setkey session key hook
+ *
+ * The SDK calls rc5_ctx_setkey(ctx, key, key_len) to install the session
+ * encryption key after CERTIFY completes.  The certify response handler
+ * (iv_gutes_on_respfrm_certify_resp) calls it with key_len=0x20 (32 bytes).
+ *
+ * We intercept all rc5_ctx_setkey calls, and when we see a 32-byte key we
+ * store it and write it to SESSION_KEY_PATH so the relay can read it.
+ */
+
+#ifndef SESSION_KEY_PATH
+#define SESSION_KEY_PATH "/cache/session_key_extracted.bin"
+#endif
+
+/* Shared state: the captured 32-byte session key */
+static uint8_t  _session_key[32];
+static int      _session_key_valid = 0;
+static pthread_mutex_t _sk_mutex = PTHREAD_MUTEX_INITIALIZER;
+
+/* Accessor for the bridge C++ code (declared in session_key.h) */
+int interpose_get_session_key(uint8_t *out, size_t len) {
+    if (len < 32) return -1;
+    pthread_mutex_lock(&_sk_mutex);
+    int ok = _session_key_valid;
+    if (ok) memcpy(out, _session_key, 32);
+    pthread_mutex_unlock(&_sk_mutex);
+    return ok ? 0 : -1;
+}
+
+static void _write_session_key_file(const uint8_t *key) {
+    const char *path = getenv("SESSION_KEY_PATH");
+    if (!path) path = SESSION_KEY_PATH;
+
+    int fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0600);
+    if (fd >= 0) {
+        write(fd, key, 32);
+        close(fd);
+        fprintf(stderr, "[interpose] session key written to %s\n", path);
+    } else {
+        /* Fall through — we still log it to stderr as hex */
+        fprintf(stderr, "[interpose] WARNING: cannot write %s\n", path);
+    }
+}
+
+static int (*_real_rc5_ctx_setkey)(void *, const void *, unsigned short);
+
+int rc5_ctx_setkey(void *ctx, const void *key, unsigned short key_len) {
+    if (!_real_rc5_ctx_setkey)
+        _real_rc5_ctx_setkey = dlsym(RTLD_NEXT, "rc5_ctx_setkey");
+    if (!_real_rc5_ctx_setkey) return -1;
+
+    /* Log every call for debugging */
+    fprintf(stderr, "[interpose] rc5_ctx_setkey ctx=%p key_len=%u\n", ctx, key_len);
+
+    /* Capture 32-byte session keys (CERTIFY response sets exactly 0x20) */
+    if (key_len == 0x20 && key) {
+        pthread_mutex_lock(&_sk_mutex);
+        memcpy(_session_key, key, 32);
+        _session_key_valid = 1;
+        pthread_mutex_unlock(&_sk_mutex);
+
+        fprintf(stderr, "[interpose] SESSION KEY CAPTURED: ");
+        const uint8_t *k = (const uint8_t *)key;
+        for (int i = 0; i < 32; i++) fprintf(stderr, "%02x", k[i]);
+        fprintf(stderr, "\n");
+
+        _write_session_key_file(key);
+    }
+
+    return _real_rc5_ctx_setkey(ctx, key, key_len);
 }

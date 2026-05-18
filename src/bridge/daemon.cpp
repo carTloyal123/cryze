@@ -6,6 +6,7 @@
 #include "callbacks.hpp"
 #include "broadcast.hpp"
 #include "signal.hpp"
+#include "session_key.hpp"
 #include "log.hpp"
 
 #include <atomic>
@@ -188,6 +189,16 @@ int main(int argc, char** argv) {
     if (init_rc.load() != 0) return 1;
     if (!wait_for(cb::g_app_online, 30, "APP_ONLINE")) return 1;
     LOG_INFO("daemon", "SDK online");
+
+    {
+        uint8_t sk[32];
+        if (session_key::wait_for(sk, 5)) {
+            LOG_INFO("daemon", "session key: %s", session_key::to_hex(sk).c_str());
+            session_key::write_to_file(sk);
+        } else {
+            LOG_WARN("daemon", "session key not captured");
+        }
+    }
 
 
     g_sdk.subscribe_dev(creds.access_token.c_str(), creds.device_mac.c_str(),
