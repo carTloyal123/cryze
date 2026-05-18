@@ -69,7 +69,7 @@ class GutesRelay:
         self.upstream_port = int(upstream.split(':')[1])
         self.state = RelayState(keepalive_enabled=keepalive)
         self.t0 = time.time()
-        self.local_ip = local_ip or self._detect_local_ip()
+        self.local_ip = local_ip if local_ip and local_ip not in ("0.0.0.0", "") else self._detect_local_ip()
         self.session_cache_path = Path(session_cache)
         
         # Server identity — the relay needs its own stable term_id.
