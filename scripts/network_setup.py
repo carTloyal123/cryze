@@ -2,10 +2,12 @@
 """network_setup.py — One-shot network configuration for offline doorbell bridge.
 
 Runs as an init container before the relay starts. Sets up:
-  1. iptables DNAT — redirects doorbell's Mars-bound UDP to the local relay
-  2. ARP redirect — spoofs the gateway MAC so doorbell routes through us
-  3. ICMP redirect disable — prevents host from telling doorbell to bypass us
-  4. conntrack flush — clears stale NAT entries
+  1. DNS interception — redirects doorbell's DNS queries to a local responder
+     that spoofs wyze-mars-asrv.wyzecam.com → relay IP
+  2. iptables DNAT — redirects doorbell's Mars-bound UDP to the local relay
+  3. ARP redirect — spoofs the gateway MAC so doorbell routes through us
+  4. ICMP redirect disable — prevents host from telling doorbell to bypass us
+  5. conntrack flush — clears stale NAT entries
 
 Requires: network_mode=host, cap_add=[NET_ADMIN, NET_RAW]
 """
@@ -36,6 +38,9 @@ MARS_IPS_FALLBACK = {
 MARS_PORTS = [28800, 51701, 8443, 8000]
 
 DNAT_CHAIN = "WYZE_DNAT"
+DNS_INTERCEPT_PORT = 5353
+DNS_UPSTREAM = "8.8.8.8"
+MARS_HOSTNAME = b"wyze-mars-asrv.wyzecam.com"
 
 
 def log(msg: str):
@@ -266,9 +271,194 @@ def start_arp_redirect(device_ip: str, gateway_ip: str, iface: str):
         sys.exit(0)
 
 
+# ---------------------------------------------------------------------------
+# DNS interception
+# ---------------------------------------------------------------------------
+
+def parse_dns_name(data: bytes, offset: int) -> tuple[bytes, int]:
+    """Parse a DNS QNAME from *data* starting at *offset*.
+
+    Returns (dotted-name as bytes, new offset after QNAME).
+    Handles label-length encoding (no compression pointers needed for queries).
+    """
+    labels: list[bytes] = []
+    while True:
+        if offset >= len(data):
+            break
+        length = data[offset]
+        if length == 0:
+            offset += 1
+            break
+        if (length & 0xC0) == 0xC0:
+            # compression pointer — follow it (rare in queries but handle it)
+            if offset + 1 >= len(data):
+                break
+            ptr = struct.unpack("!H", data[offset:offset + 2])[0] & 0x3FFF
+            suffix, _ = parse_dns_name(data, ptr)
+            labels.append(suffix)
+            offset += 2
+            return b".".join(labels), offset
+        offset += 1
+        labels.append(data[offset:offset + length])
+        offset += length
+    return b".".join(labels), offset
+
+
+def build_dns_response(query: bytes, answer_ip: str) -> bytes:
+    """Build a minimal DNS A-record response for *query* with *answer_ip*."""
+    # Copy header, flip QR bit, set RA, 1 answer
+    if len(query) < 12:
+        return query
+    txn_id = query[:2]
+    flags = struct.pack("!H", 0x8180)  # QR=1, RD=1, RA=1, RCODE=0
+    qdcount = struct.pack("!H", 1)
+    ancount = struct.pack("!H", 1)
+    nscount = struct.pack("!H", 0)
+    arcount = struct.pack("!H", 0)
+    header = txn_id + flags + qdcount + ancount + nscount + arcount
+
+    # Question section — copy from query
+    q_start = 12
+    q_offset = q_start
+    while q_offset < len(query) and query[q_offset] != 0:
+        q_offset += 1 + query[q_offset]
+    q_offset += 1  # trailing zero
+    q_offset += 4  # QTYPE + QCLASS
+    question = query[q_start:q_offset]
+
+    # Answer — pointer to name in question (0xC00C), type A, class IN, TTL 60
+    answer = struct.pack("!H", 0xC00C)          # name pointer
+    answer += struct.pack("!HH", 1, 1)           # type A, class IN
+    answer += struct.pack("!I", 60)              # TTL 60s
+    answer += struct.pack("!H", 4)               # RDLENGTH
+    answer += socket.inet_aton(answer_ip)         # RDATA
+
+    return header + question + answer
+
+
+def dns_responder_loop(relay_ip: str):
+    """Main loop for the DNS responder child process.
+
+    Listens on 0.0.0.0:DNS_INTERCEPT_PORT (UDP).  For queries matching
+    the Mars hostname, returns *relay_ip*.  Everything else is proxied
+    to DNS_UPSTREAM.
+    """
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    sock.bind(("0.0.0.0", DNS_INTERCEPT_PORT))
+    sock.settimeout(5.0)  # allow periodic signal checks
+
+    mars_lower = MARS_HOSTNAME.lower()
+
+    while True:
+        try:
+            data, addr = sock.recvfrom(1024)
+        except socket.timeout:
+            continue
+        except OSError:
+            break
+
+        if len(data) < 12:
+            continue
+
+        # Parse QNAME from question section
+        try:
+            qname, qname_end = parse_dns_name(data, 12)
+        except Exception:
+            qname = b""
+
+        qname_lower = qname.lower()
+
+        if qname_lower == mars_lower:
+            # Spoof: return our relay IP
+            log(f"  DNS intercept: {qname.decode(errors='replace')} -> {relay_ip} (from {addr[0]}:{addr[1]})")
+            resp = build_dns_response(data, relay_ip)
+            try:
+                sock.sendto(resp, addr)
+            except OSError:
+                pass
+        else:
+            # Proxy to upstream DNS
+            try:
+                fwd = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+                fwd.settimeout(3.0)
+                fwd.sendto(data, (DNS_UPSTREAM, 53))
+                resp, _ = fwd.recvfrom(4096)
+                fwd.close()
+                sock.sendto(resp, addr)
+            except Exception:
+                pass
+
+
+def setup_dns_iptables(device_ips: list[str]):
+    """Add iptables REDIRECT rules to capture DNS queries from devices."""
+    count = 0
+    for dev_ip in device_ips:
+        # Remove existing rule if present (idempotent)
+        run([
+            "iptables", "-t", "nat", "-D", "PREROUTING",
+            "-s", dev_ip, "-p", "udp", "--dport", "53",
+            "-j", "REDIRECT", "--to-port", str(DNS_INTERCEPT_PORT),
+        ])
+        # Add the rule
+        result = run([
+            "iptables", "-t", "nat", "-A", "PREROUTING",
+            "-s", dev_ip, "-p", "udp", "--dport", "53",
+            "-j", "REDIRECT", "--to-port", str(DNS_INTERCEPT_PORT),
+        ])
+        if result.returncode == 0:
+            count += 1
+            log(f"  iptables: DNS REDIRECT {dev_ip} udp/53 -> localhost:{DNS_INTERCEPT_PORT}")
+        else:
+            log(f"  iptables: DNS REDIRECT failed for {dev_ip}: {result.stderr.strip()}")
+    return count
+
+
+def cleanup_dns_iptables(device_ips: list[str]):
+    """Remove DNS REDIRECT rules."""
+    for dev_ip in device_ips:
+        run([
+            "iptables", "-t", "nat", "-D", "PREROUTING",
+            "-s", dev_ip, "-p", "udp", "--dport", "53",
+            "-j", "REDIRECT", "--to-port", str(DNS_INTERCEPT_PORT),
+        ])
+
+
+def start_dns_intercept(device_ips: list[str], relay_ip: str) -> int:
+    """Set up DNS interception: iptables REDIRECT + forked responder.
+
+    Returns the PID of the DNS responder child process.
+    """
+    # 1. Install iptables REDIRECT rules
+    setup_dns_iptables(device_ips)
+
+    # 2. Fork a child to run the DNS responder
+    pid = os.fork()
+    if pid > 0:
+        log(f"  DNS responder listening on :{DNS_INTERCEPT_PORT} (pid={pid})")
+        return pid
+
+    # Child process
+    signal.signal(signal.SIGTERM, lambda *_: sys.exit(0))
+    signal.signal(signal.SIGINT, lambda *_: sys.exit(0))
+
+    try:
+        dns_responder_loop(relay_ip)
+    except Exception:
+        pass
+    finally:
+        sys.exit(0)
+
+
 def cleanup_on_exit(signum, frame):
     """Clean up iptables rules on SIGTERM/SIGINT."""
     log("Cleaning up network rules...")
+    # Clean up DNS REDIRECT rules
+    device_ips = [DOORBELL_IP]
+    if CHIME_IP:
+        device_ips.append(CHIME_IP)
+    cleanup_dns_iptables(device_ips)
+    # Clean up DNAT chain
     run(["iptables", "-t", "nat", "-D", "PREROUTING", "-j", DNAT_CHAIN])
     run(["iptables", "-t", "nat", "-F", DNAT_CHAIN])
     run(["iptables", "-t", "nat", "-X", DNAT_CHAIN])
@@ -302,29 +492,37 @@ def main():
     # 1. Enable IP forwarding
     enable_ip_forwarding()
 
-    # 2. Resolve Mars IPs
-    mars_ips = resolve_mars_ips()
-    log(f"  Mars IPs: {len(mars_ips)} resolved")
-
-    # 3. Set up iptables DNAT
+    # Build device list
     device_ips = [DOORBELL_IP]
     if CHIME_IP:
         device_ips.append(CHIME_IP)
+
+    # 2. DNS interception (primary mechanism for Mars redirection)
+    #    Intercepts ALL DNS queries from the doorbell (even to 8.8.8.8)
+    #    and spoofs wyze-mars-asrv.wyzecam.com → relay_ip
+    dns_pid = start_dns_intercept(device_ips, relay_ip)
+
+    # 3. Resolve Mars IPs (for DNAT fallback)
+    mars_ips = resolve_mars_ips()
+    log(f"  Mars IPs: {len(mars_ips)} resolved")
+
+    # 4. Set up iptables DNAT (fallback for already-cached DNS)
     setup_iptables_dnat(relay_ip, mars_ips, device_ips)
 
-    # 4. Disable ICMP redirects
+    # 5. Disable ICMP redirects
     disable_icmp_redirects()
 
-    # 5. Flush conntrack
+    # 6. Flush conntrack
     flush_conntrack()
 
-    # 6. Start ARP redirect (stays running as child process)
+    # 7. Start ARP redirect (needed so traffic routes through us for DNAT)
     arp_pids = []
     for dev_ip in device_ips:
         pid = start_arp_redirect(dev_ip, gateway_ip, iface)
         arp_pids.append(pid)
 
-    log(f"Network setup complete. ARP redirect pids: {arp_pids}")
+    child_pids = [dns_pid] + arp_pids
+    log(f"Network setup complete. Child pids: {child_pids} (dns={dns_pid}, arp={arp_pids})")
     log("Waiting for SIGTERM to clean up...")
 
     # Keep parent alive so Docker doesn't kill the ARP redirect children
