@@ -235,13 +235,15 @@ def build_init_info_resp(relay, req_data: bytes, addr: tuple, req_sqnum: int) ->
                 session_key = sk
                 break
     
-    # Build payload: flags2(2B) + ack_result(2B) + online_cnt(2B) + offline_cnt(2B) + device_entry(28B)
+    # Device entry: 0x1c (28) bytes
+    # +0x00: did (8B LE)  +0x0C: status (1B)  +0x0D: auth (1B)  +0x0E: srv_id (2B)  +0x10: tid (16B, zeros = use did)
     device_id = getattr(relay, 'device_numeric_id', 429728659090583)
     
     dev_entry = bytearray(28)
-    struct.pack_into('<Q', dev_entry, 0, device_id)
-    dev_entry[24] = 1  # status = online
-    dev_entry[25] = 1  # auth = authorized
+    struct.pack_into('<Q', dev_entry, 0, device_id)  # did
+    dev_entry[0x0C] = 1   # status = online
+    dev_entry[0x0D] = 1   # auth = authorized
+    # tid[0x10:0x20] stays all zeros → SDK generates id string from did
     
     flags2 = 0x0001  # bit 0 = has device list
     payload = struct.pack('<HHHH', flags2, 0, 1, 0)  # flags2, ack_result=0, online=1, offline=0
