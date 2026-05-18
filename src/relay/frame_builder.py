@@ -256,8 +256,8 @@ def build_init_info_resp(relay, req_data: bytes, addr: tuple, req_sqnum: int) ->
     CRYPTO_HDR = 0x18
     frame_size = CRYPTO_HDR + len(payload)
     resp = bytearray(frame_size)
-    resp[0] = 0x7E  # session proto
-    resp[1] = TYPE_INIT_INFO_MSG  # 0xA6 — same as request, SDK matches via opt_resp
+    resp[0] = 0x7F  # relay proto — avoids session_id routing check
+    resp[1] = TYPE_INIT_INFO_MSG  # 0xA6
     struct.pack_into('<H', resp, 2, frame_size)
     
     # term_id — use session_id from CERTIFY
@@ -277,47 +277,15 @@ def build_init_info_resp(relay, req_data: bytes, addr: tuple, req_sqnum: int) ->
     struct.pack_into('<I', resp, 0x0C, sqnum)
     struct.pack_into('<I', resp, 0x10, req_sqnum & 0xFFFFFFFF)
     
-    # opt_flags: encrypt=2 (session), opt_resp=1 (bit 21), relay_flag=1 (bit 25)
+    # opt_flags: no encryption, opt_resp=1 (bit 21), relay_flag=1 (bit 25)
     nonce = _rand.randint(0, 0x7FFF)
-    opt_flags = (nonce << 1) | (2 << 16) | (1 << 21) | (1 << 25)
+    opt_flags = (nonce << 1) | (0 << 16) | (1 << 21) | (1 << 25)
     struct.pack_into('<I', resp, 0x14, opt_flags)
     
-    # Payload (plaintext)
+    # Payload (plaintext — no session encryption needed with bit25 relay proto)
     resp[CRYPTO_HDR:CRYPTO_HDR + len(payload)] = payload
     
-    if session_key and verify_session_key(session_key, req_data):
-        # Session key verified — use session encryption
-        # chkval = req_sqnum for response matching (SDK matches pending_req.sqnum == resp.chkval)
-        struct.pack_into('<I', resp, 0x10, req_sqnum & 0xFFFFFFFF)
-        
-        # Session encrypt
-        rc5_session = RC5(block_bytes=8, rounds=6)
-        rc5_session.setkey(session_key)
-        
-        # 1. Encrypt payload (0x18+)
-        enc_payload = rc5_session.encrypt(bytes(resp[0x18:]))
-        resp[0x18:0x18 + len(enc_payload)] = enc_payload
-        
-        # 2. Encrypt sqnum+chkval (0x0C-0x13)
-        enc_sqchk = rc5_session.encrypt_block(bytes(resp[0x0C:0x14]))
-        resp[0x0C:0x14] = enc_sqchk
-        
-        # 3. Encrypt ID: RC5_enc with GWELL_KEY, then XOR with encrypted sqnum/chkval
-        rc5_id = RC5(block_bytes=8, rounds=6)
-        rc5_id.setkey(GWELL_KEY)
-        enc_id = bytearray(rc5_id.encrypt_block(bytes(resp[4:12])))
-        for i in range(4):
-            enc_id[i] ^= resp[0x0C + i]
-            enc_id[4 + i] ^= resp[0x10 + i]
-        resp[4:12] = enc_id
-        
-        log.info(f"  [DEBUG] INIT_INFO_RESP session-encrypted with key={session_key[:8].hex()}...")
-        log.info(f"  [DEBUG] FULL RESP ({len(resp)}B): {resp.hex()}")
-    else:
-        # No session key — use opt_encrypt=0 fallback (works for bridge SDK)
-        opt_flags = (1 << 21) | (1 << 25)  # opt_resp=1, bit25
-        struct.pack_into('<I', resp, 0x14, opt_flags)
-        log.info(f"  [DEBUG] INIT_INFO_RESP plaintext (no session key)")
+    log.info(f"  [DEBUG] INIT_INFO_RESP plaintext relay-proto, key ignored")
     
     log.info(f"  [DEBUG] RESP hex: {resp[:24].hex()}")
     return bytes(resp)
