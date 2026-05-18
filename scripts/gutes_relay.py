@@ -605,11 +605,8 @@ class GutesRelay:
         # Payload (plaintext)
         resp[CRYPTO_HDR:CRYPTO_HDR + len(payload)] = payload
         
-        if False and session_key and self._verify_session_key_valid(session_key, req_data):
+        if session_key and self._verify_session_key_valid(session_key, req_data):
             # Session key verified — use session encryption
-            # DISABLED: opt_encrypt=0 with opt_resp=1+bit25 works for bridge SDK
-            # and avoids session key issues. Session encryption only needed if
-            # the device firmware explicitly requires it.
             chkval = self._compute_chkval(resp)
             struct.pack_into('<I', resp, 0x10, chkval)
             # But chkval field is ALSO used for response matching — SDK reads it AFTER decrypt
