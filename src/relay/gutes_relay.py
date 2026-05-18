@@ -424,7 +424,7 @@ class GutesRelay:
         
         try:
             sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-            sock.settimeout(5.0)
+            sock.settimeout(3.0)
             sock.sendto(data, (mars_host, mars_port))
             
             # Wait for CERTIFY_RESP (and possibly CERTIFY_ACK first)
@@ -526,7 +526,7 @@ class GutesRelay:
         cache_key = client_addr or ("proxy", 0)
         if cache_key not in self._mars_proxy_socks:
             sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-            sock.settimeout(5.0)
+            sock.settimeout(3.0)
             self._mars_proxy_socks[cache_key] = sock
         sock = self._mars_proxy_socks[cache_key]
 
