@@ -1,11 +1,11 @@
 # Wyze Doorbell Bridge
 
-Offline RTSP/WebRTC bridge for the Wyze Video Doorbell Pro. Streams H.264 video via [go2rtc](https://github.com/AlexxIT/go2rtc) with sub-5-second time-to-first-frame.
+Offline RTSP/WebRTC bridge for the Wyze Video Doorbell Pro. Reverse-engineers the GUTES P2P protocol to stream H.264 video via [go2rtc](https://github.com/AlexxIT/go2rtc) without cloud dependencies.
 
 ## Requirements
 
 - Linux host with Docker (ARM64 native or x86_64 with QEMU)
-- Wyze account with API keys from https://developer-api-console.wyze.com/
+- Wyze account + API keys from https://developer-api-console.wyze.com/
 
 ## Quick Start
 
@@ -14,45 +14,46 @@ Offline RTSP/WebRTC bridge for the Wyze Video Doorbell Pro. Streams H.264 video 
 python3 scripts/setup_apk.py
 
 # 2. Configure credentials
-cp .env.example .env
-# Edit .env with your Wyze email, password, API keys, and DOORBELL_IP
+cp .env.example .env   # Edit with your Wyze email, password, API keys, DOORBELL_IP
 
-# 3. Start all services
+# 3. Start
 docker compose up -d
 
 # 4. View stream
-# Open http://localhost:1984/stream.html?src=doorbell
+open http://localhost:1984/stream.html?src=doorbell
 ```
 
-## Viewing the Stream
+## Stream URLs
 
 | Method | URL |
 |--------|-----|
-| Web UI | `http://host:1984/stream.html?src=doorbell` |
-| RTSP | `rtsp://host:8554/doorbell` |
-| ffplay | `ffplay -rtsp_transport tcp rtsp://host:8554/doorbell` |
+| Web UI | `http://HOST:1984/stream.html?src=doorbell` |
+| RTSP | `rtsp://HOST:8554/doorbell` |
+| ffplay | `ffplay -rtsp_transport tcp rtsp://HOST:8554/doorbell` |
 
-## Services
+## Configuration
 
-| Service | What it does |
-|---------|-------------|
-| `network-setup` | iptables DNAT + ARP redirect (intercepts doorbell Mars traffic) |
-| `relay` | GUTES protocol relay (handles all P2P signaling locally) |
-| `go2rtc` | Stream server (RTSP / WebRTC / API) |
-| `bridge-builder` | Compiles ARM64 bridge binary (one-shot, cached) |
+All settings via `.env` (see `.env.example`):
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `WYZE_EMAIL` | Yes | Wyze account email |
+| `WYZE_PASSWORD` | Yes | Wyze account password |
+| `WYZE_KEY_ID` | Yes | API key ID from developer console |
+| `WYZE_API_KEY` | Yes | API key secret |
+| `DOORBELL_IP` | Yes | Doorbell LAN IP (e.g. `192.168.1.81`) |
+| `SKIP_WAKEUP` | No | `1` to skip cloud wakeup (doorbell already on relay keepalive) |
+| `LAN_ONLY` | No | `1` to block cloud relay servers (force LAN video) |
 
 ## Development
 
 ```bash
-./into.sh              # Start go2rtc (dev mode)
-./into.sh build        # Compile bridge
-./into.sh run 30       # Run bridge for 30 seconds
-./into.sh shell        # Interactive shell in container
+scripts/into.sh              # Start go2rtc (dev mode)
+scripts/into.sh build        # Compile bridge
+scripts/into.sh run 30       # Run bridge for 30 seconds
+scripts/into.sh shell        # Interactive shell in container
 ```
 
-## Docs
+## Architecture
 
-- [docs/setup.md](docs/setup.md) — Docker Compose, x86 QEMU, VLC
-- [docs/architecture.md](docs/architecture.md) — Protocol details, crypto
-- [docs/offline.md](docs/offline.md) — Deployment tiers, traffic analysis
-- [docs/configuration.md](docs/configuration.md) — Environment variables
+See [docs/architecture.md](docs/architecture.md) for protocol details and system design.

@@ -15,14 +15,15 @@
 
 set -euo pipefail
 HERE="$(cd "$(dirname "$0")" && pwd)"
+ROOT="$(cd "$HERE/.." && pwd)"
 IMAGE="wyze-bridge:latest"
-COMPOSE="docker compose --env-file /dev/null -f $HERE/docker-compose.yml"
+COMPOSE="docker compose --env-file /dev/null -f $ROOT/docker-compose.yml"
 DEV="wyze-bridge-dev"
 ENV_VARS="LD_PRELOAD=/work/libs/bionic_interpose.so LD_LIBRARY_PATH=/work/libs:/apk/xapk_contents/arm64_libs/lib/arm64-v8a"
 
 # Load .env vars for dev container commands (test/run)
 load_env_vars() {
-    local env_file="$HERE/.env"
+    local env_file="$ROOT/.env"
     if [[ -f "$env_file" ]]; then
         while IFS='=' read -r key val; do
             [[ -z "$key" || "$key" == \#* ]] && continue
@@ -36,7 +37,7 @@ load_env_vars() {
 ensure_image() {
     if ! docker image inspect "$IMAGE" &>/dev/null; then
         echo "Building Docker image..."
-        docker build --platform linux/arm64 -t "$IMAGE" "$HERE"
+        docker build --platform linux/arm64 -t "$IMAGE" "$ROOT"
     fi
 }
 
@@ -47,7 +48,7 @@ ensure_dev() {
         docker rm -f "$DEV" 2>/dev/null || true
         docker run -d --name "$DEV" --platform linux/arm64 \
             --network host \
-            -v "$HERE:/work" -v "$HERE/../apk:/apk:ro" \
+            -v "$ROOT:/work" -v "$ROOT/../apk:/apk:ro" \
             --cap-add NET_ADMIN --cap-add NET_RAW \
             -w /work "$IMAGE" sleep infinity
         # Run lib setup via entrypoint.py's setup function
@@ -73,10 +74,10 @@ _ensure_relay() {
         local relay_mode="proxy"
         local relay_keepalive=""
         local relay_upstream="3.13.212.24:28800"
-        if [[ -f "$HERE/.env" ]]; then
-            relay_mode=$(grep -m1 '^RELAY_MODE=' "$HERE/.env" 2>/dev/null | cut -d= -f2 || echo "proxy")
+        if [[ -f "$ROOT/.env" ]]; then
+            relay_mode=$(grep -m1 '^RELAY_MODE=' "$ROOT/.env" 2>/dev/null | cut -d= -f2 || echo "proxy")
             [[ -z "$relay_mode" ]] && relay_mode="proxy"
-            local ka=$(grep -m1 '^RELAY_KEEPALIVE=' "$HERE/.env" 2>/dev/null | cut -d= -f2)
+            local ka=$(grep -m1 '^RELAY_KEEPALIVE=' "$ROOT/.env" 2>/dev/null | cut -d= -f2)
             [[ "$ka" == "1" || "$ka" == "true" ]] && relay_keepalive="--keepalive"
         fi
         # Resolve Mars upstream
@@ -88,7 +89,7 @@ try:
 except: print('3.13.212.24')
 " 2>/dev/null)
         [[ -n "$mars_ip" ]] && relay_upstream="${mars_ip}:28800"
-        docker exec -d "$DEV" python3 /work/scripts/gutes_relay.py \
+        docker exec -d "$DEV" python3 /work/src/relay/gutes_relay.py \
             --mode "$relay_mode" --upstream "$relay_upstream" \
             --log-file /work/relay.log --local-ip 127.0.0.1 \
             --session-cache /work/cache/session_keys.json \
@@ -135,8 +136,8 @@ _run_bridge() {
     _ensure_relay
     # Block cloud relay TCP if LAN_ONLY is set or not explicitly disabled
     local lan_only="${LAN_ONLY:-}"
-    if [[ -f "$HERE/.env" ]] && [[ -z "$lan_only" ]]; then
-        lan_only=$(grep -m1 '^LAN_ONLY=' "$HERE/.env" 2>/dev/null | cut -d= -f2 || echo "")
+    if [[ -f "$ROOT/.env" ]] && [[ -z "$lan_only" ]]; then
+        lan_only=$(grep -m1 '^LAN_ONLY=' "$ROOT/.env" 2>/dev/null | cut -d= -f2 || echo "")
     fi
     if [[ "$lan_only" == "1" || "$lan_only" == "true" ]]; then
         _block_cloud_relay
@@ -146,8 +147,8 @@ _run_bridge() {
     trap "rm -f '$envfile'" EXIT
     echo "LD_PRELOAD=/work/libs/bionic_interpose.so" >> "$envfile"
     echo "LD_LIBRARY_PATH=/work/libs:/apk/xapk_contents/arm64_libs/lib/arm64-v8a" >> "$envfile"
-    if [[ -f "$HERE/.env" ]]; then
-        grep -v '^\s*#' "$HERE/.env" | grep -v '^\s*$' >> "$envfile"
+    if [[ -f "$ROOT/.env" ]]; then
+        grep -v '^\s*#' "$ROOT/.env" | grep -v '^\s*$' >> "$envfile"
     fi
     for v in P2P_PORT_TYPE LAN_WAKEUP_DELAY LAN_WAIT DOORBELL_IP DOORBELL_PORT P2P_URL CACHE_FILE; do
         [[ -n "${!v:-}" ]] && echo "$v=${!v}" >> "$envfile"
@@ -210,7 +211,7 @@ case "${1:-up}" in
         ensure_dev
         load_env_vars
         echo "=== Starting GUTES relay ==="
-        dev_exec env $ENV_VARS python3 scripts/gutes_relay.py ${@:2}
+        dev_exec env $ENV_VARS python3 src/relay/gutes_relay.py ${@:2}
         ;;
 
     test)
@@ -228,7 +229,7 @@ case "${1:-up}" in
     clean)
         $COMPOSE down --remove-orphans 2>/dev/null || true
         docker rm -f "$DEV" 2>/dev/null || true
-        rm -rf "$HERE/libs" "$HERE/build"
+        rm -rf "$ROOT/libs" "$ROOT/build"
         echo "Stopped. Removed libs/ and build/."
         ;;
 
@@ -236,8 +237,8 @@ case "${1:-up}" in
         $COMPOSE down --remove-orphans 2>/dev/null || true
         docker rm -f "$DEV" 2>/dev/null || true
         docker rmi "$IMAGE" 2>/dev/null || true
-        rm -rf "$HERE/libs" "$HERE/build"
-        docker build --platform linux/arm64 --no-cache -t "$IMAGE" "$HERE"
+        rm -rf "$ROOT/libs" "$ROOT/build"
+        docker build --platform linux/arm64 --no-cache -t "$IMAGE" "$ROOT"
         echo "Done. Run './into.sh' to start."
         ;;
 

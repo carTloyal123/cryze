@@ -163,7 +163,7 @@ def setup_libs() -> None:
 
     # -- Compile shim libraries --
     log("Compiling bionic_interpose.so...")
-    run(f"gcc -shared -o {LIBS_DIR}/bionic_interpose.so {SRC_DIR}/bionic_interpose.c -fPIC -ldl -lpthread")
+    run(f"gcc -shared -o {LIBS_DIR}/bionic_interpose.so {SRC_DIR}/bridge/bionic_interpose.c -fPIC -ldl -lpthread")
 
     log("Creating shim libraries...")
 
@@ -483,7 +483,7 @@ def start_relay() -> subprocess.Popen | None:
             log(f"DNS resolution failed, using default upstream: {upstream}")
 
     cmd = [
-        sys.executable, str(WORK / "scripts" / "gutes_relay.py"),
+        sys.executable, str(WORK / "src" / "relay" / "gutes_relay.py"),
         "--mode", mode,
         "--upstream", upstream,
         "--log-file", log_file,

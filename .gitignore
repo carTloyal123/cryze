@@ -3,9 +3,12 @@ logs/
 .env
 libs/
 config
+cache/
+plans/
 *.h264
 *.o
 *.d
+*.pyc
+__pycache__/
 core
-plans/
-cache/
+relay.log

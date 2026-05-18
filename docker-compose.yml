@@ -1,39 +1,30 @@
 # Wyze Doorbell Bridge — Docker Compose Stack
 #
 # Usage: docker compose up
-#
-# Services:
-#   network-setup  - Init: iptables DNAT + ARP redirect (stays running for ARP)
-#   relay          - GUTES protocol relay (Python, native — no QEMU)
-#   go2rtc         - Stream server (RTSP/WebRTC/API — native)
-#   bridge-builder - One-shot: compiles arm64 bridge binary into shared volume
-#
 # Requires: Linux host with Docker, .env with Wyze credentials + DOORBELL_IP
 
 services:
 
-  # --- Network Setup (init, stays running for ARP redirect) ---
   network-setup:
     image: python:3.12-slim
     container_name: wyze-network
     network_mode: host
     privileged: true
     volumes:
-      - ./scripts:/app/scripts:ro
+      - ./src/network:/app/src/network:ro
     env_file: .env
     command: >-
       sh -c "apt-get update -qq && apt-get install -y -qq iptables conntrack >/dev/null 2>&1;
-             python3 /app/scripts/network_setup.py"
+             python3 /app/src/network/network_setup.py"
     restart: unless-stopped
     stop_grace_period: 5s
 
-  # --- GUTES Protocol Relay (Python, native) ---
   relay:
     image: python:3.12-slim
     container_name: wyze-relay
     network_mode: host
     volumes:
-      - ./scripts:/app/scripts:ro
+      - ./src/relay:/app/src/relay:ro
       - ./cache:/app/cache
     env_file: .env
     environment:
@@ -41,7 +32,7 @@ services:
       - CHIME_IP=${CHIME_IP:-}
       - SESSION_CACHE=/app/cache/session_keys.json
     command: >-
-      python3 /app/scripts/gutes_relay.py
+      python3 /app/src/relay/gutes_relay.py
       --mode relay
       --local-ip 0.0.0.0
       --log-file /app/cache/relay.log
@@ -66,7 +57,6 @@ services:
       retries: 3
       start_period: 10s
 
-  # --- Stream Server (go2rtc, native) ---
   go2rtc:
     image: alexxit/go2rtc:latest
     container_name: wyze-go2rtc
@@ -86,9 +76,6 @@ services:
         condition: service_completed_successfully
     restart: unless-stopped
 
-  # --- Bridge Builder (arm64, one-shot) ---
-  # Compiles the bridge binary and copies it + SDK libs to shared volumes.
-  # Only runs once — cached until source changes.
   bridge-builder:
     build:
       context: .
