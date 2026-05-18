@@ -42,14 +42,14 @@ def decrypt_session_key(encrypted_key: bytes) -> Optional[bytes]:
         log.info("  [RELAY] No mars_access_token available for session key decryption")
         return None
     
-    # mars_access_token: Base64 (from Wyze Mars API) or hex
+    # mars_access_token: first 128 hex chars = 64 bytes (certify key at 0x30:0x40)
     try:
-        token_bytes = base64.b64decode(access_token)
-    except Exception:
+        token_bytes = bytes.fromhex(access_token[:128])
+    except (ValueError, IndexError):
         try:
-            token_bytes = bytes.fromhex(access_token[:128])
-        except ValueError:
-            log.warning("  [RELAY] mars_access_token not valid Base64 or hex")
+            token_bytes = base64.b64decode(access_token)
+        except Exception:
+            log.warning("mars_access_token not valid hex or Base64")
             return None
     
     if len(token_bytes) < 0x40:

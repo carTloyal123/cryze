@@ -426,12 +426,12 @@ def build_calling_ack(relay, calling_data: bytes, addr: tuple, sender_term_id: i
     try:
         with open(os.path.join(os.path.dirname(__file__), '..', 'cache', 'auth.json')) as f:
             auth_data = json.load(f)
-        import base64 as _b64
         token = auth_data['mars_access_token']
         try:
-            token_bytes = _b64.b64decode(token)
-        except Exception:
             token_bytes = bytes.fromhex(token[:128])
+        except (ValueError, IndexError):
+            import base64 as _b64
+            token_bytes = _b64.b64decode(token)
         certify_key = token_bytes[0x30:0x40]
     except Exception:
         certify_key = session_key[:16]
