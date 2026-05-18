@@ -281,6 +281,16 @@ class GutesRelay:
                 self.state.addr_last_sqnum[addr] = certify_sqnum
                 self.log(f"  [DEBUG] CERTIFY plaintext sqnum={certify_sqnum}")
             if self.mode == "relay":
+                # For bridge (localhost): handle locally with captured session key
+                # For doorbell/chime (LAN devices): proxy to Mars for proper authentication
+                doorbell_ip = os.environ.get('DOORBELL_IP', '192.168.1.81')
+                chime_ip = os.environ.get('CHIME_IP', '')
+                if addr[0] in (doorbell_ip, chime_ip) and addr[0] != '127.0.0.1':
+                    self.log(f"  [RELAY] Device CERTIFY from {addr[0]} — proxying to Mars")
+                    mars_resp = self._proxy_certify_to_mars(data, term_id, addr)
+                    if mars_resp:
+                        return mars_resp
+                    self.log(f"  [RELAY] Mars proxy failed for device CERTIFY")
                 return self._handle_certify_local(data, addr, term_id)
             return None  # proxy: forward
 
@@ -301,7 +311,14 @@ class GutesRelay:
                 self.state.clients[term_id].certified = True
                 _calling_on_certified(self, term_id)
             if not ack and not is_resp:
-                # Load bridge-captured session key if available
+                # Device (doorbell/chime) INIT_INFO: proxy to Mars
+                doorbell_ip = os.environ.get('DOORBELL_IP', '192.168.1.81')
+                chime_ip = os.environ.get('CHIME_IP', '')
+                if addr[0] in (doorbell_ip, chime_ip) and addr[0] != '127.0.0.1':
+                    mars_resp = self._proxy_frame_to_mars(data, "INIT_INFO (device)", addr)
+                    if mars_resp:
+                        return mars_resp
+                # Bridge INIT_INFO: handle locally with captured session key
                 captured = load_bridge_captured_session_key()
                 if captured:
                     if addr not in self.state.addr_session_keys or self.state.addr_session_keys[addr] != captured:
