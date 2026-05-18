@@ -89,6 +89,8 @@ class GutesRelay:
 
         # Extra responses to send before the main response (e.g., ACK before RESP)
         self._extra_responses: list[tuple[bytes, tuple]] = []
+        # Persistent Mars proxy sockets per client (for session continuity)
+        self._mars_proxy_socks: dict[tuple, socket.socket] = {}
 
         # MTP relay subsystem
         self._mtp_relay = MtpRelay(self)
@@ -308,7 +310,7 @@ class GutesRelay:
                     return resp
                 else:
                     # No session key — proxy INIT_INFO to Mars too
-                    mars_resp = self._proxy_frame_to_mars(data, "INIT_INFO")
+                    mars_resp = self._proxy_frame_to_mars(data, "INIT_INFO", addr)
                     if mars_resp:
                         self.log(f"  [MARS-PROXY] → INIT_INFO_RESP from Mars ({len(mars_resp)}B)")
                         return mars_resp
@@ -327,7 +329,7 @@ class GutesRelay:
             has_session_key = addr in self.state.addr_session_keys
             if not has_session_key:
                 # No session key — proxy CALLING to Mars for proper routing
-                mars_resp = self._proxy_frame_to_mars(data, "CALLING")
+                mars_resp = self._proxy_frame_to_mars(data, "CALLING", addr)
                 if mars_resp:
                     self.log(f"  [MARS-PROXY] → CALLING response from Mars ({len(mars_resp)}B)")
                     return mars_resp
@@ -507,8 +509,8 @@ class GutesRelay:
             self.log(f"  [MARS-PROXY] Error: {e}")
             return None
 
-    def _proxy_frame_to_mars(self, data: bytes, frame_name: str) -> Optional[bytes]:
-        """Proxy a single frame to Mars and return the first response."""
+    def _proxy_frame_to_mars(self, data: bytes, frame_name: str, client_addr: tuple = None) -> Optional[bytes]:
+        """Proxy a single frame to Mars using persistent per-client upstream socket."""
         mars_host = self.upstream_host
         mars_port = self.upstream_port
         if mars_host in ("127.0.0.1", "0.0.0.0", ""):
@@ -520,9 +522,15 @@ class GutesRelay:
             except Exception:
                 return None
 
-        try:
+        # Use persistent upstream socket per client address for session continuity
+        cache_key = client_addr or ("proxy", 0)
+        if cache_key not in self._mars_proxy_socks:
             sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             sock.settimeout(5.0)
+            self._mars_proxy_socks[cache_key] = sock
+        sock = self._mars_proxy_socks[cache_key]
+
+        try:
             sock.sendto(data, (mars_host, mars_port))
             self.log(f"  [MARS-PROXY] Forwarding {frame_name} to {mars_host}:{mars_port}")
 
@@ -533,18 +541,17 @@ class GutesRelay:
                     break
                 if len(pkt) < 4:
                     continue
-                pkt_type = pkt[1]
                 pkt_opt = struct.unpack_from('<I', pkt, 0x14)[0] if len(pkt) >= 0x18 else 0
                 is_resp_pkt = bool(pkt_opt & (1 << 21))
                 is_ack_pkt = bool(pkt_opt & (1 << 20))
-                if is_resp_pkt or (not is_ack_pkt and pkt_type != data[1]):
+                if is_resp_pkt or (not is_ack_pkt and pkt[1] != data[1]):
                     self.log(f"  [MARS-PROXY] Got {frame_name} response from Mars ({len(pkt)}B)")
-                    sock.close()
                     return pkt
-                # ACKs are intermediate — keep waiting
-            sock.close()
+            self.log(f"  [MARS-PROXY] No response for {frame_name} (timeout)")
         except Exception as e:
             self.log(f"  [MARS-PROXY] Error proxying {frame_name}: {e}")
+            # Socket may be dead, remove it
+            self._mars_proxy_socks.pop(cache_key, None)
         return None
 
     def _handle_certify_local(self, data: bytes, addr: tuple, term_id: int) -> Optional[bytes]:
