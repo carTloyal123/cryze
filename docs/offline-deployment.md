@@ -1,66 +1,34 @@
 # Fully Offline Deployment
 
-## Achievement
-
 100% offline H.264 video streaming from a Wyze Video Doorbell Pro. Zero internet traffic during streaming — all GUTES P2P signaling handled by a local relay, video delivered directly over LAN UDP.
 
-**Verified**: 101 H.264 frames, 467KB video, 21.5 seconds, zero external connections.
+## Quick Start
 
-## How It Works
+### 1. Router Setup (one-time, 2 minutes)
 
-```
-Doorbell ──UDP──▶ Bridge Host ──DNAT──▶ Local Relay ──GUTES──▶ Bridge SDK
-   │                                        │                      │
-   │              (ARP spoof +               │                      │
-   │               static route)             │                      │
-   ▼                                         ▼                      ▼
-   WiFi stays on              Handles LIST/DETECT/         Streams H.264
-   even when "asleep"         CERTIFY/CALLING/MTP          via go2rtc
-                              for both bridge + doorbell    RTSP/WebRTC
-```
+Add static routes on your router so device traffic flows through the bridge host:
 
-The doorbell's Mars-bound GUTES traffic gets intercepted at three levels:
-1. **ARP spoof**: Bridge host tells doorbell "I am the gateway"
-2. **Router static route**: Router sends doorbell-destined traffic to bridge host
-3. **Host iptables DNAT**: Mars IPs redirected to local relay (192.168.1.236)
+| Destination | Next Hop | Why |
+|-------------|----------|-----|
+| `<doorbell_ip>/32` | `<bridge_host_ip>` | Doorbell's Mars traffic gets intercepted |
+| `<chime_ip>/32` | `<bridge_host_ip>` | Chime's Mars traffic gets intercepted |
 
-## Network Requirements
+On UniFi: Settings → Routing → Static Routes → Add.
 
-### Router Configuration
-
-Add static routes for both devices through the bridge host:
-
-| Destination | Next Hop | Purpose |
-|-------------|----------|---------|
-| 192.168.1.81/32 (doorbell) | 192.168.1.236 (bridge) | Return traffic flows through bridge |
-| 192.168.1.12/32 (chime) | 192.168.1.236 (bridge) | Chime traffic flows through bridge |
-
-### Bridge Host
-
-The `network-setup` Docker service automatically configures:
-- ARP spoofing (tells devices the gateway MAC is the bridge host's MAC)
-- DNS interception (spoofs `wyze-mars-asrv.wyzecam.com` to bridge IP)
-- ICMP redirect suppression (prevents devices from learning the real gateway)
-- iptables DNAT (Mars IPs redirected to local relay)
-
-Additionally, host-level iptables DNAT rules are needed:
-
-```bash
-# Add DNAT on the host (not in a container) for Mars-bound traffic
-for ip in 18.118.90.161 3.13.212.24 3.131.23.11 3.19.80.22 34.215.36.59 \
-          35.81.136.54 35.85.21.174 52.201.137.206 54.208.16.245; do
-  for port in 28800 51701 8443 8000; do
-    iptables -t nat -A WYZE_HOST_DNAT -s 192.168.1.81 -d $ip -p udp --dport $port \
-      -j DNAT --to-destination 192.168.1.236:$port
-    iptables -t nat -A WYZE_HOST_DNAT -s 192.168.1.12 -d $ip -p udp --dport $port \
-      -j DNAT --to-destination 192.168.1.236:$port
-  done
-done
-```
-
-### .env Configuration
+### 2. Configure `.env`
 
 ```env
+# Wyze credentials (login once, cached 7 days)
+WYZE_EMAIL=you@example.com
+WYZE_PASSWORD=your_password
+WYZE_KEY_ID=your_api_key_id
+WYZE_API_KEY=your_api_key
+
+# Device IPs (find in your router's client list)
+DOORBELL_IP=192.168.1.81
+CHIME_IP=192.168.1.12
+
+# Offline mode
 P2P_URL=|127.0.0.1
 RELAY_MODE=relay
 RELAY_KEEPALIVE=1
@@ -68,59 +36,72 @@ LAN_ONLY=1
 LAN_WAIT=0
 SUBSCRIBE_WAIT=3
 SKIP_WAKEUP=1
-DOORBELL_IP=192.168.1.81
-CHIME_IP=192.168.1.12
 ```
 
-## Key Technical Discoveries
+### 3. Deploy
 
-### Doorbell WiFi Behavior
+```bash
+docker compose up -d
+```
 
-The Wyze doorbell keeps WiFi active even in "sleep" mode. It drops its GUTES/Mars session but stays reachable on the LAN. This means:
-- No BT wakeup needed in most cases
-- The doorbell responds to UDP probes immediately
-- A new GUTES session establishes in ~2-3 seconds
+The `network-setup` service automatically:
+- Enables IP forwarding on the host
+- Disables ICMP redirects (prevents devices from bypassing intercept)
+- ARP-spoofs devices to route through the bridge host
+- Intercepts DNS to spoof Mars hostname → bridge IP
+- Sets up iptables DNAT for Mars server IPs → local relay
+- All with `--privileged` and `network_mode: host`
 
-### Session Key Capture
+### 4. Stream
 
-The bridge's `libiotp2pav.so` SDK performs CERTIFY key exchange. An LD_PRELOAD hook on `rc5_ctx_setkey` captures the 32-byte session key when CERTIFY completes. This key is shared with the relay for session-encrypted CALLING/MTP_RES_RESP frames.
+Access via go2rtc at `http://<bridge_host_ip>:1984`. Streams available as RTSP (`:8554`), WebRTC, or HLS.
 
-### APP_ONLINE Bypass
+## How It Works
 
-The SDK's `gat_rcv_init_info_msg_resp` checks `unit+0x3bc` before firing APP_ONLINE. This subscribe-gate flag is cleared by writing 0 directly to the SDK's memory after `iv_access_init`. A fallback direct callback invocation ensures APP_ONLINE fires even if the INIT_INFO_RESP format doesn't exactly match Mars's response.
+```
+Doorbell ─WiFi─▶ Router ─static route─▶ Bridge Host
+                                           │
+                               iptables DNAT + DNS spoof
+                                           │
+                                    ┌──────┴──────┐
+                                    │  Local      │
+                                    │  GUTES      │──▶ go2rtc (RTSP/WebRTC)
+                                    │  Relay      │
+                                    └─────────────┘
+```
+
+1. Doorbell wakes from sleep, resolves `wyze-mars-asrv.wyzecam.com` via DNS
+2. DNS intercepted → returns bridge host IP instead of real Mars
+3. Doorbell connects to our relay (thinking it's Mars)
+4. Relay handles LIST/DETECT/CERTIFY/CALLING — all locally
+5. Bridge SDK connects via relay, establishes AV link
+6. Doorbell streams H.264 directly to bridge over LAN UDP
 
 ## What Requires Internet
 
-| Operation | Internet? | When |
-|-----------|-----------|------|
-| Initial Wyze login | Yes | Once, cached 7 days |
-| Mars token registration | Yes | Once, cached 7 days |
-| DMS wakeup (cold start) | Optional | Only if doorbell WiFi is off |
-| GUTES signaling | No | Local relay |
-| Video streaming | No | Direct LAN P2P |
+| Operation | Internet? | Frequency |
+|-----------|-----------|-----------|
+| Wyze login + Mars token | Yes | Once per 7 days (cached) |
+| DMS wakeup (deep sleep) | Optional | Only if doorbell WiFi is off |
+| GUTES signaling | No | Always local |
+| Video streaming | No | Always LAN |
 
-After the initial auth (cached for 7 days), the system operates with zero internet for weeks. The DMS wakeup is only needed if the doorbell enters true deep sleep (very low battery), which rarely happens when RELAY_KEEPALIVE maintains the session.
+After initial auth cache, the system runs offline indefinitely. The DMS wakeup (`SKIP_WAKEUP=0`) is only needed when the doorbell enters true deep sleep (WiFi off). With `RELAY_KEEPALIVE=1`, the relay maintains the doorbell's session to prevent sleep.
 
-## Architecture
+## Doorbell Sleep Behavior
 
-```
-┌─────────────────────────────────────────────────┐
-│              Docker (ARM64 QEMU)                 │
-│                                                  │
-│  ┌──────────┐  ┌───────────┐  ┌──────────┐     │
-│  │ go2rtc   │  │  GUTES    │  │  Bridge  │     │
-│  │ RTSP/    │◀═│  Relay    │  │  (C++)   │     │
-│  │ WebRTC   │  │  :28800   │  │  SDK     │     │
-│  │ :1984    │  └─────┬─────┘  └────┬─────┘     │
-│  └──────────┘        │             │            │
-└──────────────────────│─────────────│────────────┘
-                       │             │
-              Host iptables DNAT     │ H.264 stdout
-                       │             │
-         ┌─────────────┘             │
-         │                           │
-   ┌─────┴──────┐            ┌──────┴───────┐
-   │  Doorbell   │───UDP P2P──│   Bridge     │
-   │ 192.168.1.81│  (H.264)  │ 192.168.1.236│
-   └─────────────┘            └──────────────┘
-```
+The Wyze doorbell keeps WiFi active even when "asleep" — it just drops its GUTES session. When a new connection comes (via our relay), it responds in ~2 seconds. True deep sleep (WiFi off) only happens after extended idle or very low battery.
+
+## Technical Details
+
+### Session Key Capture
+An LD_PRELOAD hook on `rc5_ctx_setkey` captures the 32-byte session key from the SDK's CERTIFY exchange. This enables the relay to session-encrypt CALLING and MTP frames.
+
+### APP_ONLINE Bypass
+The SDK's subscribe-gate flag (`unit+0x3bc`) is cleared after init, and the APP_ONLINE callback is invoked directly if INIT_INFO_RESP isn't accepted within 5 seconds.
+
+### Network Intercept Stack
+- **ARP spoof**: Tells devices the gateway MAC is the bridge host's MAC (500ms intervals + broadcast)
+- **ICMP redirect suppression**: Disabled on ALL interfaces to prevent devices from learning the real gateway
+- **DNS intercept**: Spoofs `wyze-mars-asrv.wyzecam.com` → bridge IP on port 5354
+- **iptables DNAT**: Mars IPs × ports (28800, 51701, 8443, 8000) → local relay
