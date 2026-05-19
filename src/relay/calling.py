@@ -57,35 +57,27 @@ def handle_calling(relay, data: bytes, addr: tuple, sender_term_id: int) -> Opti
             if target and (time.time() - target.last_seen) < 30:
                 _route_calling_to(relay, data, target, sender_term_id)
             else:
-                # Doorbell offline — route CALLING to chime instead
-                # The chime acts as relay, forwarding CALLING to doorbell via BT/WiFi
+                # Doorbell offline — send WAKEUP to chime + forward CALLING
+                log.info(f"  [CALLING] Doorbell offline, triggering chime wakeup")
+                _trigger_chime_wakeup(relay)
                 if state.chime_term_id:
                     chime = state.clients.get(state.chime_term_id)
-                    if chime and (time.time() - chime.last_seen) < 60:
-                        log.info(f"  [CALLING] Doorbell offline, routing to chime for BT wakeup")
+                    if chime and (time.time() - chime.last_seen) < 120:
                         _route_calling_to(relay, data, chime, sender_term_id)
-                    else:
-                        log.info(f"  [CALLING] Chime stale, queuing CALLING")
-                        state.pending_callings.append(PendingWakeup(
-                            calling_data=data, bridge_term_id=sender_term_id,
-                            timestamp=time.time(), timeout=60.0))
-                else:
-                    log.info(f"  [CALLING] No chime connected, queuing CALLING")
-                    state.pending_callings.append(PendingWakeup(
-                        calling_data=data, bridge_term_id=sender_term_id,
-                        timestamp=time.time(), timeout=60.0))
-        else:
-            # Can't determine destination — route to chime as fallback
-            if state.chime_term_id:
-                chime = state.clients.get(state.chime_term_id)
-                if chime and (time.time() - chime.last_seen) < 60:
-                    log.info(f"  [CALLING] Unknown dest, routing to chime")
-                    _route_calling_to(relay, data, chime, sender_term_id)
-            else:
-                log.info(f"  [CALLING] No chime, no doorbell — queuing")
                 state.pending_callings.append(PendingWakeup(
                     calling_data=data, bridge_term_id=sender_term_id,
-                    timestamp=time.time(), timeout=60.0))
+                    timestamp=time.time(), timeout=90.0))
+        else:
+            # Can't determine destination — send WAKEUP to chime as fallback
+            log.info(f"  [CALLING] Unknown dest, triggering chime wakeup")
+            _trigger_chime_wakeup(relay)
+            if state.chime_term_id:
+                chime = state.clients.get(state.chime_term_id)
+                if chime and (time.time() - chime.last_seen) < 120:
+                    _route_calling_to(relay, data, chime, sender_term_id)
+            state.pending_callings.append(PendingWakeup(
+                calling_data=data, bridge_term_id=sender_term_id,
+                timestamp=time.time(), timeout=90.0))
         
         # Generate MTP_RES_RESP to direct the bridge to our local TCP relay
         # This tells the SDK: "connect to our relay for media transport"
@@ -174,33 +166,43 @@ def _route_calling_to(relay, data: bytes, target: ClientSession, sender_term_id:
 
 
 def _trigger_chime_wakeup(relay):
-    """Send a wakeup command to the chime via GUTES.
+    """Send a WAKEUP frame to the chime to trigger BT doorbell wake.
     
-    The chime is always connected (it's plugged in). We need to send it
-    a GDM PASSTHROUGH frame that instructs it to wake the doorbell via BT.
-    
-    From the RE: the wakeup is triggered by a PASSTHROUGH frame (type 0xBD)
-    containing a GDM action_key='wakeup' with action_params={'wakeup-live-view': 1}.
-    
-    The exact frame format will be determined once we capture the chime's
-    traffic through our relay. For now, this is a placeholder.
+    Sends a WAKEUP (0xBB) frame to the chime's GUTES session.
+    Also forwards the raw CALLING frame for the chime to relay.
     """
     state = relay.state
     if not state.chime_term_id:
-        log.info(f"  [WAKEUP] No chime connected — cannot trigger local wakeup")
-        log.info(f"  [WAKEUP] Falling back to cloud wakeup (DMS HTTP)")
+        log.info(f"  [WAKEUP] No chime connected")
         return
     
     chime = state.clients.get(state.chime_term_id)
-    if not chime or (time.time() - chime.last_seen) > 60:
-        log.info(f"  [WAKEUP] Chime session stale — cannot trigger local wakeup")
+    if not chime or (time.time() - chime.last_seen) > 120:
+        log.info(f"  [WAKEUP] Chime session stale")
         return
     
-    # TODO: Build and send the actual wakeup PASSTHROUGH frame to chime
-    # This will be filled in once we capture the chime's GDM traffic
-    # and understand what frame triggers the BT wakeup
-    log.info(f"  [WAKEUP] Would send wakeup to chime term_id={state.chime_term_id}")
-    log.info(f"  [WAKEUP] (pending: capture chime traffic to learn wakeup frame format)")
+    # Build WAKEUP frame (type 0xBB)
+    # Simple format: header(28B) with opt_encrypt=0, bit25=1, no payload
+    wakeup = bytearray(HEADER_SIZE)
+    wakeup[0] = 0x7F  # relay proto
+    wakeup[1] = 0xBB  # WAKEUP
+    struct.pack_into('<H', wakeup, 2, HEADER_SIZE)
+    # term_id: use relay's server term_id
+    struct.pack_into('<q', wakeup, 4, relay.server_term_id)
+    sqnum = relay.server_sqnum
+    relay.server_sqnum = (relay.server_sqnum + 1) & 0xFFFFFFFF
+    struct.pack_into('<I', wakeup, 0x0C, sqnum)
+    struct.pack_into('<I', wakeup, 0x10, 0)
+    # opt_flags: bit25=1 (relay flag)
+    struct.pack_into('<I', wakeup, 0x14, (1 << 25))
+    
+    # Send to chime
+    if chime.our_port in relay.relay_socks:
+        try:
+            relay.relay_socks[chime.our_port].sendto(bytes(wakeup), chime.addr)
+            log.info(f"  [WAKEUP] Sent WAKEUP (0xBB) to chime {chime.addr[0]}:{chime.addr[1]}")
+        except OSError as e:
+            log.info(f"  [WAKEUP] Send failed: {e}")
 
 
 def deliver_pending_callings(relay, doorbell_term_id: int):
