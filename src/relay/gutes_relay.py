@@ -253,6 +253,12 @@ class GutesRelay:
             client.last_seen = time.time()
             client.frames_in += 1
             self.state.addr_to_term[addr] = term_id
+            # Detailed capture for chime and doorbell frames
+            chime_ip = os.environ.get('CHIME_IP', '192.168.1.12')
+            doorbell_ip = os.environ.get('DOORBELL_IP', '192.168.1.81')
+            if addr[0] in (chime_ip, doorbell_ip) and not is_new:
+                self.log(f"  [DEVICE-IN] {addr[0]}:{addr[1]} type=0x{ftype:02x}({type_name}) "
+                        f"len={frm_len} enc={encrypt_mode} hex={self.hexdump(data, 256)}")
 
         # --- DETECT: always respond locally (we want to win the race) ---
         if ftype == TYPE_DETECT_REQ:
@@ -1001,6 +1007,7 @@ class GutesRelay:
         type_name = FRAME_TYPES.get(ftype, f"0x{ftype:02X}")
         
         sender_ip = sender_addr[0]
+        chime_ip = os.environ.get('CHIME_IP', '192.168.1.12')
         routed = False
         for tid, client in self.state.clients.items():
             if client.addr[0] != sender_ip:
@@ -1009,6 +1016,10 @@ class GutesRelay:
                         self.relay_socks[client.our_port].sendto(data, client.addr)
                         self.log(f"  → ROUTE {type_name} to {client.addr[0]}:{client.addr[1]} "
                                 f"(term_id={tid})")
+                        # Detailed hex dump for chime-destined frames
+                        if client.addr[0] == chime_ip:
+                            self.log(f"  [CHIME-CAPTURE] type=0x{ftype:02x} len={len(data)} "
+                                    f"from={sender_ip} hex={self.hexdump(data, 512)}")
                         client.frames_out += 1
                         routed = True
                     except OSError as e:
