@@ -5,6 +5,6 @@
 
 namespace sdk {
 
-SdkSymbols load(const std::string& path = "/libs/libiotp2pav.so");
+SdkSymbols load(const std::string& path = "/work/libs/libiotp2pav.so");
 
 }  // namespace sdk

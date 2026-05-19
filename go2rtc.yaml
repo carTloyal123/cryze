@@ -2,7 +2,7 @@
 
 streams:
   doorbell:
-    - exec:/bridge/run_bridge.sh#video=h264#killsignal=2#killtimeout=10
+    - exec:/work/scripts/run_bridge.sh#video=h264#killsignal=2#killtimeout=10
 
 rtsp:
   listen: ":8554"
