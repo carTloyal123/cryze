@@ -166,10 +166,11 @@ def _route_calling_to(relay, data: bytes, target: ClientSession, sender_term_id:
 
 
 def _trigger_chime_wakeup(relay):
-    """Send a WAKEUP frame to the chime to trigger BT doorbell wake.
+    """Send wakeup signals to the chime to trigger BT doorbell wake.
     
-    Sends a WAKEUP (0xBB) frame to the chime's GUTES session.
-    Also forwards the raw CALLING frame for the chime to relay.
+    Sends multiple frame types to maximize chances of triggering the wakeup:
+    1. WAKEUP frame (0xBB) — simple wakeup signal
+    2. The raw CALLING frame — chime may relay it to doorbell
     """
     state = relay.state
     if not state.chime_term_id:
@@ -181,28 +182,54 @@ def _trigger_chime_wakeup(relay):
         log.info(f"  [WAKEUP] Chime session stale")
         return
     
-    # Build WAKEUP frame (type 0xBB)
-    # Simple format: header(28B) with opt_encrypt=0, bit25=1, no payload
-    wakeup = bytearray(HEADER_SIZE)
-    wakeup[0] = 0x7F  # relay proto
-    wakeup[1] = 0xBB  # WAKEUP
-    struct.pack_into('<H', wakeup, 2, HEADER_SIZE)
-    # term_id: use relay's server term_id
-    struct.pack_into('<q', wakeup, 4, relay.server_term_id)
+    sock = relay.relay_socks.get(chime.our_port)
+    if not sock:
+        log.info(f"  [WAKEUP] No socket for chime port {chime.our_port}")
+        return
+    
     sqnum = relay.server_sqnum
     relay.server_sqnum = (relay.server_sqnum + 1) & 0xFFFFFFFF
+    
+    # 1. Send WAKEUP frame (type 0xBB)
+    wakeup = bytearray(HEADER_SIZE)
+    wakeup[0] = 0x7F
+    wakeup[1] = 0xBB  # WAKEUP
+    struct.pack_into('<H', wakeup, 2, HEADER_SIZE)
+    struct.pack_into('<q', wakeup, 4, relay.server_term_id)
     struct.pack_into('<I', wakeup, 0x0C, sqnum)
-    struct.pack_into('<I', wakeup, 0x10, 0)
-    # opt_flags: bit25=1 (relay flag)
     struct.pack_into('<I', wakeup, 0x14, (1 << 25))
     
-    # Send to chime
-    if chime.our_port in relay.relay_socks:
-        try:
-            relay.relay_socks[chime.our_port].sendto(bytes(wakeup), chime.addr)
-            log.info(f"  [WAKEUP] Sent WAKEUP (0xBB) to chime {chime.addr[0]}:{chime.addr[1]}")
-        except OSError as e:
-            log.info(f"  [WAKEUP] Send failed: {e}")
+    try:
+        sock.sendto(bytes(wakeup), chime.addr)
+        log.info(f"  [WAKEUP] Sent 0xBB to chime {chime.addr[0]}:{chime.addr[1]}")
+    except OSError as e:
+        log.info(f"  [WAKEUP] 0xBB send failed: {e}")
+    
+    # 2. Send GDM_PUSH (type 0xA7) with wakeup action JSON
+    # Mars sends GDM actions to devices as JSON in the payload
+    import json as _json
+    action_payload = _json.dumps({
+        "action_key": "wakeup",
+        "action_params": {"wakeup-live-view": 1}
+    }).encode()
+    
+    gdm_size = HEADER_SIZE + len(action_payload)
+    gdm = bytearray(gdm_size)
+    gdm[0] = 0x7F
+    gdm[1] = 0xA7  # GDM_PUSH
+    struct.pack_into('<H', gdm, 2, gdm_size)
+    struct.pack_into('<q', gdm, 4, relay.server_term_id)
+    sqnum2 = relay.server_sqnum
+    relay.server_sqnum = (relay.server_sqnum + 1) & 0xFFFFFFFF
+    struct.pack_into('<I', gdm, 0x0C, sqnum2)
+    struct.pack_into('<I', gdm, 0x14, (1 << 25))
+    gdm[HEADER_SIZE:] = action_payload
+    
+    try:
+        sock.sendto(bytes(gdm), chime.addr)
+        log.info(f"  [WAKEUP] Sent GDM_PUSH wakeup to chime ({gdm_size}B)")
+    except OSError as e:
+        log.info(f"  [WAKEUP] GDM send failed: {e}")
 
 
 def deliver_pending_callings(relay, doorbell_term_id: int):
