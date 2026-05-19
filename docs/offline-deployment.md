@@ -41,8 +41,13 @@ SKIP_WAKEUP=1
 ### 3. Deploy
 
 ```bash
+git clone https://github.com/carTloyal123/cryze.git
+cd cryze
+cp .env.example .env   # edit credentials + device IPs as shown above
 docker compose up -d
 ```
+
+First build takes ~3-5 minutes (downloads APK, compiles bridge, bundles go2rtc).
 
 The `network-setup` service automatically:
 - Enables IP forwarding on the host
@@ -101,7 +106,7 @@ An LD_PRELOAD hook on `rc5_ctx_setkey` captures the 32-byte session key from the
 The SDK's subscribe-gate flag (`unit+0x3bc`) is cleared after init, and the APP_ONLINE callback is invoked directly if INIT_INFO_RESP isn't accepted within 5 seconds.
 
 ### Network Intercept Stack
-- **ARP spoof**: Tells devices the gateway MAC is the bridge host's MAC (500ms intervals + broadcast)
-- **ICMP redirect suppression**: Disabled on ALL interfaces to prevent devices from learning the real gateway
+- **ARP spoof**: Tells devices the gateway MAC is the bridge host's MAC (2s intervals)
+- **ICMP redirect suppression**: Prevents devices from learning the real gateway
 - **DNS intercept**: Spoofs `wyze-mars-asrv.wyzecam.com` → bridge IP on port 5354
 - **iptables DNAT**: Mars IPs × ports (28800, 51701, 8443, 8000) → local relay

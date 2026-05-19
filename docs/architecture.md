@@ -28,10 +28,9 @@
 
 | Service | Role |
 |---------|------|
-| `network-setup` | iptables DNAT + ARP redirect (intercepts doorbell Mars traffic) |
+| `go2rtc` | Self-contained image: go2rtc + bridge binary + SDK libs. Launches bridge on-demand via exec |
 | `relay` | GUTES protocol relay (all P2P signaling handled locally) |
-| `go2rtc` | Stream server — launches bridge on-demand via exec |
-| `bridge-builder` | One-shot ARM64 compilation (cached) |
+| `network-setup` | iptables DNAT + ARP redirect + DNS intercept (intercepts doorbell Mars traffic) |
 
 ## GUTES Protocol
 
@@ -75,17 +74,11 @@ The GUTES protocol (Gwell UDP Transport) handles P2P signaling over UDP.
 3. RC5 decrypt with certify_key (16-byte blocks, 6 rounds)
 4. certify_key = `mars_access_token[0x30:0x40]`
 
-## Deployment Tiers
+## Deployment Modes
 
-**Tier 1 — Hybrid**: Internet for CALLING relay only (5.7 KB signaling), all video on LAN.
+**Standard** (`P2P_URL=|18.118.90.161`): Bridge SDK connects to Mars for CALLING signaling (~6KB per session). Video always on LAN. Simplest setup — just `docker compose up`.
 
-**Tier 2 — Fully Offline**: Zero external connections. Requires router DNAT rule redirecting doorbell's Mars-bound UDP to the bridge host.
-
-**Tier 3 — Auto-Offline** (Linux): Container automatically adds iptables DNAT rules (`NET_ADMIN` capability). No router config needed.
-
-### Doorbell Connection
-
-The doorbell gets Mars IPs from the BT wakeup payload (not DNS), so DNS overrides don't work. DNAT at the network level is required for full offline operation.
+**Fully Offline** (`P2P_URL=|127.0.0.1`): Zero external connections after initial auth. Requires router DNAT or static routes to redirect device Mars-bound traffic to the bridge host. See [offline-deployment.md](offline-deployment.md).
 
 ## Source Layout
 
