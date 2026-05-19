@@ -149,22 +149,25 @@ def setup_iptables_dnat(relay_ip: str, mars_ips: set[str], device_ips: list[str]
 
 
 def disable_icmp_redirects():
-    """Prevent the host from sending ICMP redirects to devices.
-    
-    Must disable on ALL interfaces — the per-interface setting overrides
-    the global 'all' setting. Without this, the ARP-spoofed devices learn
-    the real gateway via ICMP redirect and bypass our intercept.
-    """
-    import glob
-    disabled = 0
-    for path in glob.glob("/proc/sys/net/ipv4/conf/*/send_redirects"):
+    """Prevent the host from sending ICMP redirects to devices."""
+    for path in ["/proc/sys/net/ipv4/conf/all/send_redirects",
+                 "/proc/sys/net/ipv4/conf/default/send_redirects"]:
         try:
             with open(path, "w") as f:
                 f.write("0\n")
-            disabled += 1
         except (PermissionError, FileNotFoundError, OSError):
             pass
-    log.info("  ICMP send_redirects disabled on %d interfaces", disabled)
+
+    # Also disable for the specific interface
+    if INTERFACE:
+        path = f"/proc/sys/net/ipv4/conf/{INTERFACE}/send_redirects"
+        try:
+            with open(path, "w") as f:
+                f.write("0\n")
+        except (PermissionError, FileNotFoundError, OSError):
+            pass
+
+    log.info("  ICMP send_redirects disabled")
 
 
 def flush_conntrack():
@@ -240,23 +243,16 @@ def start_arp_redirect(device_ip: str, gateway_ip: str, iface: str):
     try:
         s = socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.ntohs(0x0003))
         s.bind((iface, 0))
+        pkt = build_arp_reply(our_mac, gateway_ip, target_mac, device_ip)
 
-        # Unicast ARP reply: tells the specific device "gateway is at our MAC"
-        pkt_unicast = build_arp_reply(our_mac, gateway_ip, target_mac, device_ip)
-        # Broadcast ARP reply: any device joining the network picks this up
-        pkt_broadcast = build_arp_reply(our_mac, gateway_ip, b"\xff\xff\xff\xff\xff\xff", device_ip)
+        # Fast initially (100ms) to catch boot, then slow down (2s)
+        for _ in range(50):
+            s.send(pkt)
+            time.sleep(0.1)
 
-        # Fast burst initially (50ms for 5s) to catch devices during boot
-        for _ in range(100):
-            s.send(pkt_unicast)
-            s.send(pkt_broadcast)
-            time.sleep(0.05)
-
-        # Continuous at 500ms — fast enough to win ARP races when devices wake
         while True:
-            s.send(pkt_unicast)
-            s.send(pkt_broadcast)
-            time.sleep(0.5)
+            s.send(pkt)
+            time.sleep(2.0)
     except Exception:
         pass
     finally:
