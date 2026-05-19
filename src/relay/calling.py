@@ -55,18 +55,37 @@ def handle_calling(relay, data: bytes, addr: tuple, sender_term_id: int) -> Opti
         if target_term_id:
             target = state.clients.get(target_term_id)
             if target and (time.time() - target.last_seen) < 30:
-                # Target is online — route CALLING directly to it
                 _route_calling_to(relay, data, target, sender_term_id)
+            else:
+                # Doorbell offline — route CALLING to chime instead
+                # The chime acts as relay, forwarding CALLING to doorbell via BT/WiFi
+                if state.chime_term_id:
+                    chime = state.clients.get(state.chime_term_id)
+                    if chime and (time.time() - chime.last_seen) < 60:
+                        log.info(f"  [CALLING] Doorbell offline, routing to chime for BT wakeup")
+                        _route_calling_to(relay, data, chime, sender_term_id)
+                    else:
+                        log.info(f"  [CALLING] Chime stale, queuing CALLING")
+                        state.pending_callings.append(PendingWakeup(
+                            calling_data=data, bridge_term_id=sender_term_id,
+                            timestamp=time.time(), timeout=60.0))
+                else:
+                    log.info(f"  [CALLING] No chime connected, queuing CALLING")
+                    state.pending_callings.append(PendingWakeup(
+                        calling_data=data, bridge_term_id=sender_term_id,
+                        timestamp=time.time(), timeout=60.0))
         else:
-            # Target not connected — queue CALLING and trigger wakeup
-            log.info(f"  [CALLING] Target offline (dest={target_term_id}) — queuing + wakeup")
-            state.pending_callings.append(PendingWakeup(
-                calling_data=data,
-                bridge_term_id=sender_term_id,
-                timestamp=time.time(),
-                timeout=30.0
-            ))
-            _trigger_chime_wakeup(relay)
+            # Can't determine destination — route to chime as fallback
+            if state.chime_term_id:
+                chime = state.clients.get(state.chime_term_id)
+                if chime and (time.time() - chime.last_seen) < 60:
+                    log.info(f"  [CALLING] Unknown dest, routing to chime")
+                    _route_calling_to(relay, data, chime, sender_term_id)
+            else:
+                log.info(f"  [CALLING] No chime, no doorbell — queuing")
+                state.pending_callings.append(PendingWakeup(
+                    calling_data=data, bridge_term_id=sender_term_id,
+                    timestamp=time.time(), timeout=60.0))
         
         # Generate MTP_RES_RESP to direct the bridge to our local TCP relay
         # This tells the SDK: "connect to our relay for media transport"
