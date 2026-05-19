@@ -51,7 +51,7 @@ ensure_dev() {
             -v "$ROOT:/work" -v "$ROOT/../apk:/apk:ro" \
             --cap-add NET_ADMIN --cap-add NET_RAW \
             -w /work "$IMAGE" sleep infinity
-        # Run lib setup via entrypoint.py's setup function
+        # Run lib setup
         docker exec "$DEV" python3 -c "
 import sys; sys.path.insert(0, '/work/scripts')
 from entrypoint import setup_libs, build_bridge
@@ -100,9 +100,7 @@ except: print('3.13.212.24')
 }
 
 _block_cloud_relay() {
-    # Block outbound TCP and UDP to cloud relay servers (force LAN-only video).
-    # The SDK uses both LAN UDP and cloud TCP/UDP relays simultaneously;
-    # blocking non-LAN traffic eliminates the cloud relay path entirely.
+    # Block cloud relay TCP/UDP to force LAN-only video.
     local CHAIN="WYZE_BLOCK_RELAY"
     # Flush and rebuild if already exists (Mars IPs may change)
     docker exec "$DEV" iptables -D OUTPUT -j "$CHAIN" 2>/dev/null || true
@@ -111,7 +109,7 @@ _block_cloud_relay() {
 
     echo "  Setting up LAN-only firewall rules..."
     docker exec "$DEV" iptables -N "$CHAIN"
-    # Allow all LAN/localhost traffic (both TCP and UDP)
+    # Allow all LAN/localhost traffic
     docker exec "$DEV" iptables -A "$CHAIN" -d 192.168.0.0/16 -j RETURN
     docker exec "$DEV" iptables -A "$CHAIN" -d 10.0.0.0/8 -j RETURN
     docker exec "$DEV" iptables -A "$CHAIN" -d 172.16.0.0/12 -j RETURN
@@ -124,7 +122,7 @@ _block_cloud_relay() {
     # Allow DNS
     docker exec "$DEV" iptables -A "$CHAIN" -p udp --dport 53 -j RETURN
     docker exec "$DEV" iptables -A "$CHAIN" -p tcp --dport 53 -j RETURN
-    # Block everything else to external IPs (TCP relay servers only)
+    # Block TCP to external IPs
     # NOTE: Must allow UDP to external IPs for NAT hairpin (doorbell's WAN IP)
     docker exec "$DEV" iptables -A "$CHAIN" -p tcp -j REJECT
     # Insert into OUTPUT chain

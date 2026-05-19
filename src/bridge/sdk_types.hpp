@@ -1,5 +1,3 @@
-// sdk_types.hpp — ABI definitions for libiotp2pav.so
-
 #pragma once
 
 #include <cstdint>
@@ -79,11 +77,6 @@ namespace av_off {
     constexpr size_t call_type        = 0x0c;  // int32 — 1=live, 6=playback, 7=download
     constexpr size_t state            = 0x10;  // int32 — 1=play, 2=prepare
     constexpr size_t user_data        = 0x14;  // 32 bytes — PlayerUserData
-    // Within user_data:
-    //   +0x34 from av_req base = audioType (byte)
-    //   +0x3e from av_req base = videoType (byte)
-
-    // Decoder callbacks — passed to avctl_start_recv_and_dec via start_av_enc_dec
     constexpr size_t init_decoder     = 0x48;  // fn(chn, ctx, av_header) -> int
     constexpr size_t decode_audio     = 0x50;  // fn(chn, ctx, data, len, pts, frame)
     constexpr size_t decode_video     = 0x58;  // fn(chn, ctx, data, len, pts, frame)
@@ -100,7 +93,6 @@ namespace av_off {
     constexpr size_t flags            = 0xbc;  // byte — additional flags
 }
 
-// Zeroed buffer satisfying SDK null checks on context_ptr
 constexpr size_t kFakeContextSize = 0x2000;
 
 using fn_iv_access_init       = int  (*)(void* param);
@@ -115,7 +107,6 @@ using fn_iv_lan_connectable   = int  (*)(const char* dev_id);
 using fn_find_device_id       = int64_t (*)(void* termunit, const char* dev_id);
 using fn_get_tick_count       = uint32_t (*)(void);
 
-// SDK symbol bundle
 struct SdkSymbols {
     fn_iv_access_init       access_init;
     fn_iv_access_destroy    access_destroy;

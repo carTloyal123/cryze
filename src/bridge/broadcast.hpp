@@ -15,15 +15,11 @@ struct PollResult {
     double elapsed_seconds = 0;
 };
 
-// Resolve the numeric dst_id for a device.
 int64_t resolve_dst_id(const sdk::SdkSymbols& sdk, const std::string& device_mac);
 
-// Poll the SDK's broadcast list for a doorbell response.
-// Returns when an entry matching dst_id with a non-zero IPv4 is found, or on timeout.
 PollResult poll(const sdk::SdkSymbols& sdk, int64_t dst_id,
                 int max_wait_sec, std::atomic<bool>& shutdown);
 
-// Inject a synthetic broadcast list entry when the doorbell doesn't respond.
 bool inject(const sdk::SdkSymbols& sdk, int64_t dst_id,
             const std::string& ip_str, uint16_t port,
             const std::string& device_mac);

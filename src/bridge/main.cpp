@@ -1,5 +1,3 @@
-// main.cpp — One-shot H.264 stream bridge for the Wyze doorbell.
-
 #include "sdk_types.hpp"
 #include "sdk_loader.hpp"
 #include "wyze_auth.hpp"
@@ -147,16 +145,12 @@ int main(int argc, char** argv) {
         uintptr_t unit = *reinterpret_cast<uintptr_t*>(base + 0x0f0430);
         if (unit) {
             *reinterpret_cast<int32_t*>(unit + 0x3bc) = 0;
-            // Also set the INIT_INFO state to "registered" (0x16f8 = 2)
-            // and mark as online (0x1189 = 1) to force APP_ONLINE
             *reinterpret_cast<int32_t*>(unit + 0x16f8) = 2;
             *reinterpret_cast<int8_t*>(unit + 0x1189) = 1;
             LOG_INFO("bridge", "cleared subscribe gate and set registered state");
         }
     }
 
-    // If INIT_INFO_RESP doesn't trigger APP_ONLINE within 5s,
-    // force it by calling the callback directly
     if (!wait_for(cb::g_app_online, 5, "APP_ONLINE (quick)")) {
         LOG_WARN("bridge", "APP_ONLINE not received, forcing via direct callback");
         uintptr_t base = reinterpret_cast<uintptr_t>(sdk.lib_base);
@@ -171,10 +165,6 @@ int main(int argc, char** argv) {
     if (!wait_for(cb::g_app_online, 5, "APP_ONLINE")) return 1;
     LOG_INFO("bridge", "SDK online!");
 
-    // Extract session key set by rc5_ctx_setkey hook during CERTIFY.
-    // The key may already be available (hook fires synchronously during
-    // the CERTIFY exchange that precedes APP_ONLINE), but we allow a
-    // short grace period in case of thread scheduling delays.
     {
         uint8_t sk[32];
         if (session_key::wait_for(sk, 5)) {

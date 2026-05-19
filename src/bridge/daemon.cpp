@@ -1,5 +1,3 @@
-// daemon.cpp — Persistent bridge daemon with warm SDK for fast stream startup.
-
 #include "sdk_types.hpp"
 #include "sdk_loader.hpp"
 #include "wyze_auth.hpp"
@@ -56,7 +54,6 @@ static int start_stream(const std::string& device_mac) {
 
     int64_t dst_id = broadcast::resolve_dst_id(g_sdk, device_mac);
 
-
     auto result = broadcast::poll(g_sdk, dst_id, 10, g_shutdown);
 
     if (!result.found) {
@@ -67,7 +64,6 @@ static int start_stream(const std::string& device_mac) {
             broadcast::inject(g_sdk, dst_id, doorbell_ip_env, port, device_mac);
         }
     }
-
 
     static std::string user_id;
     static uint8_t null_context[sdk::kFakeContextSize] = {0};
@@ -137,7 +133,6 @@ int main(int argc, char** argv) {
     sig::install(g_shutdown);
     LOG_INFO("daemon", "starting");
 
-
     wyze::StreamCreds creds;
     try { creds = wyze::bootstrap(device_mac); }
     catch (const std::exception& e) {
@@ -145,7 +140,6 @@ int main(int argc, char** argv) {
         return 1;
     }
     g_sdk_device_id = "_@." + creds.device_mac;
-
 
     try { g_sdk = sdk::load(); }
     catch (const std::exception& e) {
@@ -200,13 +194,11 @@ int main(int argc, char** argv) {
         }
     }
 
-
     g_sdk.subscribe_dev(creds.access_token.c_str(), creds.device_mac.c_str(),
                         (uint32_t)creds.access_token.size());
     if (!wait_for(cb::g_sub_success, 20, "subscribe")) return 1;
     LOG_INFO("daemon", "subscribed — READY");
     LOG_INFO("daemon", "commands: start | stop | quit | status");
-
 
     char cmd_buf[256];
     while (!g_shutdown.load()) {

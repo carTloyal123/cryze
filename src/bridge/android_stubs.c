@@ -1,5 +1,4 @@
-// android_stubs.c — Bionic libc shims for loading Android .so files on musl/glibc.
-// Linked statically; -rdynamic exports symbols for the SDK's dynamic resolver.
+// android_stubs.c — Bionic libc shims for loading Android .so on musl/glibc.
 
 #define _GNU_SOURCE
 #include <dlfcn.h>
@@ -119,7 +118,7 @@ int __vsprintf_chk(char *s, int flags, size_t bos, const char *fmt, va_list ap) 
     return vsprintf(s, fmt, ap);
 }
 
-// Bionic _ctype_ table for inline ctype macros.
+// Bionic _ctype_ table.
 #include <ctype.h>
 unsigned char _ctype_[257];
 __attribute__((constructor)) static void _init_ctype(void) {
@@ -154,7 +153,7 @@ int __system_property_get(const char *name, char *value) {
     return 0;
 }
 
-// Bionic pthread cleanup stubs (no-op; we never cancel SDK threads).
+// Bionic pthread cleanup stubs.
 void __pthread_cleanup_push(void *r, void (*fn)(void*), void *arg) {
     (void)r; (void)fn; (void)arg;
 }
@@ -197,7 +196,7 @@ char *__strchr_chk(const char *s, int c, size_t bos) { (void)bos; return strchr(
 char *__strrchr_chk(const char *s, int c, size_t bos) { (void)bos; return strrchr((char*)s, c); }
 int __get_h_errno(void) { return 0; }
 
-// No-op atfork (never fork after dlopen).
+// No-op atfork.
 int __register_atfork(void (*prepare)(void), void (*parent)(void),
                       void (*child)(void), void *dso_handle) {
     (void)prepare; (void)parent; (void)child; (void)dso_handle;

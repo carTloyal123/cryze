@@ -1,4 +1,3 @@
-// wyze_auth.hpp — Wyze cloud auth, device discovery, Mars token registration.
 #pragma once
 
 #include <string>

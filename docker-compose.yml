@@ -1,7 +1,3 @@
-# Wyze Doorbell Bridge
-# Usage: docker compose up
-# Requires: Linux host, .env with Wyze credentials + DOORBELL_IP
-
 services:
 
   network-setup:

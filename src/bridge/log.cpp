@@ -1,4 +1,3 @@
-// log.cpp — Structured logging implementation.
 #include "log.hpp"
 
 #include <chrono>

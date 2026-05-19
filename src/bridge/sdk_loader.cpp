@@ -1,4 +1,3 @@
-// sdk_loader.cpp — dlopen wrapper for libiotp2pav.so
 #include "sdk_loader.hpp"
 #include "log.hpp"
 #include <dlfcn.h>
@@ -34,7 +33,6 @@ SdkSymbols load(const std::string& path) {
     s.find_device_id   = (fn_find_device_id)       resolve("iv_find_dstid_from_tid_key_map");
     s.get_tick         = (fn_get_tick_count)      resolve("getTickCount64");
 
-    // Get base address for crash offset reporting
     Dl_info dli{};
     if (s.access_init && dladdr((void*)s.access_init, &dli))
         s.lib_base = dli.dli_fbase;

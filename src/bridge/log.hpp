@@ -1,12 +1,3 @@
-// log.hpp — Structured logging with timestamps, levels, and component tags.
-//
-// Usage:
-//   LOG_INFO("bridge", "SDK version: %d.%d", major, minor);
-//   LOG_ERROR("auth", "login failed: %s", err.what());
-//
-// Output: 2026-05-17T14:23:01.123Z [INFO ] [bridge] SDK version: 1.0
-//
-// Env: LOG_FILE (file path), LOG_LEVEL (debug/info/warn/error)
 #pragma once
 
 #include <cstdio>

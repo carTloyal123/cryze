@@ -1,4 +1,3 @@
-// signal.cpp — Signal handling and crash diagnostics
 #include "signal.hpp"
 #include "log.hpp"
 

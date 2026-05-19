@@ -2,8 +2,7 @@
  * bionic_interpose.c
  *
  * Shared library that interposes libc functions needed by the Android SDK.
- * Must be loaded via LD_PRELOAD before the SDK .so to avoid re-entrancy
- * in musl's dynamic linker.
+ * Must be loaded via LD_PRELOAD before the SDK .so.
  *
  * Provides:
  *   - __sF array + fprintf/vfprintf/fputc/fclose translation
@@ -22,10 +21,10 @@
 #include <fcntl.h>
 #include <unistd.h>
 
-/* ---------------------------------------------------------------- __sF stdio
+/* ---- __sF stdio
  *
  * Bionic: stdin = &__sF[0], stdout = &__sF[1], stderr = &__sF[2]
- * Bionic FILE is 152 bytes. SDK computes &__sF[2] as __sF + 304 (= 0x130).
+ * Bionic FILE is 152 bytes. SDK computes &__sF[2] as __sF + 304.
  */
 #define SF_SLOT_SIZE 512
 typedef struct { char _pad[SF_SLOT_SIZE]; } _bionic_file_slot;
@@ -50,7 +49,7 @@ static FILE *_translate(FILE *f) {
     }
 }
 
-/* Use RTLD_NEXT to call the real musl implementations */
+/* Use RTLD_NEXT for the real musl implementations */
 static int (*_real_vfprintf)(FILE *, const char *, va_list);
 static int (*_real_fputc)(int, FILE *);
 static int (*_real_fclose)(FILE *);
@@ -86,7 +85,7 @@ int fclose(FILE *f) {
     return _real_fclose ? _real_fclose(f) : 0;
 }
 
-/* Enlarge SDK thread stacks (bionic default 1MB, musl default 80KB) */
+/* Enlarge SDK thread stacks (musl default 80KB is too small) */
 int pthread_create(pthread_t *t, const pthread_attr_t *a,
                    void *(*fn)(void *), void *arg) {
     if (!_real_pthread_create)
@@ -111,26 +110,23 @@ int pthread_create(pthread_t *t, const pthread_attr_t *a,
     return rc;
 }
 
-/* ----------------------------------------------- rc5_ctx_setkey session key hook
+/* ---- rc5_ctx_setkey session key hook
  *
  * The SDK calls rc5_ctx_setkey(ctx, key, key_len) to install the session
- * encryption key after CERTIFY completes.  The certify response handler
- * (iv_gutes_on_respfrm_certify_resp) calls it with key_len=0x20 (32 bytes).
- *
- * We intercept all rc5_ctx_setkey calls, and when we see a 32-byte key we
- * store it and write it to SESSION_KEY_PATH so the relay can read it.
+ * encryption key after CERTIFY completes. We intercept 32-byte keys and
+ * store them for the bridge to read.
  */
 
 #ifndef SESSION_KEY_PATH
 #define SESSION_KEY_PATH "/cache/session_key_extracted.bin"
 #endif
 
-/* Shared state: the captured 32-byte session key */
+/* Shared state: captured session key */
 static uint8_t  _session_key[32];
 static int      _session_key_valid = 0;
 static pthread_mutex_t _sk_mutex = PTHREAD_MUTEX_INITIALIZER;
 
-/* Accessor for the bridge C++ code (declared in session_key.h) */
+/* Accessor for the bridge C++ code */
 int interpose_get_session_key(uint8_t *out, size_t len) {
     if (len < 32) return -1;
     pthread_mutex_lock(&_sk_mutex);
@@ -150,7 +146,7 @@ static void _write_session_key_file(const uint8_t *key) {
         close(fd);
         fprintf(stderr, "[interpose] session key written to %s\n", path);
     } else {
-        /* Fall through — we still log it to stderr as hex */
+        /* Fall through — log to stderr as hex */
         fprintf(stderr, "[interpose] WARNING: cannot write %s\n", path);
     }
 }
@@ -162,10 +158,10 @@ int rc5_ctx_setkey(void *ctx, const void *key, unsigned short key_len) {
         _real_rc5_ctx_setkey = dlsym(RTLD_NEXT, "rc5_ctx_setkey");
     if (!_real_rc5_ctx_setkey) return -1;
 
-    /* Log every call for debugging */
+    /* Log every call */
     fprintf(stderr, "[interpose] rc5_ctx_setkey ctx=%p key_len=%u\n", ctx, key_len);
 
-    /* Capture 32-byte session keys (CERTIFY response sets exactly 0x20) */
+    /* Capture 32-byte session keys */
     if (key_len == 0x20 && key) {
         pthread_mutex_lock(&_sk_mutex);
         memcpy(_session_key, key, 32);

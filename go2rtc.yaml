@@ -1,8 +1,4 @@
 # go2rtc config — Wyze doorbell bridge
-#
-# The bridge binary is launched on-demand when a viewer connects.
-# H.264 Annex B frames flow via stdout pipe to go2rtc.
-# Bridge is killed (SIGINT) when the last viewer disconnects.
 
 streams:
   doorbell:

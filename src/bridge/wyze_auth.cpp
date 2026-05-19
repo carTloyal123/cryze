@@ -1,5 +1,3 @@
-// wyze_auth.cpp — Wyze cloud auth with token caching.
-
 #include "wyze_auth.hpp"
 #include "log.hpp"
 
@@ -337,7 +335,6 @@ StreamCreds bootstrap(const std::string& target_mac) {
         return *cached;
     }
 
-    // --- Full fresh auth ---
     auto email    = env_required("WYZE_EMAIL");
     auto password = env_required("WYZE_PASSWORD");
     auto key_id   = env_required("WYZE_KEY_ID");
@@ -380,7 +377,6 @@ StreamCreds bootstrap(const std::string& target_mac) {
         dev_body.dump(),
         {"phone-id: " + http.phone_id, "requestid: " + new_uuid()});
 
-    // Find target device
     std::string device_mac, product_model;
     const auto& dev_list = dev_resp["data"]["device_list"];
     std::string device_ip;

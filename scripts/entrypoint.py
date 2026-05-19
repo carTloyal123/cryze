@@ -61,7 +61,6 @@ def load_env_file(path: Path = WORK / ".env") -> dict[str, str]:
 
 
 def run(cmd: str | list[str], label: str | None = None) -> None:
-    """Run a command, streaming output. Exit on failure."""
     if isinstance(cmd, str):
         display = cmd
         rc = subprocess.call(cmd, shell=True)
@@ -74,7 +73,6 @@ def run(cmd: str | list[str], label: str | None = None) -> None:
 
 
 def patch_init_fini_arraysz(path: Path) -> None:
-    """Zero DT_INIT_ARRAYSZ/DT_FINI_ARRAYSZ to prevent musl SIGSEGV on NULL constructors."""
     DT_INIT_ARRAYSZ = 0x1B
     DT_FINI_ARRAYSZ = 0x1C
 
@@ -125,7 +123,6 @@ def patch_init_fini_arraysz(path: Path) -> None:
 
 
 def setup_libs() -> None:
-    """Compile shims and patch Android .so files for musl compatibility."""
     if (LIBS_DIR / "libiotp2pav.so").is_file():
         log.info("libs/ already set up, skipping.")
         return
@@ -200,7 +197,6 @@ __attribute__((weak)) int __android_log_vprint(int p, const char* t, const char*
 
 
 def build_bridge() -> None:
-    """Compile the bridge and daemon binaries if not already built."""
     if BRIDGE_BIN.is_file() and (BUILD_DIR / "bridge-daemon").is_file():
         log.info("Bridge binaries exist, skipping build.")
         return
@@ -210,7 +206,6 @@ def build_bridge() -> None:
 
 
 def shutdown(signum: int, _frame) -> None:
-    """Graceful shutdown: forward signal to go2rtc, wait, exit."""
     global shutting_down
     if shutting_down:
         return
@@ -245,7 +240,6 @@ def shutdown(signum: int, _frame) -> None:
 
 
 def setup_doorbell_dnat() -> bool:
-    """DNAT doorbell's Mars traffic to local relay. Delegates to network_setup."""
     dotenv = load_env_file()
     doorbell_ip = dotenv.get("DOORBELL_IP", os.environ.get("DOORBELL_IP", ""))
     if not doorbell_ip:
@@ -287,7 +281,6 @@ def setup_doorbell_dnat() -> bool:
 
 
 def setup_lan_only_firewall() -> bool:
-    """Block outbound TCP to cloud relay servers. Delegates to network_setup."""
     dotenv = load_env_file()
     lan_only = dotenv.get("LAN_ONLY", os.environ.get("LAN_ONLY", "0"))
     if lan_only not in ("1", "true", "yes"):
@@ -296,19 +289,17 @@ def setup_lan_only_firewall() -> bool:
 
 
 def cleanup_iptables() -> None:
-    """Remove all iptables rules added by the bridge. Delegates to network_setup."""
     cleanup_all_iptables()
 
 
 def start_relay() -> subprocess.Popen | None:
-    """Start GUTES relay as a background process."""
     dotenv = load_env_file()
     upstream = dotenv.get("RELAY_UPSTREAM", "3.13.212.24:28800")
     mode = dotenv.get("RELAY_MODE", "proxy")
     keepalive = dotenv.get("RELAY_KEEPALIVE", "0") in ("1", "true", "yes")
     log_file = str(WORK / "relay.log")
 
-    # Resolve current Mars servers for upstream (only needed in proxy mode)
+    # Resolve Mars upstream for proxy mode
     if mode == "proxy":
         import socket as _sock
         try:

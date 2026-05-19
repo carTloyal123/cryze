@@ -238,22 +238,7 @@ def _trigger_chime_wakeup(relay):
     except OSError as e:
         log.info(f"  [WAKEUP] CALLING send failed: {e}")
     
-    # Also send WAKEUP (0xBB) and ONLINE_MSG (0xB4) as additional signals
-    for ftype, name in [(0xBB, "WAKEUP"), (0xB4, "ONLINE_MSG")]:
-        frame = bytearray(HEADER_SIZE)
-        frame[0] = 0x7F
-        frame[1] = ftype
-        struct.pack_into('<H', frame, 2, HEADER_SIZE)
-        struct.pack_into('<q', frame, 4, relay.server_term_id)
-        sq = relay.server_sqnum
-        relay.server_sqnum = (relay.server_sqnum + 1) & 0xFFFFFFFF
-        struct.pack_into('<I', frame, 0x0C, sq)
-        struct.pack_into('<I', frame, 0x14, (1 << 25))
-        try:
-            sock.sendto(bytes(frame), chime.addr)
-            log.info(f"  [WAKEUP] Sent 0x{ftype:02X} ({name}) to chime")
-        except OSError:
-            pass
+
 
 def deliver_pending_callings(relay, doorbell_term_id: int):
     """Deliver queued CALLING frames to the newly-connected doorbell.

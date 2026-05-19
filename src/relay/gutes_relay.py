@@ -246,19 +246,12 @@ class GutesRelay:
                 self.log(f"NEW CLIENT: term_id={term_id} from {addr[0]}:{addr[1]} port={our_port}")
                 self.log(f"  HDR: proto=0x{protocol:02x} type=0x{ftype:02x}({type_name}) len={frm_len} "
                         f"opt=0x{opt_flags:08x} enc={encrypt_mode} ack={ack} resp={is_resp}")
-                self.log(f"  HEX: {self.hexdump(data, 256)}")
             client = self.state.clients[term_id]
             client.addr = addr
             client.our_port = our_port
             client.last_seen = time.time()
             client.frames_in += 1
             self.state.addr_to_term[addr] = term_id
-            # Detailed capture for chime and doorbell frames
-            chime_ip = os.environ.get('CHIME_IP', '192.168.1.12')
-            doorbell_ip = os.environ.get('DOORBELL_IP', '192.168.1.81')
-            if addr[0] in (chime_ip, doorbell_ip) and not is_new:
-                self.log(f"  [DEVICE-IN] {addr[0]}:{addr[1]} type=0x{ftype:02x}({type_name}) "
-                        f"len={frm_len} enc={encrypt_mode} hex={self.hexdump(data, 256)}")
 
         # --- DETECT: always respond locally (we want to win the race) ---
         if ftype == TYPE_DETECT_REQ:
@@ -285,7 +278,7 @@ class GutesRelay:
                 self.log(f"← CERTIFY_REQ from {addr[0]}:{addr[1]} term_id={term_id} ({frm_len}B)")
                 certify_sqnum = self._extract_req_sqnum(data)
                 self.state.addr_last_sqnum[addr] = certify_sqnum
-                self.log(f"  [DEBUG] CERTIFY plaintext sqnum={certify_sqnum}")
+
             if self.mode == "relay":
                 # For bridge (localhost): handle locally with captured session key
                 # For doorbell/chime (LAN devices): proxy to Mars for proper authentication
@@ -336,7 +329,6 @@ class GutesRelay:
                 if has_session_key:
                     # Respond locally — fast path (no Mars proxy delay)
                     req_sqnum = self._extract_req_sqnum(data, addr)
-                    self.log(f"  [DEBUG] Extracted real sqnum={req_sqnum} from INIT_INFO")
                     resp = self._build_init_info_resp(data, addr, req_sqnum)
                     self.log(f"  -> INIT_INFO_RESP to {addr[0]}:{addr[1]} ({len(resp)}B)")
                     self.state.addr_last_sqnum[addr] = req_sqnum
@@ -374,7 +366,6 @@ class GutesRelay:
             if not ack and not is_resp:
                 base_sqnum = self.state.addr_last_sqnum.get(addr, 0)
                 predicted_sqnum = base_sqnum + 2
-                self.log(f"  [DEBUG] SUBSCRIBE predicted_sqnum={predicted_sqnum} (base={base_sqnum})")
                 resp = self._build_subscribe_resp(addr, predicted_sqnum)
                 self.state.addr_last_sqnum[addr] = predicted_sqnum
                 return resp
@@ -424,8 +415,6 @@ class GutesRelay:
         else:
             self.log(f"← {type_name}{'_ACK' if ack else ''} from {addr[0]}:{addr[1]}:{our_port} "
                     f"term_id={term_id} ({frm_len}B) opt=0x{opt_flags:08x} enc={encrypt_mode}")
-            if ftype not in (TYPE_KEEPALIVE,) or ack:
-                self.log(f"  HEX: {self.hexdump(data, 256)}")
             return None
 
     def _proxy_certify_to_mars(self, data: bytes, term_id: int, client_addr: tuple) -> Optional[bytes]:
@@ -603,16 +592,12 @@ class GutesRelay:
         # --- Extract client key from CERTIFY_REQ payload ---
         encrypt_mode = (opt_flags >> 16) & 3
         payload = data[0x18:]
-        self.log(f"  [DEBUG] Raw payload (first 48B): {payload[:48].hex()} encrypt_mode={encrypt_mode}")
-        
         if encrypt_mode == 1:
             pfk = derive_per_frame_key(data[:0x18])
-            self.log(f"  [DEBUG] Per-frame key: {pfk.hex()}")
             rc5 = RC5(block_bytes=8, rounds=6).setkey(pfk)
             dec_len = (len(payload) // 8) * 8
             if dec_len > 0:
                 payload = rc5.decrypt(bytes(payload[:dec_len]))
-            self.log(f"  [DEBUG] Decrypted payload (first 48B): {payload[:48].hex()}")
         
         if len(payload) < 40:
             self.log(f"  [RELAY] CERTIFY_REQ payload too short ({len(payload)}B), cannot extract client key")
@@ -620,7 +605,6 @@ class GutesRelay:
         
         hash_checksum = struct.unpack_from('<I', payload, 4)[0]
         encrypted_session_key = payload[8:40]
-        self.log(f"  [DEBUG] hash_checksum=0x{hash_checksum:08x} enc_key={encrypted_session_key.hex()}")
         
         session_key = self._decrypt_session_key(encrypted_session_key)
         hash_verified = False
@@ -974,10 +958,6 @@ class GutesRelay:
                 opt = struct.unpack_from('<I', data, 0x14)[0] if len(data) >= 0x18 else 0
                 self.log(f"  ← UPS {type_name} from {upstream_addr[0]}:{upstream_addr[1]} "
                         f"({len(data)}B) term_id={resp_term_id} opt=0x{opt:08x}")
-                self.log(f"    UPS HEX: {self.hexdump(data, 256)}")
-                
-                if ftype == TYPE_LIST_RESP:
-                    self.log(f"    [LIST_RESP] Passing through unmodified ({len(data)}B)")
                 
                 fd = sock.fileno()
                 if fd in self.upstream_to_client:
@@ -1007,7 +987,6 @@ class GutesRelay:
         type_name = FRAME_TYPES.get(ftype, f"0x{ftype:02X}")
         
         sender_ip = sender_addr[0]
-        chime_ip = os.environ.get('CHIME_IP', '192.168.1.12')
         routed = False
         for tid, client in self.state.clients.items():
             if client.addr[0] != sender_ip:
@@ -1016,10 +995,6 @@ class GutesRelay:
                         self.relay_socks[client.our_port].sendto(data, client.addr)
                         self.log(f"  → ROUTE {type_name} to {client.addr[0]}:{client.addr[1]} "
                                 f"(term_id={tid})")
-                        # Detailed hex dump for chime-destined frames
-                        if client.addr[0] == chime_ip:
-                            self.log(f"  [CHIME-CAPTURE] type=0x{ftype:02x} len={len(data)} "
-                                    f"from={sender_ip} hex={self.hexdump(data, 512)}")
                         client.frames_out += 1
                         routed = True
                     except OSError as e:

@@ -131,15 +131,11 @@ def extract_request_sequence_number(req_data: bytes, addr: tuple = None,
                     session_key = sk
                     break
         if session_key:
-            log.info(f"  [DEBUG] _extract_req_sqnum: using session_key={session_key[:8].hex()}... for addr={addr}")
             rc5 = RC5(block_bytes=8, rounds=6)
-            rc5.setkey(session_key)  # Full 32-byte session key
+            rc5.setkey(session_key)
             decrypted_block = rc5.decrypt_block(bytes(req_data[0x0C:0x14]))
             sqnum = struct.unpack_from('<I', decrypted_block, 0)[0]
-            log.info(f"  [DEBUG] _extract_req_sqnum: decrypted sqnum={sqnum} from enc_bytes={req_data[0x0C:0x14].hex()}")
             return sqnum
-        else:
-            log.info(f"  [DEBUG] _extract_req_sqnum: NO session key for addr={addr}, keys={list(state.addr_session_keys.keys())}")
     
     # Fallback: per-frame key (for opt_encrypt=1, or if no session key)
     pfk = derive_per_frame_key(req_data)
@@ -276,7 +272,6 @@ def capture_session_key_from_response(state: RelayState, data: bytes, term_id: i
         state.session_keys[term_id] = server_key
         persist_session_key(session_cache_path, term_id, server_key)
         log.info(f"  [CACHE] Captured session key material from CERTIFY_RESP for term_id={term_id}")
-        log.info(f"  [CACHE] server_key={server_key[:8].hex()}...")
 
 
 def get_session_key(state: RelayState, term_id: int,

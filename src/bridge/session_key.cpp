@@ -1,9 +1,3 @@
-// session_key.cpp — Session key extraction helpers.
-//
-// The heavy lifting is done by the rc5_ctx_setkey hook in bionic_interpose.c.
-// This module provides a clean C++ API for the bridge to query and persist
-// the captured key.
-
 #include "session_key.hpp"
 #include "log.hpp"
 
@@ -16,11 +10,9 @@
 #include <thread>
 #include <unistd.h>
 
-// Resolved at runtime from bionic_interpose.so (loaded via LD_PRELOAD).
 using fn_get_key = int (*)(uint8_t*, size_t);
 
 static fn_get_key resolve_getter() {
-    // Try RTLD_DEFAULT first (covers LD_PRELOAD and statically linked cases).
     auto fn = reinterpret_cast<fn_get_key>(dlsym(RTLD_DEFAULT, "interpose_get_session_key"));
     if (!fn)
         LOG_WARN("session_key", "interpose_get_session_key not found — hook not loaded?");

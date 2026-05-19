@@ -285,9 +285,6 @@ def build_init_info_resp(relay, req_data: bytes, addr: tuple, req_sqnum: int) ->
     # Payload (plaintext — no session encryption needed with bit25 relay proto)
     resp[CRYPTO_HDR:CRYPTO_HDR + len(payload)] = payload
     
-    log.info(f"  [DEBUG] INIT_INFO_RESP plaintext relay-proto, key ignored")
-    
-    log.info(f"  [DEBUG] RESP hex: {resp[:24].hex()}")
     return bytes(resp)
 
 

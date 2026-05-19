@@ -1,10 +1,11 @@
 build/
 logs/
-.env
 libs/
-config
 cache/
 plans/
+.env
+.DS_Store
+.mcp.json
 *.h264
 *.o
 *.d

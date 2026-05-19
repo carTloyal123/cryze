@@ -95,9 +95,6 @@ class GutesFrame:
                 f"enc={enc_str} qos={qos_str} flags={flags_str}")
 
 
-# HEADER_SIZE imported from constants (0x1C = 28 bytes)
-
-
 def parse_frame(data: bytes, direction: str = "", session_key: Optional[bytes] = None) -> Optional[GutesFrame]:
     """Parse a GUTES frame from raw bytes.
     

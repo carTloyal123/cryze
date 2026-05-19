@@ -1,16 +1,4 @@
-"""Shared logging configuration for all Python services.
-
-Usage:
-    from log_config import get_logger
-    log = get_logger("relay")
-    log.info("listening on port %d", port)
-
-Output format matches the C++ bridge:
-    2026-05-17T14:23:01.123Z [INFO ] [relay] listening on port 28800
-
-Set LOG_LEVEL env var to debug/info/warn/error (default: info).
-Set LOG_FILE env var to also write to a file.
-"""
+"""Shared logging configuration for all Python services."""
 
 import logging
 import os

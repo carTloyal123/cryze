@@ -1,11 +1,4 @@
 # Dockerfile — ARM64 bridge builder
-#
-# Builds the Wyze bridge binary from source in an Alpine ARM64 container.
-# The entrypoint.py handles SDK lib patching at first run.
-#
-# Used by docker-compose.yml:
-#   - bridge-builder service: builds binary, copies to shared volumes
-#   - Standalone: runs entrypoint.py (relay + go2rtc)
 FROM alpine:3.20
 
 # Build + runtime dependencies
@@ -25,6 +18,4 @@ WORKDIR /work
 EXPOSE 8554 8555 1984
 STOPSIGNAL SIGINT
 
-# Default: entrypoint handles lib setup, build, relay, go2rtc
-# For bridge-builder service: override with copy command
 CMD ["python3", "/work/scripts/entrypoint.py"]

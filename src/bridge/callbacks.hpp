@@ -1,4 +1,3 @@
-// callbacks.hpp — SDK callback implementations
 #pragma once
 
 #include <atomic>
@@ -15,7 +14,6 @@ extern std::atomic<size_t>   g_video_bytes;
 extern int                   g_h264_output_fd;
 extern int                   g_min_log_level;
 
-// Get the array of iv_access_init callback function pointers.
 void** get_init_callbacks();
 
 }  // namespace cb

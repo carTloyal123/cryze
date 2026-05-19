@@ -22,8 +22,6 @@ std::atomic<int>      g_video_frames{0};
 std::atomic<size_t>   g_video_bytes{0};
 int                   g_h264_output_fd = -1;
 
-// iv_access_init callbacks (16 slots)
-
 static int64_t generic_cb(int slot, uint64_t a0, uint64_t a1) {
     LOG_DEBUG("sdk", "cb slot=%d a0=0x%" PRIx64 " a1=0x%" PRIx64, slot, a0, a1);
     return 0;
@@ -39,7 +37,6 @@ static int64_t cb_app_state(uint64_t link_state, uint64_t, uint64_t,
     return 0;
 }
 
-// Slot 12: subscribe_with_devid_resp_cb
 static int64_t cb_subscribe(uint64_t, uint64_t error_code, uint64_t,
                             uint64_t, uint64_t, uint64_t) {
     uint32_t err = (uint32_t)error_code;
@@ -53,13 +50,11 @@ static int64_t cb_subscribe(uint64_t, uint64_t error_code, uint64_t,
     return 0;
 }
 
-// SDK cache read: always miss
 static int64_t cb_cache_read(uint64_t key, uint64_t a1, uint64_t a2,
                              uint64_t a3, uint64_t a4, uint64_t a5) {
     return -1;
 }
 
-// SDK cache write: no-op
 static int64_t cb_cache_write(uint64_t key, uint64_t a1, uint64_t a2,
                               uint64_t a3, uint64_t a4, uint64_t a5) {
     return 0;
@@ -76,7 +71,6 @@ SLOT_STUB(4)  SLOT_STUB(5)  SLOT_STUB(6)
 SLOT_STUB(9)  SLOT_STUB(11)
 SLOT_STUB(15)
 
-// Provides the host's LAN IP to the SDK for broadcast discovery and P2P addressing.
 static int64_t cb_get_local_ip(uint64_t ipv4_out_ptr, uint64_t ipv6_out_ptr,
                                uint64_t a2, uint64_t a3, uint64_t a4, uint64_t a5) {
     auto* ipv4_out = reinterpret_cast<uint32_t*>(ipv4_out_ptr);
@@ -135,7 +129,6 @@ static int64_t cb_get_local_ip(uint64_t ipv4_out_ptr, uint64_t ipv6_out_ptr,
     return 0;
 }
 
-// SDK log callback. Filtered by g_min_log_level.
 int g_min_log_level = 0;
 
 static int64_t cb_p2p_log(uint64_t level, uint64_t file_ptr, uint64_t fmt_ptr,
@@ -166,14 +159,10 @@ static void* s_init_cbs[16] = {
 
 void** get_init_callbacks() { return s_init_cbs; }
 
-// AV decoder callbacks (set in av_req for iv_start_av_link)
-// These are extern "C" so libiotp2pav.so can call them directly.
-
 constexpr int kDecoderToRingBufferOffset = 0x19b;
 constexpr int kRingReadIndex  = 0x464;
 constexpr int kRingWriteIndex = 0x465;
 
-// SDK output ring buffer control — must advance read index to prevent stalls.
 static uint32_t* s_ring_buffer_base = nullptr;
 
 extern "C" {
