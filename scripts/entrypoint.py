@@ -23,7 +23,7 @@ from network_setup import (
 log = get_logger('entrypoint')
 
 WORK       = Path("/work")
-APK_LIBS   = Path("/apk/xapk_contents/arm64_libs/lib/arm64-v8a")
+APK_LIBS   = WORK / "apk" / "xapk_contents" / "arm64_libs" / "lib" / "arm64-v8a"
 LIBS_DIR   = WORK / "libs"
 BUILD_DIR  = WORK / "build"
 BRIDGE_BIN = BUILD_DIR / "bridge"
