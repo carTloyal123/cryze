@@ -16,6 +16,7 @@ RUN arch=$(uname -m) && \
 WORKDIR /work
 
 COPY scripts/ scripts/
+RUN chmod +x scripts/*.sh scripts/*.py
 COPY src/ src/
 COPY CMakeLists.txt .
 
