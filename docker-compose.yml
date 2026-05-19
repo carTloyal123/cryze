@@ -39,7 +39,7 @@ services:
       LOG_LEVEL: ${LOG_LEVEL:-info}
     command: >-
       python3 /app/src/relay/gutes_relay.py
-      --mode relay
+      --mode ${RELAY_MODE:-relay}
       --local-ip 0.0.0.0
       --session-cache /app/cache/session_keys.json
       --keepalive
