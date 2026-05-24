@@ -1,0 +1,13 @@
+# wyze-overlay — native amd64 ffmpeg overlay service (NO QEMU)
+FROM alpine:3.20
+
+RUN apk add --no-cache \
+        ffmpeg \
+        font-dejavu \
+        python3 \
+        busybox-extras
+
+WORKDIR /app
+COPY src/overlay/overlay_manager.py .
+VOLUME ["/cache"]
+CMD ["python3", "/app/overlay_manager.py"]

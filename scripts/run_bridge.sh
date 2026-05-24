@@ -59,4 +59,11 @@ export LAN_WAIT="${LAN_WAIT:-0}"
 export SUBSCRIBE_WAIT="${SUBSCRIBE_WAIT:-3}"
 export SKIP_WAKEUP="${SKIP_WAKEUP:-0}"
 
-exec /work/build/bridge --stdout --device "$DEVICE_MAC" $EXTRA_ARGS
+if [ "${STREAM_OVERLAY:-0}" = "1" ] && [ -n "${RAW_PORT:-}" ]; then
+    # Overlay mode: pipe bridge stdout to TCP relay for wyze-overlay container
+    exec /work/build/bridge --stdout --device "$DEVICE_MAC" $EXTRA_ARGS \
+        | python3 /work/scripts/tcp_relay.py --port "$RAW_PORT"
+else
+    # Default: bridge writes directly to go2rtc stdout (zero overhead)
+    exec /work/build/bridge --stdout --device "$DEVICE_MAC" $EXTRA_ARGS
+fi

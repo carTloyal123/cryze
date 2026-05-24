@@ -7,10 +7,11 @@ import os
 import socket
 import struct
 import sys
+import threading
 import time
 import urllib.error
 import urllib.request
-from dataclasses import dataclass, field
+from dataclasses import dataclass, asdict, field
 from pathlib import Path
 from typing import Optional
 
@@ -52,6 +53,8 @@ class DeviceInfo:
     mtp_port: int = 0 # Discovered MTP port from broadcast frame offset 0x2C
     dst_id: int = 0   # 64-bit numeric ID from broadcast frame offset 0x1C
     stream_name: str = ""  # "camera_aabbccddeeff" — set at creation
+    raw_port: int = 0
+    overlay_port: int = 0
 
     @property
     def mac_clean(self) -> str:
@@ -68,6 +71,8 @@ class DeviceInfo:
             'mtp_port': self.mtp_port,
             'dst_id': self.dst_id,
             'stream_name': self.stream_name,
+            'raw_port': self.raw_port,
+            'overlay_port': self.overlay_port,
         }
 
     @classmethod
@@ -77,7 +82,33 @@ class DeviceInfo:
             cloud_ip=d.get('cloud_ip', ''), lan_ip=d.get('lan_ip', ''),
             mtp_port=d.get('mtp_port', 0), dst_id=d.get('dst_id', 0),
             stream_name=d.get('stream_name', ''),
+            raw_port=d.get('raw_port', 0), overlay_port=d.get('overlay_port', 0),
         )
+
+
+@dataclass
+class DeviceMetrics:
+    """Live metrics for one camera device."""
+    mac: str
+    battery_pct:  Optional[int]   = None
+    signal_dbm:   Optional[int]   = None
+    bitrate_kbps: Optional[int]   = None
+    fps:          Optional[float] = None
+    resolution:   Optional[str]   = None
+    updated_at:   float           = 0.0
+
+    def render_text(self) -> str:
+        parts = []
+        if self.battery_pct is not None:
+            parts.append(f"Batt: {self.battery_pct}%")
+        if self.bitrate_kbps is not None:
+            kbps = self.bitrate_kbps
+            parts.append(f"{kbps/1000:.1f} Mbps" if kbps >= 1000 else f"{kbps} kbps")
+        if self.fps is not None:
+            parts.append(f"{self.fps:.0f} fps")
+        if self.signal_dbm is not None:
+            parts.append(f"Sig: {self.signal_dbm} dBm")
+        return "  ".join(parts)
 
 
 class DeviceRegistry:
@@ -175,6 +206,8 @@ class DeviceRegistry:
 
         raw_list = dev_resp.get('data', {}).get('device_list', [])
         devices = []
+        raw_port_base     = int(os.environ.get("RAW_PORT_BASE",     "18000"))
+        overlay_port_base = int(os.environ.get("OVERLAY_PORT_BASE", "19000"))
         for dev in raw_list:
             model = dev.get('product_model', '')
             ptype = dev.get('product_type', '')
@@ -184,6 +217,7 @@ class DeviceRegistry:
             if filter_macs is not None and mac not in filter_macs:
                 continue
             mac_clean = mac.replace(':', '').lower()
+            index = len(devices)
             info = DeviceInfo(
                 mac=mac,
                 name=dev.get('nickname', dev.get('product_model', mac)),
@@ -191,6 +225,8 @@ class DeviceRegistry:
                 cloud_ip=dev.get('ip', ''),
                 stream_name=f'camera_{mac_clean}',
             )
+            info.raw_port     = raw_port_base + index
+            info.overlay_port = overlay_port_base + index
             devices.append(info)
             log.info("  Found camera: %s (%s) model=%s", info.name, info.mac, info.model)
 
@@ -292,6 +328,36 @@ class DeviceRegistry:
                 self._by_dst_id[dst_id] = info
             log.info("Registry updated: %s (%s) → %s mtp=%d dst_id=%d",
                      info.name, info.mac, lan_ip, mtp_port, dst_id)
+
+    # ------------------------------------------------------------------
+    # Metrics helpers
+    # ------------------------------------------------------------------
+
+    def write_metrics(self, mac: str, metrics) -> None:
+        info = self.get_by_mac(mac)
+        if not info: return
+        mc   = info.mac_clean
+        base = Path("/cache")
+        base.mkdir(parents=True, exist_ok=True)
+        tmp_j = base / f"metrics_{mc}.json.tmp"
+        tmp_j.write_text(json.dumps(asdict(metrics), indent=2))
+        tmp_j.rename(base / f"metrics_{mc}.json")
+        tmp_t = base / f"metrics_{mc}.txt.tmp"
+        tmp_t.write_text(metrics.render_text())
+        tmp_t.rename(base / f"metrics_{mc}.txt")
+
+    def read_metrics(self, mac: str):
+        info = self.get_by_mac(mac)
+        if not info: return None
+        try:
+            d = json.loads(Path(f"/cache/metrics_{info.mac_clean}.json").read_text())
+            return DeviceMetrics(
+                mac=d.get('mac', mac), battery_pct=d.get('battery_pct'),
+                signal_dbm=d.get('signal_dbm'), bitrate_kbps=d.get('bitrate_kbps'),
+                fps=d.get('fps'), resolution=d.get('resolution'),
+                updated_at=d.get('updated_at', 0.0))
+        except (FileNotFoundError, json.JSONDecodeError, KeyError):
+            return None
 
     # ------------------------------------------------------------------
     # Cryptographic helpers for bridge identification
@@ -399,3 +465,71 @@ class DeviceRegistry:
     def __repr__(self) -> str:
         return (f"DeviceRegistry({len(self.devices)} devices: "
                 f"{[d.mac for d in self.devices]})")
+
+
+def poll_device_properties(mac: str, access_token: str = "") -> dict:
+    mc = mac.replace(':', '').lower()
+    if not access_token:
+        try:
+            auth = json.loads(Path(f"/cache/auth_{mc}.json").read_text())
+            access_token = auth.get('wyze_access_token', '')
+        except (FileNotFoundError, json.JSONDecodeError):
+            pass
+    if not access_token:
+        return {}
+    try:
+        import uuid as _uuid
+        body = json.dumps({
+            "device_mac": mac,
+            "target_pid_list": ["P3", "P1"],
+            "phone_id": str(_uuid.uuid4()),
+            "sc": _SC, "sv": _SV_DEVICES,
+            "ts": int(time.time() * 1000),
+        }).encode()
+        req = urllib.request.Request(
+            _APP_BASE + "/app/v2/device/get_property_list",
+            data=body, method="POST")
+        req.add_header("Content-Type", "application/json")
+        req.add_header("User-Agent", _USER_AGENT)
+        req.add_header("access_token", access_token)
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            data = json.loads(resp.read())
+        result = {}
+        for item in data.get("data", {}).get("property_list", []):
+            pid, val = item.get("pid"), item.get("value")
+            if pid and val is not None:
+                try: result[pid] = int(val)
+                except (ValueError, TypeError): pass
+        return result
+    except Exception as e:
+        log.debug("poll_device_properties %s: %s", mac, e)
+        return {}
+
+
+class MetricsPoller(threading.Thread):
+    def __init__(self, registry, interval: int = 60):
+        super().__init__(daemon=True, name="MetricsPoller")
+        self.registry = registry
+        self.interval = interval
+
+    def run(self):
+        log.info("MetricsPoller started (interval=%ds, %d device(s))",
+                 self.interval, len(self.registry.devices))
+        while True:
+            for device in self.registry.devices:
+                try:
+                    props = poll_device_properties(device.mac)
+                    if not props: continue
+                    existing = self.registry.read_metrics(device.mac) \
+                               or DeviceMetrics(mac=device.mac)
+                    changed = False
+                    if "P3" in props: existing.battery_pct = props["P3"]; changed = True
+                    if "P1" in props: existing.signal_dbm  = props["P1"]; changed = True
+                    if changed:
+                        existing.updated_at = time.time()
+                        self.registry.write_metrics(device.mac, existing)
+                        log.info("Metrics %s: battery=%s signal=%s",
+                                 device.mac, existing.battery_pct, existing.signal_dbm)
+                except Exception as e:
+                    log.warning("MetricsPoller %s: %s", device.mac, e)
+            time.sleep(self.interval)

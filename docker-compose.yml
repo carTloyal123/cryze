@@ -74,3 +74,25 @@ services:
       relay:
         condition: service_healthy
     restart: unless-stopped
+
+  wyze-overlay:
+    build:
+      context: .
+      dockerfile: src/overlay/Dockerfile.overlay
+    image: wyze-overlay:latest
+    container_name: wyze-overlay
+    network_mode: host
+    volumes:
+      - ./cache:/cache:ro
+      - ./logs:/logs
+    env_file: .env
+    environment:
+      CACHE_DIR: /cache
+      LOG_FILE: /logs/overlay.log
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+    depends_on:
+      relay:
+        condition: service_healthy
+    profiles:
+      - overlay
+    restart: unless-stopped

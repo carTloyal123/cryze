@@ -5,6 +5,7 @@
 #include <cinttypes>
 #include <cstdio>
 #include <cstring>
+#include <atomic>
 #include <dlfcn.h>
 #include <errno.h>
 #include <ifaddrs.h>
@@ -228,19 +229,34 @@ void bridge_destroy_decoder(uint32_t chn, void* ctx) {
 }
 
 void bridge_recv_av_data(uint32_t chn, void* ctx, void* av_data) {
-    static int count = 0;
-    if (++count <= 3)
-        LOG_DEBUG("av", "recv_av_data #%d chn=%u", count, chn);
+    static std::atomic<int> count{0};
+    int n = count.fetch_add(1);
+    if (n < 3)
+        LOG_DEBUG("av", "recv_av_data #%d chn=%u", n, chn);
 }
 
 void bridge_recv_user_data(uint32_t chn, void* ctx, void* user_data) {
-    static int count = 0;
-    if (++count <= 3)
-        LOG_DEBUG("av", "recv_user_data #%d chn=%u", count, chn);
+    static std::atomic<int> count{0};
+    int n = count.fetch_add(1);
+    if (user_data && n < 2) {
+        const uint8_t* p = reinterpret_cast<const uint8_t*>(user_data);
+        char hex[100] = {0};
+        for (int i = 0; i < 32 && i*3+2 < (int)sizeof(hex); ++i)
+            snprintf(hex + i*3, 4, "%02x ", p[i]);
+        LOG_INFO("av", "user_data chn=%u dump#%d [0..31]: %s", chn, n, hex);
+    }
 }
 
 void bridge_recv_avheader(uint32_t chn, void* ctx, void* av_header) {
-    LOG_DEBUG("av", "recv_avheader chn=%u header=%p", chn, av_header);
+    static std::atomic<int> count{0};
+    int n = count.fetch_add(1);
+    if (av_header && n < 3) {
+        const uint8_t* p = reinterpret_cast<const uint8_t*>(av_header);
+        char hex[392] = {0};
+        for (int i = 0; i < 128 && i*3+2 < (int)sizeof(hex); ++i)
+            snprintf(hex + i*3, 4, "%02x ", p[i]);
+        LOG_INFO("av", "avheader chn=%u dump#%d [0..127]: %s", chn, n, hex);
+    }
 }
 
 }  // extern "C"
