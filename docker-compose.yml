@@ -15,7 +15,7 @@ services:
     command: >-
       sh -c "apt-get update -qq && apt-get install -y -qq iptables conntrack >/dev/null 2>&1;
              python3 /app/src/network/network_setup.py"
-    restart: unless-stopped
+    restart: on-failure
     stop_grace_period: 5s
 
   relay:
