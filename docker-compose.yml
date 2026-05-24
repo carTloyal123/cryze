@@ -33,7 +33,7 @@ services:
       LOG_LEVEL: ${LOG_LEVEL:-info}
     command: >-
       python3 /app/src/relay/gutes_relay.py
-      --mode relay
+      --mode ${RELAY_MODE:-relay}
       --local-ip 0.0.0.0
       --session-cache /app/cache/session_keys.json
       --registry /app/cache/device_registry.json
@@ -63,9 +63,13 @@ services:
       - ./cache:/app/cache
       - ./logs:/logs
       - ./.env:/work/.env:ro
+    env_file: .env
     environment:
       LOG_FILE: /logs/bridge.log
       LOG_LEVEL: ${LOG_LEVEL:-info}
+      # Relay runs as a separate container — entrypoint.py skips spawning its own
+      RELAY_EXTERNAL: "1"
+    command: ["python3", "/work/scripts/entrypoint.py"]
     depends_on:
       relay:
         condition: service_healthy

@@ -415,8 +415,12 @@ def main() -> None:
     # 2. Network rules for all discovered IPs
     setup_network(registry)
 
-    # 3. Start relay with registry
-    relay_proc = start_relay(registry_path=registry_path)
+    # 3. Start relay — skip if RELAY_EXTERNAL=1 (relay runs in its own container)
+    relay_external = os.environ.get("RELAY_EXTERNAL", "0") in ("1", "true", "yes")
+    if relay_external:
+        log.info("RELAY_EXTERNAL=1 — relay managed externally, skipping local start")
+    else:
+        relay_proc = start_relay(registry_path=registry_path)
 
     # 4. Start go2rtc
     env = {
