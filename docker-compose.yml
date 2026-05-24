@@ -69,6 +69,9 @@ services:
       LOG_LEVEL: ${LOG_LEVEL:-info}
       # Relay runs as a separate container — entrypoint.py skips spawning its own
       RELAY_EXTERNAL: "1"
+      STREAM_OVERLAY: ${STREAM_OVERLAY:-0}
+      RAW_PORT_BASE: ${RAW_PORT_BASE:-18000}
+      OVERLAY_PORT_BASE: ${OVERLAY_PORT_BASE:-19000}
     command: ["python3", "/work/scripts/entrypoint.py"]
     depends_on:
       relay:
