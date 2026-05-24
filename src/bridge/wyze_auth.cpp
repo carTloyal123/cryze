@@ -140,7 +140,11 @@ static std::string s_phone_id;
 
 static std::string cache_path() {
     const char* p = std::getenv("CACHE_FILE");
-    return p && *p ? std::string(p) : "cache/auth.json";
+    if (p && *p) return std::string(p);
+    // CACHE_FILE must be set by run_bridge.sh — prevents silent single-file collisions
+    // across concurrent per-device bridge processes.
+    throw std::runtime_error(
+        "CACHE_FILE env var not set. run_bridge.sh must set CACHE_FILE=/cache/auth_{mac}.json");
 }
 
 static void ensure_parent_dir(const std::string& path) {

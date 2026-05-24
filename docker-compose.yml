@@ -28,16 +28,15 @@ services:
       - ./logs:/app/logs
     env_file: .env
     environment:
-      DOORBELL_IP: ${DOORBELL_IP:-}
-      CHIME_IP: ${CHIME_IP:-}
       SESSION_CACHE: /app/cache/session_keys.json
       LOG_FILE: /app/logs/relay.log
       LOG_LEVEL: ${LOG_LEVEL:-info}
     command: >-
       python3 /app/src/relay/gutes_relay.py
-      --mode ${RELAY_MODE:-relay}
+      --mode relay
       --local-ip 0.0.0.0
       --session-cache /app/cache/session_keys.json
+      --registry /app/cache/device_registry.json
       --keepalive
       --mtp-port 23000
     depends_on:
@@ -61,6 +60,7 @@ services:
     network_mode: host
     volumes:
       - ./cache:/cache
+      - ./cache:/app/cache
       - ./logs:/logs
       - ./.env:/work/.env:ro
     environment:

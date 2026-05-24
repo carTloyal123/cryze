@@ -1,8 +1,7 @@
-# go2rtc config — Wyze doorbell bridge
+# go2rtc config — streams registered dynamically at runtime via REST API.
+# Run entrypoint.py which calls PUT /api/streams/camera_{mac} per discovered device.
 
-streams:
-  doorbell:
-    - exec:/work/scripts/run_bridge.sh#video=h264#killsignal=2#killtimeout=10
+streams: {}
 
 rtsp:
   listen: ":8554"

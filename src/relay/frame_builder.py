@@ -387,24 +387,57 @@ def build_calling_ack(relay, calling_data: bytes, addr: tuple, sender_term_id: i
                 session_key = sk
                 break
     if not session_key:
-        log.info(f"  [MTP] No session key for CALLING_ACK")
+        log.info("  [MTP] No session key for CALLING_ACK")
         return None
-    
-    # Get certify key for ID encryption
+
+    # Get certify key — prefer registry lookup over hardcoded auth.json path
+    certify_key = session_key[:16]  # safe fallback
     try:
-        with open(os.path.join(os.path.dirname(__file__), '..', 'cache', 'auth.json')) as f:
-            auth_data = json.load(f)
-        token = auth_data['mars_access_token']
-        try:
-            token_bytes = bytes.fromhex(token[:128])
-        except (ValueError, IndexError):
+        sender_client = state.clients.get(sender_term_id)
+        device_mac = sender_client.device_mac if sender_client else ""
+        if device_mac and state.registry:
+            ck = state.registry.get_certify_key(device_mac)
+            if ck:
+                certify_key = ck
+        else:
+            # Legacy: try any auth cache file
             import base64 as _b64
-            token_bytes = _b64.b64decode(token)
-        certify_key = token_bytes[0x30:0x40]
+            cache_paths = [
+                os.path.join(os.path.dirname(__file__), '..', 'cache', 'auth.json'),
+                '/cache/auth.json', '/work/cache/auth.json',
+            ]
+            if device_mac:
+                mc = device_mac.replace(':', '').lower()
+                cache_paths = [f'/cache/auth_{mc}.json',
+                               f'/work/cache/auth_{mc}.json'] + cache_paths
+            for cp in cache_paths:
+                try:
+                    with open(cp) as f:
+                        auth_data = json.load(f)
+                    token = auth_data['mars_access_token']
+                    try:
+                        token_bytes = bytes.fromhex(token[:128])
+                    except (ValueError, IndexError):
+                        token_bytes = _b64.b64decode(token)
+                    if len(token_bytes) >= 0x40:
+                        certify_key = token_bytes[0x30:0x40]
+                    break
+                except Exception:
+                    continue
     except Exception:
-        certify_key = session_key[:16]
-    
-    doorbell_ip_str = os.environ.get('DOORBELL_IP', '192.168.1.81')
+        pass
+
+    # Resolve doorbell IP via registry
+    doorbell_ip_str = "0.0.0.0"
+    try:
+        sender_client = state.clients.get(sender_term_id)
+        device_mac = sender_client.device_mac if sender_client else ""
+        if device_mac and state.registry:
+            info = state.registry.get_by_mac(device_mac)
+            if info and info.lan_ip:
+                doorbell_ip_str = info.lan_ip
+    except Exception:
+        pass
     doorbell_port = 51850
     
     # Extract request's plaintext sqnum
@@ -518,12 +551,30 @@ def build_mtp_res_resp(relay, calling_data: bytes, addr: tuple, sender_term_id: 
         link_id = state.mtp_link_counter
         state.mtp_link_counter += 1
     
-    doorbell_ip = os.environ.get('DOORBELL_IP', '192.168.1.81')
-    doorbell_port = state.doorbell_mtp_port or int(os.environ.get('DOORBELL_PORT', '51850'))
-    if state.doorbell_mtp_port:
-        log.info(f"  [MTP] Using broadcast-discovered port {doorbell_port}")
+    doorbell_ip = "0.0.0.0"
+    doorbell_port = 51850
+    try:
+        sender_client = state.clients.get(sender_term_id)
+        device_mac = sender_client.device_mac if sender_client else ""
+        if device_mac and state.registry:
+            info = state.registry.get_by_mac(device_mac)
+            if info and info.lan_ip:
+                doorbell_ip = info.lan_ip
+        doorbell_port = state.doorbell_mtp_ports.get(device_mac, 0) or \
+                        int(os.environ.get('DOORBELL_PORT', '51850'))
+    except Exception:
+        pass
+    if state.doorbell_mtp_ports:
+        # Legacy fallback: pick any discovered MTP port if we couldn't resolve by MAC
+        if doorbell_port == 51850:
+            for v in state.doorbell_mtp_ports.values():
+                if v:
+                    doorbell_port = v
+                    break
+    if doorbell_port:
+        log.info("  [MTP] Using discovered MTP port %d", doorbell_port)
     else:
-        log.info(f"  [MTP] No broadcast port discovered, using fallback {doorbell_port}")
+        log.info("  [MTP] No broadcast port discovered, using fallback %d", doorbell_port)
     
     # Build the frame — needs to be at least 0x7A bytes (122)
     CRYPTO_HDR = 0x18

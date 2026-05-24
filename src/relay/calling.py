@@ -1,6 +1,6 @@
 """CALLING/wakeup routing — handles CALLING_REQ routing and doorbell wakeup."""
 
-import os
+import socket as _socket
 import struct
 import sys
 import time
@@ -18,93 +18,90 @@ from models import ClientSession, PendingWakeup
 
 def handle_calling(relay, data: bytes, addr: tuple, sender_term_id: int) -> Optional[bytes]:
     """Handle CALLING_REQ with full routing logic.
-    
+
     In the real Mars relay, CALLING is routed by destination term_id
     (encrypted in the frame payload with opt_encrypt=2 session key).
-    
+
     Relay mode routing:
-    1. Try to decrypt payload to find destination term_id
-    2. Route CALLING to doorbell if online
+    1. Resolve sender's device MAC from ClientSession.device_mac
+    2. Route CALLING to the doorbell for that MAC if online
     3. Generate MTP_RES_RESP directing bridge to our local TCP relay
-    
-    Proxy mode: Mars handles routing, we just log and forward.
-    
+
     Args:
         relay: GutesRelay instance
-        data: Raw CALLING_REQ frame bytes
-        addr: Sender (ip, port) tuple
+        data:  Raw CALLING_REQ frame bytes
+        addr:  Sender (ip, port) tuple
         sender_term_id: Decoded term_id of sender
-    
+
     Returns: MTP_RES_RESP bytes to send back to caller, or None.
     """
     state = relay.state
-    
+
     if relay.mode == "relay":
-        # Try to determine destination from payload
+        sender_client = state.clients.get(sender_term_id)
+        sender_mac    = sender_client.device_mac if sender_client else ""
+
+        # Try to decrypt payload to find explicit destination term_id
         dest_term_id = _extract_calling_dest(relay, data, sender_term_id)
-        
-        # Determine target: explicit destination or heuristic
+
+        # Determine routing target based on sender role + MAC
         target_term_id = dest_term_id
-        if not target_term_id:
-            # Heuristic: if sender is bridge, target is doorbell (and vice versa)
-            if sender_term_id == state.bridge_term_id:
-                target_term_id = state.doorbell_term_id
-            elif sender_term_id == state.doorbell_term_id:
-                target_term_id = state.bridge_term_id
-        
+        if not target_term_id and sender_client:
+            if sender_client.role == "bridge" and sender_mac:
+                target_term_id = state.doorbell_term_ids.get(sender_mac, 0)
+            elif sender_client.role == "doorbell" and sender_mac:
+                target_term_id = state.bridge_term_ids.get(sender_mac, 0)
+
         if target_term_id:
             target = state.clients.get(target_term_id)
             if target and (time.time() - target.last_seen) < 30:
                 _route_calling_to(relay, data, target, sender_term_id)
             else:
-                # Doorbell offline — send WAKEUP to chime + forward CALLING
-                log.info(f"  [CALLING] Doorbell offline, triggering chime wakeup")
-                _trigger_chime_wakeup(relay)
-                if state.chime_term_id:
-                    chime = state.clients.get(state.chime_term_id)
+                # Doorbell offline — trigger chime wakeup + queue
+                log.info("  [CALLING] Doorbell offline, triggering chime wakeup (mac=%s)", sender_mac)
+                _trigger_chime_wakeup(relay, sender_mac)
+                chime_tid = state.chime_term_ids.get(sender_mac, 0)
+                if chime_tid:
+                    chime = state.clients.get(chime_tid)
                     if chime and (time.time() - chime.last_seen) < 120:
                         _route_calling_to(relay, data, chime, sender_term_id)
-                state.pending_callings.append(PendingWakeup(
-                    calling_data=data, bridge_term_id=sender_term_id,
-                    timestamp=time.time(), timeout=90.0))
+                state.pending_callings.setdefault(sender_mac, []).append(
+                    PendingWakeup(calling_data=data, bridge_term_id=sender_term_id,
+                                  timestamp=time.time(), timeout=90.0))
         else:
-            # Can't determine destination — send WAKEUP to chime as fallback
-            log.info(f"  [CALLING] Unknown dest, triggering chime wakeup")
-            _trigger_chime_wakeup(relay)
-            if state.chime_term_id:
-                chime = state.clients.get(state.chime_term_id)
+            # Can't determine destination — trigger wakeup as fallback
+            log.info("  [CALLING] Unknown dest, triggering chime wakeup (mac=%s)", sender_mac)
+            _trigger_chime_wakeup(relay, sender_mac)
+            chime_tid = state.chime_term_ids.get(sender_mac, 0)
+            if chime_tid:
+                chime = state.clients.get(chime_tid)
                 if chime and (time.time() - chime.last_seen) < 120:
                     _route_calling_to(relay, data, chime, sender_term_id)
-            state.pending_callings.append(PendingWakeup(
-                calling_data=data, bridge_term_id=sender_term_id,
-                timestamp=time.time(), timeout=90.0))
-        
-        # Generate MTP_RES_RESP to direct the bridge to our local TCP relay
-        # This tells the SDK: "connect to our relay for media transport"
-        # But first, send a CALLING ACK with the doorbell's address
-        # (the SDK expects this before MTP_RES_RESP)
+            state.pending_callings.setdefault(sender_mac, []).append(
+                PendingWakeup(calling_data=data, bridge_term_id=sender_term_id,
+                              timestamp=time.time(), timeout=90.0))
+
+        # Build CALLING_ACK + MTP_RES_RESP — direct SDK to local TCP relay
         calling_ack = relay._build_calling_ack(data, addr, sender_term_id)
-        mtp_resp = relay._build_mtp_res_resp(data, addr, sender_term_id)
+        mtp_resp    = relay._build_mtp_res_resp(data, addr, sender_term_id)
         if calling_ack and mtp_resp:
-            log.info(f"  [MTP] Sending CALLING_ACK + MTP_RES_RESP to bridge {addr[0]}:{addr[1]}")
-            # Return both concatenated — the recv loop will need to handle this
-            # Actually we can't return two frames. Send the ACK via the socket
-            # and return the MTP_RES_RESP
+            log.info("  [MTP] Sending CALLING_ACK + MTP_RES_RESP to bridge %s:%d",
+                     addr[0], addr[1])
             relay._extra_responses.append((calling_ack, addr))
             return mtp_resp
         elif mtp_resp:
-            log.info(f"  [MTP] Sending MTP_RES_RESP to bridge {addr[0]}:{addr[1]}")
+            log.info("  [MTP] Sending MTP_RES_RESP to bridge %s:%d", addr[0], addr[1])
             return mtp_resp
         return None
-    # In proxy mode: Mars handles routing, but log for awareness
+
     else:
-        log.info(f"  [PROXY] CALLING forwarded to Mars for routing")
+        log.info("  [PROXY] CALLING forwarded to Mars for routing")
         return None
 
 
 def _extract_calling_dest(relay, data: bytes, sender_term_id: int) -> int:
     """Try to extract destination term_id from CALLING payload.
-    
+
     The CALLING_REQ payload is session-encrypted (opt_encrypt=2).
     If we have the sender's session key, we can decrypt to find
     the destination term_id (first 8 bytes of decrypted payload).
@@ -112,34 +109,45 @@ def _extract_calling_dest(relay, data: bytes, sender_term_id: int) -> int:
     state = relay.state
     opt_flags = struct.unpack_from('<I', data, 0x14)[0]
     encrypt_mode = (opt_flags >> 16) & 3
-    payload = data[0x18:]  # Encryption starts at 0x18
-    
+    payload = data[0x18:]
+
     if encrypt_mode != 2 or len(payload) < 8:
         return 0
-    
+
     session_key = relay.get_session_key(sender_term_id)
     if not session_key:
-        # Try addr-based lookup (CALLING comes from same addr as CERTIFY)
-        # We need to find which addr has this sender_term_id
-        for a, sk in state.addr_session_keys.items():
-            session_key = sk
-            break  # Use first available session key (bridge usually only has one)
+        # Try addr-based lookup; prefer the key for the sender's device MAC
+        sender_client = state.clients.get(sender_term_id)
+        sender_mac    = sender_client.device_mac if sender_client else ""
+        if sender_mac:
+            for a, sk in state.addr_session_keys.items():
+                client_tid = state.addr_to_term.get(a)
+                if client_tid:
+                    c = state.clients.get(client_tid)
+                    if c and c.device_mac == sender_mac:
+                        session_key = sk
+                        break
+        if not session_key:
+            # Last resort: first available key
+            for sk in state.addr_session_keys.values():
+                session_key = sk
+                break
+
     if not session_key:
-        log.info(f"  [CALLING] No session key for sender {sender_term_id}, cannot extract dest")
+        log.info("  [CALLING] No session key for sender %d, cannot extract dest", sender_term_id)
         return 0
-    
+
     try:
         rc5 = RC5(block_bytes=8, rounds=6).setkey(session_key)
         dec_len = (len(payload) // 8) * 8
         if dec_len < 8:
             return 0
         decrypted = rc5.decrypt(bytes(payload[:dec_len]))
-        # First 8 bytes of CALLING payload = destination term_id (int64 LE)
         dest_id = struct.unpack_from('<q', decrypted, 0)[0]
-        log.info(f"  [CALLING] Decrypted dest_term_id={dest_id}")
+        log.info("  [CALLING] Decrypted dest_term_id=%d", dest_id)
         return dest_id
     except Exception as e:
-        log.info(f"  [CALLING] Decrypt failed: {e}")
+        log.info("  [CALLING] Decrypt failed: %s", e)
         return 0
 
 
@@ -148,76 +156,78 @@ def _route_calling_to(relay, data: bytes, target: ClientSession, sender_term_id:
     if target.tcp_writer:
         try:
             target.tcp_writer.write(data)
-            log.info(f"  [CALLING] Routed to {target.addr[0]}:{target.addr[1]} (TCP) "
-                    f"term_id={target.term_id}")
+            log.info("  [CALLING] Routed to %s:%d (TCP) term_id=%d",
+                     target.addr[0], target.addr[1], target.term_id)
             target.frames_out += 1
         except Exception as e:
-            log.info(f"  [CALLING] TCP route failed: {e}")
+            log.info("  [CALLING] TCP route failed: %s", e)
     elif target.our_port in relay.relay_socks:
         try:
             relay.relay_socks[target.our_port].sendto(data, target.addr)
-            log.info(f"  [CALLING] Routed to {target.addr[0]}:{target.addr[1]}:{target.our_port} (UDP) "
-                    f"term_id={target.term_id}")
+            log.info("  [CALLING] Routed to %s:%d:%d (UDP) term_id=%d",
+                     target.addr[0], target.addr[1], target.our_port, target.term_id)
             target.frames_out += 1
         except OSError as e:
-            log.info(f"  [CALLING] UDP route failed: {e}")
+            log.info("  [CALLING] UDP route failed: %s", e)
     else:
-        log.info(f"  [CALLING] No route to target term_id={target.term_id}")
+        log.info("  [CALLING] No route to target term_id=%d", target.term_id)
 
 
-def _trigger_chime_wakeup(relay):
+def _trigger_chime_wakeup(relay, device_mac: str = ""):
     """Send a CALLING frame to the chime to trigger BT doorbell wakeup.
-    
+
     Builds a plaintext CALLING_REQ (0xA4) with bit25 bypass that the chime's
     SDK can process. The chime receives CALLING and triggers BT wakeup of
     the doorbell, same as when Mars forwards CALLING.
+
+    Args:
+        relay:       GutesRelay instance
+        device_mac:  MAC of the camera/doorbell to wake (used to find chime + doorbell IP)
     """
-    state = relay.state
-    if not state.chime_term_id:
-        log.info(f"  [WAKEUP] No chime connected")
+    state   = relay.state
+    chime_tid = state.chime_term_ids.get(device_mac, 0)
+    if not chime_tid:
+        log.info("  [WAKEUP] No chime connected for mac=%s", device_mac)
         return
-    
-    chime = state.clients.get(state.chime_term_id)
+
+    chime = state.clients.get(chime_tid)
     if not chime or (time.time() - chime.last_seen) > 120:
-        log.info(f"  [WAKEUP] Chime session stale")
+        log.info("  [WAKEUP] Chime session stale for mac=%s", device_mac)
         return
-    
+
     sock = relay.relay_socks.get(chime.our_port)
     if not sock:
-        log.info(f"  [WAKEUP] No socket for chime port {chime.our_port}")
+        log.info("  [WAKEUP] No socket for chime port %d", chime.our_port)
         return
-    
-    import socket as _socket
-    
-    # Build CALLING_REQ (type 0xA4) — plaintext with bit25 bypass
-    # Payload: link_id(4B) + caller_info containing bridge's LAN address
-    doorbell_ip = os.environ.get('DOORBELL_IP', '192.168.1.81')
+
+    # Resolve doorbell IP via registry
+    registry   = state.registry
+    doorbell_ip = ""
+    if registry and device_mac:
+        info = registry.get_by_mac(device_mac)
+        if info and info.lan_ip:
+            doorbell_ip = info.lan_ip
     bridge_ip = relay.local_ip
-    
-    # CALLING payload structure (from RE):
-    # +0x00: dest_term_id (8B) — the doorbell's numeric ID  
-    # +0x08: link_id (4B) — random connection identifier
-    # +0x0C: caller_ip (4B network order)
-    # +0x10: caller_port (2B network order)
-    # +0x12: call_type (1B) = 1 (live)
-    # +0x13: padding
+
     import random as _rand
     link_id = _rand.randint(1, 0x7FFFFFFF)
-    
+
     payload = bytearray(32)
-    # dest_term_id: use 0 (broadcast — chime should process)
+    # dest_term_id: broadcast (chime processes)
     struct.pack_into('<Q', payload, 0, 0)
     struct.pack_into('<I', payload, 8, link_id)
-    # caller IP
-    ip_bytes = _socket.inet_aton(bridge_ip)
+    # caller IP (relay's IP)
+    try:
+        ip_bytes = _socket.inet_aton(bridge_ip)
+    except OSError:
+        ip_bytes = b'\x00\x00\x00\x00'
     payload[0x0C:0x10] = ip_bytes
     struct.pack_into('>H', payload, 0x10, 28800)  # caller port
     payload[0x12] = 1  # call_type = live
-    
-    # Pad to 8-byte boundary
+
     pad = (8 - len(payload) % 8) % 8
     payload += b'\x00' * pad
-    
+
     frame_size = HEADER_SIZE + len(payload)
     calling = bytearray(frame_size)
     calling[0] = 0x7F  # relay proto
@@ -227,114 +237,151 @@ def _trigger_chime_wakeup(relay):
     sqnum = relay.server_sqnum
     relay.server_sqnum = (relay.server_sqnum + 1) & 0xFFFFFFFF
     struct.pack_into('<I', calling, 0x0C, sqnum)
-    # opt_flags: opt_encrypt=0, bit25=1
-    struct.pack_into('<I', calling, 0x14, (1 << 25))
-    calling[HEADER_SIZE:HEADER_SIZE+len(payload)] = payload
-    
+    struct.pack_into('<I', calling, 0x14, (1 << 25))  # opt_flags: bit25 bypass
+    calling[HEADER_SIZE:HEADER_SIZE + len(payload)] = payload
+
     try:
         sock.sendto(bytes(calling), chime.addr)
-        log.info(f"  [WAKEUP] Sent CALLING to chime {chime.addr[0]}:{chime.addr[1]} "
-                f"(link_id={link_id}, {frame_size}B)")
+        log.info("  [WAKEUP] Sent CALLING to chime %s:%d (link_id=%d, %dB, doorbell=%s)",
+                 chime.addr[0], chime.addr[1], link_id, frame_size, doorbell_ip)
     except OSError as e:
-        log.info(f"  [WAKEUP] CALLING send failed: {e}")
-    
+        log.info("  [WAKEUP] CALLING send failed: %s", e)
 
 
-def deliver_pending_callings(relay, doorbell_term_id: int):
+def deliver_pending_callings(relay, doorbell_term_id: int, device_mac: str):
     """Deliver queued CALLING frames to the newly-connected doorbell.
-    
-    Called when the doorbell connects and completes CERTIFY.
+
+    Called when a doorbell for device_mac connects and completes CERTIFY.
+
+    Args:
+        relay:            GutesRelay instance
+        doorbell_term_id: term_id of the newly connected doorbell
+        device_mac:       MAC of the camera/doorbell
     """
     state = relay.state
-    now = time.time()
+    now   = time.time()
+    queue = state.pending_callings.get(device_mac, [])
+    if not queue:
+        return
+
     delivered = 0
-    expired = 0
-    
+    expired   = 0
     remaining = []
-    for pending in state.pending_callings:
+
+    for pending in queue:
         age = now - pending.timestamp
         if age > pending.timeout:
             expired += 1
             continue
-        
-        # Deliver this CALLING to the doorbell
+
         doorbell = state.clients.get(doorbell_term_id)
         if doorbell:
-            log.info(f"  [WAKEUP] Delivering queued CALLING to doorbell "
-                    f"(queued {age:.1f}s ago)")
-            # In relay mode: send directly to doorbell's address
+            log.info("  [WAKEUP] Delivering queued CALLING to doorbell mac=%s (queued %.1fs ago)",
+                     device_mac, age)
             if doorbell.tcp_writer:
-                # TCP delivery
                 try:
                     doorbell.tcp_writer.write(pending.calling_data)
                     delivered += 1
-                except:
-                    remaining.append(pending)
+                    continue
+                except Exception:
+                    pass
             elif doorbell.our_port in relay.relay_socks:
-                # UDP delivery
                 try:
                     relay.relay_socks[doorbell.our_port].sendto(
                         pending.calling_data, doorbell.addr)
                     delivered += 1
-                except:
-                    remaining.append(pending)
-        else:
-            remaining.append(pending)
-    
-    state.pending_callings = remaining
+                    continue
+                except Exception:
+                    pass
+        remaining.append(pending)
+
+    state.pending_callings[device_mac] = remaining
     if delivered or expired:
-        log.info(f"  [WAKEUP] Delivered {delivered} CALLINGs, expired {expired}")
+        log.info("  [WAKEUP] Delivered %d CALLINGs, expired %d (mac=%s)",
+                 delivered, expired, device_mac)
 
 
 def identify_device_role(relay, term_id: int, addr: tuple) -> str:
-    """Identify device role based on IP matching.
+    """Identify device role using the DeviceRegistry.
 
-    Uses environment variables for configurable IPs:
-    - DOORBELL_IP: IP of the doorbell
-    - CHIME_IP: IP of the chime (optional)
-    - Bridge: localhost or our own IP
+    - doorbell: addr IP matches any registry DeviceInfo.lan_ip
+    - bridge:   addr IP is relay's own IP or loopback
+    - unknown:  everything else
     """
+    registry = relay.state.registry
     ip = addr[0]
-    doorbell_ip = os.environ.get('DOORBELL_IP', '192.168.1.81')
-    chime_ip = os.environ.get('CHIME_IP', '192.168.1.12')
 
-    if ip == doorbell_ip:
+    if registry and registry.is_doorbell_ip(ip):
         return "doorbell"
-    elif ip == chime_ip:
-        return "chime"
-    elif ip in (relay.local_ip, "127.0.0.1", "192.168.5.1"):
+    if ip in (relay.local_ip, "127.0.0.1"):
         return "bridge"
-    
-    # Heuristic: if from the same subnet but not doorbell/chime, likely bridge
     return "unknown"
 
 
 def on_client_certified(relay, term_id: int):
     """Called when a client completes CERTIFY. Identify role and handle wakeups."""
-    state = relay.state
+    state  = relay.state
     client = state.clients.get(term_id)
     if not client:
         return
-    
-    # Identify role
+
     role = identify_device_role(relay, term_id, client.addr)
+
+    # For bridges: use CERTIFY payload for precise device-MAC identification
+    if role in ("bridge", "unknown"):
+        certify_data = relay._last_certify_frames.get(term_id)
+        if certify_data and state.registry:
+            mac = state.registry.identify_bridge_mac(certify_data)
+            if mac:
+                client.device_mac = mac
+                role = "bridge"
+                log.info("  [CERTIFY-ID] Bridge identified: term_id=%d mac=%s", term_id, mac)
+
     client.role = role
-    
+    mac = client.device_mac
+
     if role == "chime":
-        state.chime_term_id = term_id
-        log.info(f"  [ROLE] Identified CHIME: term_id={term_id} addr={client.addr[0]}:{client.addr[1]}")
+        # Chimes: associate with a doorbell by IP adjacency or fallback to IP key
+        # Use registry to find which doorbell this chime belongs to
+        registry = state.registry
+        if registry and mac:
+            state.chime_term_ids[mac] = term_id
+        else:
+            # Store under addr-derived key as best-effort
+            state.chime_term_ids[client.addr[0]] = term_id
+        log.info("  [ROLE] CHIME: term_id=%d addr=%s:%d mac=%s",
+                 term_id, client.addr[0], client.addr[1], mac or '?')
+
     elif role == "doorbell":
-        state.doorbell_term_id = term_id
-        state.doorbell_addr = client.addr
-        state.keepalive_misses = 0
-        log.info(f"  [ROLE] Identified DOORBELL: term_id={term_id} addr={client.addr[0]}:{client.addr[1]}")
-        if state.keepalive_enabled:
-            log.info(f"  [KEEPALIVE] Doorbell connected — keepalive will begin to {client.addr[0]}:{client.addr[1]}")
-        # Deliver any pending CALLINGs
-        if state.pending_callings:
-            deliver_pending_callings(relay, term_id)
+        # Resolve MAC from registry by LAN IP if not already set
+        if not mac and state.registry:
+            info = state.registry.get_by_lan_ip(client.addr[0])
+            if info:
+                mac = info.mac
+                client.device_mac = mac
+        if mac:
+            state.doorbell_term_ids[mac] = term_id
+            state.doorbell_addrs[mac]    = client.addr
+            state.keepalive_misses[mac]  = 0
+            log.info("  [ROLE] DOORBELL: term_id=%d addr=%s:%d mac=%s",
+                     term_id, client.addr[0], client.addr[1], mac)
+            if state.keepalive_enabled:
+                log.info("  [KEEPALIVE] Doorbell connected — keepalive active for %s", mac)
+            # Deliver any pending CALLINGs for this device
+            if state.pending_callings.get(mac):
+                deliver_pending_callings(relay, term_id, mac)
+        else:
+            log.info("  [ROLE] DOORBELL (mac unknown): term_id=%d addr=%s:%d",
+                     term_id, client.addr[0], client.addr[1])
+
     elif role == "bridge":
-        state.bridge_term_id = term_id
-        log.info(f"  [ROLE] Identified BRIDGE: term_id={term_id} addr={client.addr[0]}:{client.addr[1]}")
+        if mac:
+            state.bridge_term_ids[mac] = term_id
+            log.info("  [ROLE] BRIDGE: term_id=%d mac=%s", term_id, mac)
+        else:
+            log.info("  [ROLE] BRIDGE (mac unknown): term_id=%d addr=%s:%d",
+                     term_id, client.addr[0], client.addr[1])
+
     else:
-        log.info(f"  [ROLE] Unknown device: term_id={term_id} addr={client.addr[0]}:{client.addr[1]}")
+        log.info("  [ROLE] UNKNOWN: term_id=%d addr=%s:%d",
+                 term_id, client.addr[0], client.addr[1])
