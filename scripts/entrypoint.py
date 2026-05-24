@@ -208,6 +208,13 @@ def build_device_registry(dotenv: dict):
     _discover_lan_ips(registry)
 
     registry.save_cache(cache_path)
+    # Also write to host-mounted /cache so the overlay container can read it
+    shared_cache = Path("/cache") / "device_registry.json"
+    try:
+        registry.save_cache(shared_cache)
+        log.info("Device registry also saved to shared %s", shared_cache)
+    except Exception as e:
+        log.warning("Could not save registry to shared cache %s: %s", shared_cache, e)
     return registry
 
 
