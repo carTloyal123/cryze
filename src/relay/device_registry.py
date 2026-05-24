@@ -7,7 +7,6 @@ import os
 import socket
 import struct
 import sys
-import threading
 import time
 import urllib.error
 import urllib.request
@@ -467,69 +466,3 @@ class DeviceRegistry:
                 f"{[d.mac for d in self.devices]})")
 
 
-def poll_device_properties(mac: str, access_token: str = "") -> dict:
-    mc = mac.replace(':', '').lower()
-    if not access_token:
-        try:
-            auth = json.loads(Path(f"/cache/auth_{mc}.json").read_text())
-            access_token = auth.get('wyze_access_token', '')
-        except (FileNotFoundError, json.JSONDecodeError):
-            pass
-    if not access_token:
-        return {}
-    try:
-        import uuid as _uuid
-        body = json.dumps({
-            "device_mac": mac,
-            "target_pid_list": ["P3", "P1"],
-            "phone_id": str(_uuid.uuid4()),
-            "sc": _SC, "sv": _SV_DEVICES,
-            "ts": int(time.time() * 1000),
-        }).encode()
-        req = urllib.request.Request(
-            _APP_BASE + "/app/v2/device/get_property_list",
-            data=body, method="POST")
-        req.add_header("Content-Type", "application/json")
-        req.add_header("User-Agent", _USER_AGENT)
-        req.add_header("access_token", access_token)
-        with urllib.request.urlopen(req, timeout=10) as resp:
-            data = json.loads(resp.read())
-        result = {}
-        for item in data.get("data", {}).get("property_list", []):
-            pid, val = item.get("pid"), item.get("value")
-            if pid and val is not None:
-                try: result[pid] = int(val)
-                except (ValueError, TypeError): pass
-        return result
-    except Exception as e:
-        log.debug("poll_device_properties %s: %s", mac, e)
-        return {}
-
-
-class MetricsPoller(threading.Thread):
-    def __init__(self, registry, interval: int = 60):
-        super().__init__(daemon=True, name="MetricsPoller")
-        self.registry = registry
-        self.interval = interval
-
-    def run(self):
-        log.info("MetricsPoller started (interval=%ds, %d device(s))",
-                 self.interval, len(self.registry.devices))
-        while True:
-            for device in self.registry.devices:
-                try:
-                    props = poll_device_properties(device.mac)
-                    if not props: continue
-                    existing = self.registry.read_metrics(device.mac) \
-                               or DeviceMetrics(mac=device.mac)
-                    changed = False
-                    if "P3" in props: existing.battery_pct = props["P3"]; changed = True
-                    if "P1" in props: existing.signal_dbm  = props["P1"]; changed = True
-                    if changed:
-                        existing.updated_at = time.time()
-                        self.registry.write_metrics(device.mac, existing)
-                        log.info("Metrics %s: battery=%s signal=%s",
-                                 device.mac, existing.battery_pct, existing.signal_dbm)
-                except Exception as e:
-                    log.warning("MetricsPoller %s: %s", device.mac, e)
-            time.sleep(self.interval)

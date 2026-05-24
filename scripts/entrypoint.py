@@ -438,15 +438,6 @@ def main() -> None:
     # 3. Write per-device streams to go2rtc.yaml (must happen before go2rtc starts)
     write_go2rtc_streams(registry, overlay=overlay_enabled)
 
-    if overlay_enabled:
-        try:
-            from device_registry import MetricsPoller
-            poller = MetricsPoller(registry)
-            poller.start()
-            log.info("MetricsPoller started")
-        except Exception as e:
-            log.warning("MetricsPoller failed to start: %s", e)
-
     # 4. Start relay — skip if RELAY_EXTERNAL=1 (relay runs in its own container)
     relay_external = os.environ.get("RELAY_EXTERNAL", "0") in ("1", "true", "yes")
     if relay_external:

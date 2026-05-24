@@ -250,13 +250,22 @@ void bridge_recv_user_data(uint32_t chn, void* ctx, void* user_data) {
 void bridge_recv_avheader(uint32_t chn, void* ctx, void* av_header) {
     static std::atomic<int> count{0};
     int n = count.fetch_add(1);
-    if (av_header && n < 3) {
-        const uint8_t* p = reinterpret_cast<const uint8_t*>(av_header);
+
+    if (!av_header) return;
+    const uint8_t* p = reinterpret_cast<const uint8_t*>(av_header);
+
+    // Hex dump first 3 calls so we can reverse-engineer the struct layout
+    if (n < 3) {
         char hex[392] = {0};
         for (int i = 0; i < 128 && i*3+2 < (int)sizeof(hex); ++i)
             snprintf(hex + i*3, 4, "%02x ", p[i]);
         LOG_INFO("av", "avheader chn=%u dump#%d [0..127]: %s", chn, n, hex);
     }
+
+    // TODO: once struct layout is confirmed from hex dump, read battery_pct directly:
+    //   uint8_t battery = p[BATTERY_OFFSET];  // offset TBD from hex dump analysis
+    // Then write: /cache/metrics_{mac_clean}.txt with "Batt: N%"
+    // This replaces any polling approach entirely.
 }
 
 }  // extern "C"
