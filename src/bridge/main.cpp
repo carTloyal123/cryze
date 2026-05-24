@@ -219,6 +219,7 @@ int main(int argc, char** argv) {
         }
     }
 
+    cb::g_device_mac = creds.device_mac;  // expose to avheader callback for metrics writes
     static std::string sdk_device_id = "_@." + creds.device_mac;
     static std::string user_id = creds.user_id;
     static uint8_t null_context[sdk::kFakeContextSize] = {0};

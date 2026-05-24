@@ -207,6 +207,7 @@ class DeviceRegistry:
         devices = []
         raw_port_base     = int(os.environ.get("RAW_PORT_BASE",     "18000"))
         overlay_port_base = int(os.environ.get("OVERLAY_PORT_BASE", "19000"))
+        initial_metrics: list[tuple['DeviceInfo', int]] = []  # (info, battery_pct)
         for dev in raw_list:
             model = dev.get('product_model', '')
             ptype = dev.get('product_type', '')
@@ -226,8 +227,36 @@ class DeviceRegistry:
             )
             info.raw_port     = raw_port_base + index
             info.overlay_port = overlay_port_base + index
+
+            # Extract battery from API response:
+            #   device_params.electricity  (integer 0-100)  — most GW_ cameras
+            #   property_list[pid=P5]      (string "0"-"100") — older firmware
+            battery_pct = None
+            dp = dev.get('device_params', {})
+            if isinstance(dp, dict):
+                elec = dp.get('electricity')
+                if elec is not None:
+                    try:
+                        battery_pct = int(elec)
+                    except (ValueError, TypeError):
+                        pass
+            if battery_pct is None:
+                for prop in dev.get('property_list', []):
+                    if prop.get('pid') == 'P5':
+                        try:
+                            battery_pct = int(prop.get('value', ''))
+                        except (ValueError, TypeError):
+                            pass
+                        break
+            if battery_pct is not None:
+                log.info("  Found camera: %s (%s) model=%s battery=%d%%",
+                         info.name, info.mac, info.model, battery_pct)
+                initial_metrics.append((info, battery_pct))
+            else:
+                dp_keys = list(dp.keys()) if isinstance(dp, dict) else []
+                log.info("  Found camera: %s (%s) model=%s (no battery in API — device_params keys: %s)",
+                         info.name, info.mac, info.model, dp_keys)
             devices.append(info)
-            log.info("  Found camera: %s (%s) model=%s", info.name, info.mac, info.model)
 
         if not devices:
             raise RuntimeError(
@@ -235,7 +264,18 @@ class DeviceRegistry:
                 + (f" matching filter {filter_macs}" if filter_macs else ""))
 
         log.info("Enumerated %d camera(s) from Wyze API", len(devices))
-        return cls(devices)
+        registry = cls(devices)
+
+        # Write initial battery metrics so the overlay has data before any stream starts.
+        for info, battery_pct in initial_metrics:
+            m = DeviceMetrics(mac=info.mac, battery_pct=battery_pct, updated_at=time.time())
+            try:
+                registry.write_metrics(info.mac, m)
+                log.info("  Wrote initial metrics for %s: %s", info.mac, m.render_text())
+            except Exception as e:
+                log.warning("  Could not write metrics for %s: %s", info.mac, e)
+
+        return registry
 
     @classmethod
     def from_cache(cls, cache_path: Path) -> Optional['DeviceRegistry']:

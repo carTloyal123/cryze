@@ -3,6 +3,7 @@
 #include <atomic>
 #include <cstddef>
 #include <cstdint>
+#include <string>
 
 namespace cb {
 
@@ -13,6 +14,7 @@ extern std::atomic<int>      g_video_frames;
 extern std::atomic<size_t>   g_video_bytes;
 extern int                   g_h264_output_fd;
 extern int                   g_min_log_level;
+extern std::string           g_device_mac;  // set by main() before AV link starts
 
 void** get_init_callbacks();
 

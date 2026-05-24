@@ -6,6 +6,8 @@
 #include <cstdio>
 #include <cstring>
 #include <atomic>
+#include <fstream>
+#include <string>
 #include <dlfcn.h>
 #include <errno.h>
 #include <ifaddrs.h>
@@ -22,6 +24,7 @@ std::atomic<uint32_t> g_sub_error{0};
 std::atomic<int>      g_video_frames{0};
 std::atomic<size_t>   g_video_bytes{0};
 int                   g_h264_output_fd = -1;
+std::string           g_device_mac;
 
 static int64_t generic_cb(int slot, uint64_t a0, uint64_t a1) {
     LOG_DEBUG("sdk", "cb slot=%d a0=0x%" PRIx64 " a1=0x%" PRIx64, slot, a0, a1);
@@ -247,14 +250,36 @@ void bridge_recv_user_data(uint32_t chn, void* ctx, void* user_data) {
     }
 }
 
+// Write battery percentage to /cache/metrics_{mac_clean}.txt for the overlay.
+static void write_battery_metrics(int battery_pct) {
+    if (g_device_mac.empty()) return;
+    // Derive mac_clean: "AA:BB:CC:DD:EE:FF" -> "aabbccddeeff"
+    std::string mac_clean;
+    for (char c : g_device_mac) {
+        if (c != ':') mac_clean += (char)std::tolower((unsigned char)c);
+    }
+    std::string path = "/cache/metrics_" + mac_clean + ".txt";
+    std::ofstream f(path, std::ios::trunc);
+    if (f) {
+        f << "Batt: " << battery_pct << "%" << std::endl;
+        LOG_DEBUG("av", "metrics written: %s -> Batt: %d%%", path.c_str(), battery_pct);
+    } else {
+        LOG_WARN("av", "cannot write metrics file: %s", path.c_str());
+    }
+}
+
 void bridge_recv_avheader(uint32_t chn, void* ctx, void* av_header) {
     static std::atomic<int> count{0};
     int n = count.fetch_add(1);
 
+    // Log the first few calls unconditionally (even NULL) so we know if this fires at all.
+    if (n < 3)
+        LOG_INFO("av", "avheader chn=%u call#%d av_header=%p", chn, n, av_header);
+
     if (!av_header) return;
     const uint8_t* p = reinterpret_cast<const uint8_t*>(av_header);
 
-    // Hex dump first 3 calls so we can reverse-engineer the struct layout
+    // Hex dump first 3 non-null calls so we can reverse-engineer the struct layout.
     if (n < 3) {
         char hex[392] = {0};
         for (int i = 0; i < 128 && i*3+2 < (int)sizeof(hex); ++i)
@@ -262,10 +287,9 @@ void bridge_recv_avheader(uint32_t chn, void* ctx, void* av_header) {
         LOG_INFO("av", "avheader chn=%u dump#%d [0..127]: %s", chn, n, hex);
     }
 
-    // TODO: once struct layout is confirmed from hex dump, read battery_pct directly:
-    //   uint8_t battery = p[BATTERY_OFFSET];  // offset TBD from hex dump analysis
-    // Then write: /cache/metrics_{mac_clean}.txt with "Batt: N%"
-    // This replaces any polling approach entirely.
+    // TODO: once battery offset is confirmed from the hex dump above, replace with:
+    //   uint8_t battery = p[BATTERY_OFFSET];
+    //   write_battery_metrics(battery);
 }
 
 }  // extern "C"
