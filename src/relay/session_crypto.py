@@ -18,24 +18,43 @@ from constants import HEADER_SIZE
 from models import RelayState
 
 
-def decrypt_session_key(encrypted_key: bytes) -> Optional[bytes]:
+def decrypt_session_key(encrypted_key: bytes, device_mac: str = "") -> Optional[bytes]:
     """Decrypt the 32-byte session key from CERTIFY_REQ.
-    
+
     The SDK encrypts the session key with RC5(16-byte blocks, 6 rounds)
     using certify_key = mars_access_token_bytes[0x30:0x40] (16 bytes).
     Two 16-byte blocks are encrypted separately.
+
+    Args:
+        encrypted_key: 32-byte encrypted client key from CERTIFY_REQ payload[8:40]
+        device_mac:    Device MAC to load the correct per-device auth cache.
     """
-    # Get mars_access_token from env or cache
+    # Get mars_access_token from env or per-device auth cache
     access_token = os.environ.get('MARS_ACCESS_TOKEN', '')
     if not access_token:
-        # Try loading from cache
         try:
-            cache_path = os.environ.get('SESSION_CACHE', '/work/cache/session_keys.json')
-            auth_path = os.path.join(os.path.dirname(cache_path), 'auth.json')
-            with open(auth_path) as f:
-                auth = json.load(f)
-            access_token = auth.get('mars_access_token', '')
-        except (FileNotFoundError, json.JSONDecodeError, KeyError):
+            # Try MAC-specific auth cache first
+            if device_mac:
+                mac_clean = device_mac.replace(':', '').lower()
+                auth_paths = [
+                    f"/cache/auth_{mac_clean}.json",
+                    f"/work/cache/auth_{mac_clean}.json",
+                    f"cache/auth_{mac_clean}.json",
+                ]
+            else:
+                # Fall back to generic cache location
+                cache_path = os.environ.get('SESSION_CACHE', '/work/cache/session_keys.json')
+                auth_paths = [os.path.join(os.path.dirname(cache_path), 'auth.json')]
+            for auth_path in auth_paths:
+                try:
+                    with open(auth_path) as f:
+                        auth = json.load(f)
+                    access_token = auth.get('mars_access_token', '')
+                    if access_token:
+                        break
+                except (FileNotFoundError, json.JSONDecodeError):
+                    continue
+        except Exception:
             pass
     
     if not access_token:
@@ -71,23 +90,31 @@ def decrypt_session_key(encrypted_key: bytes) -> Optional[bytes]:
     return block1 + block2
 
 
-def load_bridge_captured_session_key() -> Optional[bytes]:
+def load_bridge_captured_session_key(device_mac: str = "") -> Optional[bytes]:
     """Load session key captured by the bridge's rc5_ctx_setkey interpose hook.
-    
-    The bridge C++ code hooks the SDK's RC5 key setup and writes the 32-byte
-    session key to a file after CERTIFY completes. The relay reads it here.
+
+    The bridge C++ code (bionic_interpose.c) hooks the SDK's RC5 key setup and
+    writes the 32-byte session key to SESSION_KEY_PATH after CERTIFY completes.
+
+    With multi-device support each bridge process writes to its own path:
+      SESSION_KEY_PATH=/cache/session_key_{mac_clean}.bin
+
+    Args:
+        device_mac: Device MAC to read the correct per-device key file.
+                    If empty, reads from SESSION_KEY_PATH env var.
     """
-    key_path = os.environ.get("SESSION_KEY_PATH", "/app/cache/session_key_extracted.bin")
-    # Also check alternate paths for different container mount points
-    alt_paths = [key_path, "/cache/session_key_extracted.bin", "cache/session_key_extracted.bin"]
-    for path in alt_paths:
-        try:
-            data = Path(path).read_bytes()
-            if len(data) == 32 and data != bytes(32):
-                log.info(f"loaded bridge-captured session key from {path}")
-                return data
-        except (FileNotFoundError, OSError):
-            continue
+    if device_mac:
+        mac_clean = device_mac.replace(':', '').lower()
+        key_path = f"/cache/session_key_{mac_clean}.bin"
+    else:
+        key_path = os.environ.get("SESSION_KEY_PATH", "/cache/session_key_extracted.bin")
+    try:
+        data = Path(key_path).read_bytes()
+        if len(data) == 32 and data != bytes(32):
+            log.info("loaded bridge-captured session key from %s", key_path)
+            return data
+    except (FileNotFoundError, OSError):
+        pass
     return None
 
 

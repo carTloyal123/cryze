@@ -15,7 +15,7 @@ services:
     command: >-
       sh -c "apt-get update -qq && apt-get install -y -qq iptables conntrack >/dev/null 2>&1;
              python3 /app/src/network/network_setup.py"
-    restart: unless-stopped
+    restart: on-failure
     stop_grace_period: 5s
 
   relay:
@@ -28,8 +28,6 @@ services:
       - ./logs:/app/logs
     env_file: .env
     environment:
-      DOORBELL_IP: ${DOORBELL_IP:-}
-      CHIME_IP: ${CHIME_IP:-}
       SESSION_CACHE: /app/cache/session_keys.json
       LOG_FILE: /app/logs/relay.log
       LOG_LEVEL: ${LOG_LEVEL:-info}
@@ -38,6 +36,7 @@ services:
       --mode ${RELAY_MODE:-relay}
       --local-ip 0.0.0.0
       --session-cache /app/cache/session_keys.json
+      --registry /app/cache/device_registry.json
       --keepalive
       --mtp-port 23000
     depends_on:
@@ -61,11 +60,16 @@ services:
     network_mode: host
     volumes:
       - ./cache:/cache
+      - ./cache:/app/cache
       - ./logs:/logs
       - ./.env:/work/.env:ro
+    env_file: .env
     environment:
       LOG_FILE: /logs/bridge.log
       LOG_LEVEL: ${LOG_LEVEL:-info}
+      # Relay runs as a separate container — entrypoint.py skips spawning its own
+      RELAY_EXTERNAL: "1"
+    command: ["python3", "/work/scripts/entrypoint.py"]
     depends_on:
       relay:
         condition: service_healthy

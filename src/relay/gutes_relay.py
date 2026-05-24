@@ -59,7 +59,8 @@ class GutesRelay:
                  log_file: Optional[str] = None, local_ip: str = "",
                  keepalive: bool = False,
                  session_cache: str = "cache/session_keys.json",
-                 mtp_port: int = 23000):
+                 mtp_port: int = 23000,
+                 registry_path: str = ""):
         self.listen_ports = listen_ports or [28800, 8443, 8000]
         self.list_port = list_port
         self.mtp_port = mtp_port
@@ -95,6 +96,23 @@ class GutesRelay:
 
         # MTP relay subsystem
         self._mtp_relay = MtpRelay(self)
+
+        # Cache of raw CERTIFY_REQ frames per term_id (for identify_bridge_mac)
+        self._last_certify_frames: dict = {}  # term_id -> bytes
+
+        # Load DeviceRegistry if path provided
+        if registry_path:
+            try:
+                from device_registry import DeviceRegistry
+                reg = DeviceRegistry.from_cache(Path(registry_path))
+                if reg:
+                    self.state.registry = reg
+                    self.log(f"Registry loaded: {len(reg.devices)} device(s) "
+                             f"{[d.mac for d in reg.devices]}")
+                else:
+                    self.log(f"Registry cache not found or expired: {registry_path}")
+            except Exception as e:
+                self.log(f"Registry load failed: {e}")
 
     def _detect_local_ip(self) -> str:
         """Detect our LAN IP."""
@@ -155,9 +173,9 @@ class GutesRelay:
         """Delegate to frame_builder.build_detect_resp."""
         return _fb_build_detect_resp(self, req_data)
 
-    def _decrypt_session_key(self, encrypted_key: bytes) -> bytes:
+    def _decrypt_session_key(self, encrypted_key: bytes, device_mac: str = "") -> bytes:
         """Delegate to session_crypto.decrypt_session_key."""
-        return decrypt_session_key(encrypted_key)
+        return decrypt_session_key(encrypted_key, device_mac)
     
     def _giot_hash_string(self, data: bytes) -> int:
         """Delegate to session_crypto.giot_hash_string."""
@@ -278,13 +296,15 @@ class GutesRelay:
                 self.log(f"← CERTIFY_REQ from {addr[0]}:{addr[1]} term_id={term_id} ({frm_len}B)")
                 certify_sqnum = self._extract_req_sqnum(data)
                 self.state.addr_last_sqnum[addr] = certify_sqnum
+                # Cache raw frame for bridge MAC identification in on_client_certified
+                if term_id != 0:
+                    self._last_certify_frames[term_id] = data
 
             if self.mode == "relay":
-                # For bridge (localhost): handle locally with captured session key
-                # For doorbell/chime (LAN devices): proxy to Mars for proper authentication
-                doorbell_ip = os.environ.get('DOORBELL_IP', '192.168.1.81')
-                chime_ip = os.environ.get('CHIME_IP', '')
-                if addr[0] in (doorbell_ip, chime_ip) and addr[0] != '127.0.0.1':
+                # Doorbells/chimes: proxy to Mars; Bridges (localhost): handle locally
+                registry = self.state.registry
+                is_doorbell = (registry and registry.is_doorbell_ip(addr[0]))
+                if is_doorbell and addr[0] != '127.0.0.1':
                     self.log(f"  [RELAY] Device CERTIFY from {addr[0]} — proxying to Mars")
                     mars_resp = self._proxy_certify_to_mars(data, term_id, addr)
                     if mars_resp:
@@ -311,14 +331,16 @@ class GutesRelay:
                 _calling_on_certified(self, term_id)
             if not ack and not is_resp:
                 # Device (doorbell/chime) INIT_INFO: proxy to Mars
-                doorbell_ip = os.environ.get('DOORBELL_IP', '192.168.1.81')
-                chime_ip = os.environ.get('CHIME_IP', '')
-                if addr[0] in (doorbell_ip, chime_ip) and addr[0] != '127.0.0.1':
+                registry = self.state.registry
+                is_doorbell = (registry and registry.is_doorbell_ip(addr[0]))
+                if is_doorbell and addr[0] != '127.0.0.1':
                     mars_resp = self._proxy_frame_to_mars(data, "INIT_INFO (device)", addr)
                     if mars_resp:
                         return mars_resp
                 # Bridge INIT_INFO: handle locally with captured session key
-                captured = load_bridge_captured_session_key()
+                device_mac = (self.state.clients[term_id].device_mac
+                               if term_id in self.state.clients else "")
+                captured = load_bridge_captured_session_key(device_mac)
                 if captured:
                     if addr not in self.state.addr_session_keys or self.state.addr_session_keys[addr] != captured:
                         self.log(f"  [RELAY] Using bridge-captured session key={captured[:8].hex()}...")
@@ -350,8 +372,10 @@ class GutesRelay:
         # --- CALLING: local with captured session key, or proxy to Mars ---
         elif ftype == TYPE_CALLING_REQ:
             self.log(f"← CALLING_REQ from {addr[0]}:{addr[1]} term_id={term_id} ({frm_len}B)")
-            # Ensure we have the bridge-captured session key
-            captured = load_bridge_captured_session_key()
+            # Ensure we have the bridge-captured session key for this device
+            device_mac = (self.state.clients[term_id].device_mac
+                          if term_id in self.state.clients else "")
+            captured = load_bridge_captured_session_key(device_mac)
             if captured and addr not in self.state.addr_session_keys:
                 self.state.session_keys[term_id] = captured
                 self.state.addr_session_keys[addr] = captured
@@ -373,26 +397,30 @@ class GutesRelay:
 
         # --- KEEPALIVE handling ---
         elif ftype == TYPE_KEEPALIVE:
-            doorbell_ip = os.environ.get('DOORBELL_IP', '192.168.1.81')
+            registry = self.state.registry
             if ack:
                 if term_id != 0 and term_id in self.state.clients:
                     client = self.state.clients[term_id]
-                    if client.role == "doorbell" or addr[0] == doorbell_ip:
-                        self.state.doorbell_last_ack = time.time()
-                        self.state.keepalive_misses = 0
+                    if client.role == "doorbell" or (registry and registry.is_doorbell_ip(addr[0])):
+                        mac = client.device_mac or ""
+                        self.state.doorbell_last_acks[mac] = time.time()
+                        self.state.keepalive_misses[mac] = 0
                         self.log(f"← KEEPALIVE_ACK from doorbell {addr[0]}:{addr[1]} "
-                                f"term_id={term_id} — misses reset")
+                                f"term_id={term_id} mac={mac} — misses reset")
                         return None
                 self.log(f"← KEEPALIVE_ACK from {addr[0]}:{addr[1]} term_id={term_id}")
                 return None
             else:
                 self.log(f"← KEEPALIVE from {addr[0]}:{addr[1]} term_id={term_id}")
-                if addr[0] == doorbell_ip:
-                    self.state.doorbell_last_ack = time.time()
-                    self.state.keepalive_misses = 0
-                    if not self.state.doorbell_term_id and term_id:
-                        self.state.doorbell_term_id = term_id
-                        self.log(f"  [ROLE] Doorbell identified via KEEPALIVE: term_id={term_id}")
+                is_doorbell = (registry and registry.is_doorbell_ip(addr[0]))
+                if is_doorbell:
+                    info = registry.get_by_lan_ip(addr[0]) if registry else None
+                    mac = info.mac if info else ""
+                    self.state.doorbell_last_acks[mac] = time.time()
+                    self.state.keepalive_misses[mac] = 0
+                    if mac and mac not in self.state.doorbell_term_ids and term_id:
+                        self.state.doorbell_term_ids[mac] = term_id
+                        self.log(f"  [ROLE] Doorbell identified via KEEPALIVE: term_id={term_id} mac={mac}")
                 ack_resp = self._build_keepalive_ack(data, addr)
                 if ack_resp:
                     return ack_resp
@@ -606,7 +634,11 @@ class GutesRelay:
         hash_checksum = struct.unpack_from('<I', payload, 4)[0]
         encrypted_session_key = payload[8:40]
         
-        session_key = self._decrypt_session_key(encrypted_session_key)
+        # Get device_mac for per-device key lookups (may be empty before CERTIFY_ID)
+        device_mac = (self.state.clients[term_id].device_mac
+                      if term_id in self.state.clients else "")
+
+        session_key = self._decrypt_session_key(encrypted_session_key, device_mac)
         hash_verified = False
         if session_key:
             computed_hash = self._giot_hash_string(session_key)
@@ -629,7 +661,7 @@ class GutesRelay:
             self.log(f"  [RELAY] Cached XOR'd session_key={session_key[:8].hex()}...")
         else:
             # RC5 decryption failed — try bridge-captured session key first
-            captured_key = load_bridge_captured_session_key()
+            captured_key = load_bridge_captured_session_key(device_mac)
             if captured_key:
                 self.log(f"  [RELAY] Using bridge-captured session key={captured_key[:8].hex()}...")
                 # SDK has this key already (it generated it). Send all-zero server_key
@@ -650,8 +682,11 @@ class GutesRelay:
         # Track doorbell's source port as its MTP port
         role = _calling_identify_role(self, term_id, addr)
         if role == "doorbell" and addr[1] > 0:
-            self.state.doorbell_mtp_port = addr[1]
-            self.log(f"  [RELAY] Doorbell MTP port captured: {addr[1]} (from CERTIFY source port)")
+            registry = self.state.registry
+            info = registry.get_by_lan_ip(addr[0]) if registry else None
+            mac = info.mac if info else addr[0]  # fall back to IP as key
+            self.state.doorbell_mtp_ports[mac] = addr[1]
+            self.log(f"  [RELAY] Doorbell MTP port captured: {addr[1]} mac={mac} (from CERTIFY source port)")
         
         # Mark client as certified
         if term_id in self.state.clients:
@@ -802,6 +837,9 @@ class GutesRelay:
         self.log("Ready — waiting for connections...")
         self.log("=" * 60)
 
+        # Registry reference for broadcast listener and routing
+        registry = self.state.registry
+
         # Create tasks for all sockets
         tasks = []
         for port, sock in self.relay_socks.items():
@@ -836,7 +874,8 @@ class GutesRelay:
 
         # Broadcast listener on port 8900 — captures doorbell LAN announcements
         if self.mode == "relay":
-            tasks.append(asyncio.create_task(broadcast_listen(self.state, self.local_ip)))
+            tasks.append(asyncio.create_task(
+                broadcast_listen(self.state, self.local_ip, registry=registry)))
 
         await asyncio.gather(*tasks)
 
@@ -981,28 +1020,51 @@ class GutesRelay:
 
     async def _route_to_peer(self, data: bytes, sender_addr: tuple,
                              sender_port: int, sender_sock: socket.socket):
-        """Route frame to the appropriate peer (relay mode)."""
-        term_id = self.decode_term_id(data) if len(data) >= HEADER_SIZE else 0
-        ftype = data[1] if len(data) > 1 else 0
-        type_name = FRAME_TYPES.get(ftype, f"0x{ftype:02X}")
-        
-        sender_ip = sender_addr[0]
-        routed = False
-        for tid, client in self.state.clients.items():
-            if client.addr[0] != sender_ip:
-                if client.our_port in self.relay_socks:
+        """Route frame to the correct MAC-scoped peer (relay mode)."""
+        term_id     = self.decode_term_id(data) if len(data) >= HEADER_SIZE else 0
+        ftype       = data[1] if len(data) > 1 else 0
+        type_name   = FRAME_TYPES.get(ftype, f"0x{ftype:02X}")
+        sender_ip   = sender_addr[0]
+
+        sender_client = self.state.clients.get(term_id)
+        sender_mac    = sender_client.device_mac if sender_client else ""
+
+        # Determine target term_id based on sender role + device MAC
+        target_term = 0
+        if sender_client:
+            if sender_client.role == "bridge" and sender_mac:
+                target_term = self.state.doorbell_term_ids.get(sender_mac, 0)
+            elif sender_client.role == "doorbell" and sender_mac:
+                target_term = self.state.bridge_term_ids.get(sender_mac, 0)
+            elif sender_client.role == "chime" and sender_mac:
+                target_term = self.state.doorbell_term_ids.get(sender_mac, 0)
+
+        if target_term:
+            target = self.state.clients.get(target_term)
+            if target and target.our_port in self.relay_socks:
+                try:
+                    self.relay_socks[target.our_port].sendto(data, target.addr)
+                    self.log(f"  → ROUTE {type_name} to {target.addr[0]}:{target.addr[1]} "
+                            f"mac={sender_mac} term_id={target_term}")
+                    target.frames_out += 1
+                    return
+                except OSError as e:
+                    self.log(f"  ERROR routing to {target.addr}: {e}")
+
+        # Fallback for unknown-role clients: send to all non-sender IPs
+        if not sender_mac and ftype not in (TYPE_KEEPALIVE,):
+            routed = False
+            for tid, client in self.state.clients.items():
+                if client.addr[0] != sender_ip and client.our_port in self.relay_socks:
                     try:
                         self.relay_socks[client.our_port].sendto(data, client.addr)
-                        self.log(f"  → ROUTE {type_name} to {client.addr[0]}:{client.addr[1]} "
-                                f"(term_id={tid})")
                         client.frames_out += 1
                         routed = True
                     except OSError as e:
                         self.log(f"  ERROR routing to {client.addr}: {e}")
-        
-        if not routed and ftype not in (TYPE_KEEPALIVE,):
-            self.log(f"  ! NO PEER to route {type_name} (term_id={term_id}, "
-                    f"clients={list(self.state.clients.keys())})")
+            if not routed:
+                self.log(f"  ! NO PEER for {type_name} (term_id={term_id} mac={sender_mac} "
+                        f"clients={list(self.state.clients.keys())})")
 
     async def _tcp_signaling_listen(self, port: int):
         """TCP signaling server for relay mode."""
@@ -1182,6 +1244,8 @@ def main():
                        help='Path to persistent session key cache (default: cache/session_keys.json)')
     parser.add_argument('--mtp-port', type=int, default=23000,
                        help='TCP port for MTP relay server (default: 23000)')
+    parser.add_argument('--registry', default='',
+                       help='Path to device_registry.json (enables multi-device routing)')
     args = parser.parse_args()
 
     if args.log_file and not os.environ.get('LOG_FILE'):
@@ -1203,6 +1267,7 @@ def main():
         keepalive=args.keepalive,
         session_cache=args.session_cache,
         mtp_port=args.mtp_port,
+        registry_path=args.registry,
     )
 
     try:
