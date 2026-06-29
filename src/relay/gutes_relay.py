@@ -44,6 +44,7 @@ from frame_builder import (
 )
 from mtp_relay import MtpRelay
 from broadcast import broadcast_listen
+from device_registry import DeviceRegistry, DeviceInfo
 from calling import (
     handle_calling as _calling_handle,
     identify_device_role as _calling_identify_role,
@@ -100,19 +101,50 @@ class GutesRelay:
         # Cache of raw CERTIFY_REQ frames per term_id (for identify_bridge_mac)
         self._last_certify_frames: dict = {}  # term_id -> bytes
 
-        # Load DeviceRegistry if path provided
+        # DeviceRegistry: loaded at startup and reloaded when the cache file
+        # changes. The go2rtc/entrypoint container writes this file *after* the
+        # relay starts (relay is its depends_on), so a one-shot load at init
+        # always misses the fresh registry — a watch loop (_registry_reload_loop)
+        # picks it up. _registry_mtime tracks the last-loaded version.
+        self.registry_path = registry_path
+        self._registry_mtime = 0.0
         if registry_path:
-            try:
-                from device_registry import DeviceRegistry
-                reg = DeviceRegistry.from_cache(Path(registry_path))
-                if reg:
-                    self.state.registry = reg
-                    self.log(f"Registry loaded: {len(reg.devices)} device(s) "
-                             f"{[d.mac for d in reg.devices]}")
-                else:
-                    self.log(f"Registry cache not found or expired: {registry_path}")
-            except Exception as e:
-                self.log(f"Registry load failed: {e}")
+            self._load_registry(initial=True)
+
+    def _load_registry(self, initial: bool = False) -> bool:
+        """(Re)load the device registry from registry_path. Returns True if loaded.
+
+        Loads regardless of the cache TTL (the entrypoint just wrote it); TTL is
+        only meant to gate a *stale* cache on a cold standalone start.
+        """
+        path = Path(self.registry_path)
+        try:
+            if not path.is_file():
+                if initial:
+                    self.log(f"Registry cache not present yet: {self.registry_path}")
+                return False
+            mtime = path.stat().st_mtime
+            if mtime == self._registry_mtime:
+                return False  # unchanged since last load
+            data = json.loads(path.read_text())
+            devices = [DeviceInfo.from_dict(d) for d in data.get('devices', [])]
+            if not devices:
+                return False
+            self.state.registry = DeviceRegistry(devices)
+            self._registry_mtime = mtime
+            self.log(f"Registry loaded: {len(devices)} device(s) "
+                     f"{[(d.name, d.lan_ip) for d in devices]}")
+            return True
+        except Exception as e:
+            self.log(f"Registry load failed: {e}")
+            return False
+
+    async def _registry_reload_loop(self):
+        """Watch the registry cache file and reload it when it changes."""
+        while True:
+            await asyncio.sleep(5)
+            if self.registry_path:
+                self._load_registry()
 
     def _detect_local_ip(self) -> str:
         """Detect our LAN IP."""
@@ -868,6 +900,10 @@ class GutesRelay:
         # Keepalive loop (when enabled)
         if self.state.keepalive_enabled:
             tasks.append(asyncio.create_task(self._keepalive_loop()))
+
+        # Watch the registry cache for the entrypoint's post-startup write
+        if self.registry_path:
+            tasks.append(asyncio.create_task(self._registry_reload_loop()))
 
         # TCP signaling listener on port 28800 (relay mode - SDK falls back to TCP)
         if self.mode == "relay":
