@@ -1,16 +1,17 @@
 """Device registry — enumerate, discover, and track all GWELL cameras."""
 
 import base64
+import binascii
 import hashlib
 import json
-import os
-import socket
+import re
 import struct
 import sys
 import time
 import urllib.error
 import urllib.request
-from dataclasses import dataclass, field
+import uuid
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional
 
@@ -35,6 +36,17 @@ _SC          = "9f275790cab94a72bd206c8876429f3c"
 _SV_DEVICES  = "c86fa16fc99d4d6580f4efeae8b4b13c"
 
 _REGISTRY_TTL = 3600  # seconds before re-fetching from API (1 hour)
+
+
+def _slugify_stream_name(name: str, mac_clean: str) -> str:
+    """Make a go2rtc-safe stream key from a camera's display name.
+
+    go2rtc shows the stream key in its web UI, so a readable key (e.g.
+    'front_door_cam') is friendlier than the MAC. Lowercase, non-alphanumerics
+    collapsed to underscores; falls back to camera_<mac> if the name is empty.
+    """
+    slug = re.sub(r'[^a-z0-9]+', '_', name.lower()).strip('_')
+    return slug or f'camera_{mac_clean}'
 
 
 # ---------------------------------------------------------------------------
@@ -110,12 +122,14 @@ class DeviceRegistry:
         """Authenticate with Wyze and enumerate all GW_* cameras.
 
         Args:
+            email:       Wyze account email.
+            password:    Wyze account password.
+            key_id:      Wyze developer API key id.
+            api_key:     Wyze developer API key.
             filter_macs: If not None, only include these MACs (uppercase).
                          None = enroll all GW_* cameras.
         """
-        import uuid as _uuid
-
-        phone_id = str(_uuid.uuid4())
+        phone_id = str(uuid.uuid4())
 
         def _md5(s: str) -> str:
             return hashlib.md5(s.encode()).hexdigest()
@@ -175,6 +189,7 @@ class DeviceRegistry:
 
         raw_list = dev_resp.get('data', {}).get('device_list', [])
         devices = []
+        used_slugs: dict[str, int] = {}
         for dev in raw_list:
             model = dev.get('product_model', '')
             ptype = dev.get('product_type', '')
@@ -184,15 +199,25 @@ class DeviceRegistry:
             if filter_macs is not None and mac not in filter_macs:
                 continue
             mac_clean = mac.replace(':', '').lower()
+            name = dev.get('nickname', dev.get('product_model', mac))
+
+            # Readable, go2rtc-safe stream key from the camera name. Disambiguate
+            # duplicate names with a short MAC suffix so keys stay unique.
+            slug = _slugify_stream_name(name, mac_clean)
+            if slug in used_slugs:
+                slug = f'{slug}_{mac_clean[-4:]}'
+            used_slugs[slug] = used_slugs.get(slug, 0) + 1
+
             info = DeviceInfo(
                 mac=mac,
-                name=dev.get('nickname', dev.get('product_model', mac)),
+                name=name,
                 model=model,
                 cloud_ip=dev.get('ip', ''),
-                stream_name=f'camera_{mac_clean}',
+                stream_name=slug,
             )
             devices.append(info)
-            log.info("  Found camera: %s (%s) model=%s", info.name, info.mac, info.model)
+            log.info("  Found camera: %s (%s) model=%s stream=%s",
+                     info.name, info.mac, info.model, info.stream_name)
 
         if not devices:
             raise RuntimeError(
@@ -326,7 +351,7 @@ class DeviceRegistry:
                 except (ValueError, IndexError):
                     try:
                         token_bytes = base64.b64decode(token)
-                    except Exception:
+                    except (ValueError, binascii.Error):
                         continue
                 if len(token_bytes) >= 0x40:
                     return token_bytes[0x30:0x40]
@@ -366,7 +391,7 @@ class DeviceRegistry:
                 dec_len = (len(payload) // 8) * 8
                 if dec_len >= 40:
                     payload = rc5_pf.decrypt(bytes(payload[:dec_len]))
-            except Exception:
+            except (ValueError, struct.error, IndexError):
                 return None
 
         if len(payload) < 40:
@@ -391,7 +416,7 @@ class DeviceRegistry:
                     continue
                 log.info("Identified bridge MAC=%s from CERTIFY payload", device.mac)
                 return device.mac
-            except Exception:
+            except (ValueError, struct.error, IndexError):
                 continue
 
         return None

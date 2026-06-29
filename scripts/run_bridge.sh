@@ -9,20 +9,29 @@
 set -e
 
 DEVICE_MAC=""
-EXTRA_ARGS=""
 
-while [ $# -gt 0 ]; do
-    case "$1" in
-        --device)
-            DEVICE_MAC="$2"
-            shift 2
-            ;;
-        *)
-            EXTRA_ARGS="$EXTRA_ARGS $1"
-            shift
-            ;;
-    esac
+# Pull --device out of the args; everything else is collected back into the
+# positional parameters so it can be forwarded as "$@" (no word-splitting /
+# globbing hazards from stuffing args into a string).
+#
+# `for arg do` snapshots the original positional list, so appending extras to
+# "$@" inside the loop is safe; afterward we shift off the original args,
+# leaving only the forwarded extras in "$@" (order preserved).
+orig_argc=$#
+want_device=0
+for arg do
+    if [ "$want_device" -eq 1 ]; then
+        DEVICE_MAC="$arg"
+        want_device=0
+        continue
+    fi
+    if [ "$arg" = "--device" ]; then
+        want_device=1
+        continue
+    fi
+    set -- "$@" "$arg"
 done
+shift "$orig_argc"
 
 if [ -z "$DEVICE_MAC" ]; then
     echo "ERROR: run_bridge.sh requires --device <MAC>" >&2
@@ -59,4 +68,38 @@ export LAN_WAIT="${LAN_WAIT:-0}"
 export SUBSCRIBE_WAIT="${SUBSCRIBE_WAIT:-3}"
 export SKIP_WAKEUP="${SKIP_WAKEUP:-0}"
 
-exec /work/build/bridge --stdout --device "$DEVICE_MAC" $EXTRA_ARGS
+# Cold-start retry: a camera that has gone dormant fails the first
+# iv_start_av_link with err=20005 and the bridge exits non-zero having produced
+# no frames. The HTTPS wakeup the bridge sends on each start brings the camera
+# up after a couple of attempts. Retry on failure while holding stdout open so
+# go2rtc keeps the producer pipe connected (no EOF) across attempts. The bridge
+# exits 0 once frames have flowed (SIGINT/duration), which ends the loop.
+MAX_TRIES="${BRIDGE_MAX_TRIES:-6}"
+RETRY_DELAY="${BRIDGE_RETRY_DELAY:-2}"
+
+stop=0
+child=
+# go2rtc stops the producer with SIGINT (killsignal=2). Forward it to the
+# bridge child and stop retrying.
+trap 'stop=1; [ -n "$child" ] && kill -INT "$child" 2>/dev/null' INT TERM
+
+rc=1
+i=0
+while [ "$stop" -eq 0 ] && [ "$i" -lt "$MAX_TRIES" ]; do
+    i=$((i + 1))
+    /work/build/bridge --stdout --device "$DEVICE_MAC" "$@" &
+    child=$!
+    # `|| rc=$?` captures the bridge's exit without set -e aborting the script.
+    rc=0
+    wait "$child" || rc=$?
+    child=
+
+    # rc 0  -> bridge streamed then exited (SIGINT/duration): done.
+    # rc !=0 -> cold-start failure (dormant camera, err=20005): retry.
+    [ "$rc" -eq 0 ] && break
+    [ "$stop" -eq 1 ] && break
+    echo "run_bridge: $DEVICE_MAC attempt $i failed (rc=$rc), retrying in ${RETRY_DELAY}s..." >&2
+    sleep "$RETRY_DELAY"
+done
+
+exit "$rc"

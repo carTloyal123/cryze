@@ -16,10 +16,14 @@ from typing import Optional
 sys.path.insert(0, str(Path(__file__).parent))
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from log_config import get_logger
-log = get_logger('relay')
-from rc5 import RC5, GWELL_KEY, derive_per_frame_key, id_decrypt, id_encrypt
-from constants import *
-from models import *
+from rc5 import RC5, derive_per_frame_key, id_decrypt
+from constants import (
+    FRAME_TYPES, HEADER_SIZE,
+    TYPE_CALLING_REQ, TYPE_CERTIFY_REQ, TYPE_CERTIFY_RESP, TYPE_DETECT_REQ,
+    TYPE_INIT_INFO_MSG, TYPE_KEEPALIVE, TYPE_LIST_REQ, TYPE_SESSION_CTL,
+    TYPE_SUBSCRIBE,
+)
+from models import ClientSession, RelayState
 from session_crypto import (
     decrypt_session_key, giot_hash_string, extract_request_sequence_number,
     verify_session_key, extract_calling_link_id, persist_session_key,
@@ -44,17 +48,21 @@ from frame_builder import (
 )
 from mtp_relay import MtpRelay
 from broadcast import broadcast_listen
+from device_registry import DeviceRegistry, DeviceInfo
 from calling import (
     handle_calling as _calling_handle,
     identify_device_role as _calling_identify_role,
     on_client_certified as _calling_on_certified,
 )
 
+log = get_logger('relay')
+
 
 class GutesRelay:
     """UDP-based GUTES relay server with full proxy + standalone capability."""
 
-    def __init__(self, listen_ports: list[int] = None, list_port: int = 51701,
+    # noinspection PyUnusedLocal
+    def __init__(self, listen_ports: list[int] | None = None, list_port: int = 51701,
                  mode: str = "proxy", upstream: str = "3.13.212.24:28800",
                  log_file: Optional[str] = None, local_ip: str = "",
                  keepalive: bool = False,
@@ -100,21 +108,53 @@ class GutesRelay:
         # Cache of raw CERTIFY_REQ frames per term_id (for identify_bridge_mac)
         self._last_certify_frames: dict = {}  # term_id -> bytes
 
-        # Load DeviceRegistry if path provided
+        # DeviceRegistry: loaded at startup and reloaded when the cache file
+        # changes. The go2rtc/entrypoint container writes this file *after* the
+        # relay starts (relay is its depends_on), so a one-shot load at init
+        # always misses the fresh registry — a watch loop (_registry_reload_loop)
+        # picks it up. _registry_mtime tracks the last-loaded version.
+        self.registry_path = registry_path
+        self._registry_mtime = 0.0
         if registry_path:
-            try:
-                from device_registry import DeviceRegistry
-                reg = DeviceRegistry.from_cache(Path(registry_path))
-                if reg:
-                    self.state.registry = reg
-                    self.log(f"Registry loaded: {len(reg.devices)} device(s) "
-                             f"{[d.mac for d in reg.devices]}")
-                else:
-                    self.log(f"Registry cache not found or expired: {registry_path}")
-            except Exception as e:
-                self.log(f"Registry load failed: {e}")
+            self._load_registry(initial=True)
 
-    def _detect_local_ip(self) -> str:
+    def _load_registry(self, initial: bool = False) -> bool:
+        """(Re)load the device registry from registry_path. Returns True if loaded.
+
+        Loads regardless of the cache TTL (the entrypoint just wrote it); TTL is
+        only meant to gate a *stale* cache on a cold standalone start.
+        """
+        path = Path(self.registry_path)
+        try:
+            if not path.is_file():
+                if initial:
+                    self.log(f"Registry cache not present yet: {self.registry_path}")
+                return False
+            mtime = path.stat().st_mtime
+            if mtime == self._registry_mtime:
+                return False  # unchanged since last load
+            data = json.loads(path.read_text())
+            devices = [DeviceInfo.from_dict(d) for d in data.get('devices', [])]
+            if not devices:
+                return False
+            self.state.registry = DeviceRegistry(devices)
+            self._registry_mtime = mtime
+            self.log(f"Registry loaded: {len(devices)} device(s) "
+                     f"{[(d.name, d.lan_ip) for d in devices]}")
+            return True
+        except Exception as e:
+            self.log(f"Registry load failed: {e}")
+            return False
+
+    async def _registry_reload_loop(self):
+        """Watch the registry cache file and reload it when it changes."""
+        while True:
+            await asyncio.sleep(5)
+            if self.registry_path:
+                self._load_registry()
+
+    @staticmethod
+    def _detect_local_ip() -> str:
         """Detect our LAN IP."""
         try:
             s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -122,13 +162,39 @@ class GutesRelay:
             ip = s.getsockname()[0]
             s.close()
             return ip
-        except:
+        except OSError:
             return "127.0.0.1"
 
-    def log(self, msg: str):
+    @staticmethod
+    def log(msg: str):
         log.info(msg)
 
-    def decode_term_id(self, frame_data: bytes) -> int:
+    @staticmethod
+    def _frame_type_name(data: bytes) -> str:
+        """Human-readable name for a frame's type byte (for logging)."""
+        ftype = data[1] if len(data) > 1 else 0
+        return FRAME_TYPES.get(ftype, f"0x{ftype:02X}")
+
+    @staticmethod
+    def _decrypt_frame_payload(frame: bytes) -> bytes:
+        """Return the frame payload (bytes after the 0x18 header), per-frame
+        decrypted when opt_flags marks it encrypted (encrypt_mode == 1).
+
+        Shared by the CERTIFY/Mars-proxy paths that all read opt_flags at 0x14,
+        then RC5-decrypt the 8-byte-aligned payload using the per-frame key.
+        """
+        payload = frame[0x18:]
+        opt_flags = struct.unpack_from('<I', frame, 0x14)[0]
+        if (opt_flags >> 16) & 3 == 1:
+            pfk = derive_per_frame_key(frame[:0x18])
+            rc5 = RC5(block_bytes=8, rounds=6).setkey(pfk)
+            dec_len = (len(payload) // 8) * 8
+            if dec_len > 0:
+                payload = rc5.decrypt(bytes(payload[:dec_len]))
+        return payload
+
+    @staticmethod
+    def decode_term_id(frame_data: bytes) -> int:
         """Decode term_id from frame header using static RC5 key."""
         if len(frame_data) < HEADER_SIZE:
             return 0
@@ -138,30 +204,34 @@ class GutesRelay:
         try:
             id_bytes = id_decrypt(encrypted_id, chkval_bytes, sqnum_bytes)
             return struct.unpack_from('<q', id_bytes)[0]
-        except:
+        except (ValueError, struct.error):
             return 0
 
-    def get_frame_info(self, data: bytes) -> tuple[int, int, int, int]:
+    @staticmethod
+    def get_frame_info(data: bytes) -> tuple[int, int, int, int]:
         """Extract (protocol, type, frm_len, opt_flags) from frame."""
         if len(data) < HEADER_SIZE:
-            return (0, 0, 0, 0)
+            return 0, 0, 0, 0
         protocol = data[0]
         ftype = data[1]
         frm_len = struct.unpack_from('<H', data, 2)[0]
         opt_flags = struct.unpack_from('<I', data, 0x14)[0]
-        return (protocol, ftype, frm_len, opt_flags)
+        return protocol, ftype, frm_len, opt_flags
 
-    def is_ack(self, opt_flags: int) -> bool:
+    @staticmethod
+    def is_ack(opt_flags: int) -> bool:
         return bool((opt_flags >> 20) & 1)
 
-    def is_response(self, opt_flags: int) -> bool:
+    @staticmethod
+    def is_response(opt_flags: int) -> bool:
         return bool((opt_flags >> 21) & 1)
 
     def _next_sqnum(self) -> int:
         """Delegate to frame_builder.next_sqnum."""
         return _fb_next_sqnum(self)
 
-    def _make_server_chkval(self, sqnum: int) -> int:
+    @staticmethod
+    def _make_server_chkval(sqnum: int) -> int:
         """Delegate to frame_builder.make_server_chkval."""
         return _fb_make_server_chkval(sqnum)
 
@@ -173,19 +243,21 @@ class GutesRelay:
         """Delegate to frame_builder.build_detect_resp."""
         return _fb_build_detect_resp(self, req_data)
 
-    def _decrypt_session_key(self, encrypted_key: bytes, device_mac: str = "") -> bytes:
+    @staticmethod
+    def _decrypt_session_key(encrypted_key: bytes, device_mac: str = "") -> Optional[bytes]:
         """Delegate to session_crypto.decrypt_session_key."""
         return decrypt_session_key(encrypted_key, device_mac)
     
-    def _giot_hash_string(self, data: bytes) -> int:
+    @staticmethod
+    def _giot_hash_string(data: bytes) -> int:
         """Delegate to session_crypto.giot_hash_string."""
         return giot_hash_string(data)
 
-    def _extract_req_sqnum(self, req_data: bytes, addr: tuple = None) -> int:
+    def _extract_req_sqnum(self, req_data: bytes, addr: tuple | None = None) -> int:
         """Delegate to session_crypto.extract_request_sequence_number."""
         return extract_request_sequence_number(req_data, addr, self.state)
 
-    def _build_ack(self, req_data: bytes, frame_type: int, addr: tuple = None) -> bytes:
+    def _build_ack(self, req_data: bytes, frame_type: int, addr: tuple | None = None) -> bytes:
         """Delegate to frame_builder.build_ack."""
         return _fb_build_ack(self, req_data, frame_type, addr)
 
@@ -193,7 +265,8 @@ class GutesRelay:
         """Delegate to frame_builder.build_init_info_resp."""
         return _fb_build_init_info_resp(self, req_data, addr, req_sqnum)
 
-    def _verify_session_key_valid(self, session_key: bytes, req_data: bytes) -> bool:
+    @staticmethod
+    def _verify_session_key_valid(session_key: bytes, req_data: bytes) -> bool:
         """Delegate to session_crypto.verify_session_key."""
         return verify_session_key(session_key, req_data)
 
@@ -213,7 +286,8 @@ class GutesRelay:
         """Delegate to frame_builder.build_mtp_res_resp."""
         return _fb_build_mtp_res_resp(self, calling_data, addr, sender_term_id)
 
-    def _compute_chkval(self, frame: bytearray) -> int:
+    @staticmethod
+    def _compute_chkval(frame: bytearray) -> int:
         """Delegate to frame_builder.compute_chkval."""
         return _fb_compute_chkval(frame)
 
@@ -221,7 +295,7 @@ class GutesRelay:
         """Delegate to session_crypto.extract_calling_link_id."""
         return extract_calling_link_id(data, addr, self.state)
 
-    def build_list_resp(self, list_req_data: bytes, reply_ip: str = None) -> bytes:
+    def build_list_resp(self, list_req_data: bytes, reply_ip: str | None = None) -> bytes:
         """Delegate to frame_builder.build_list_resp."""
         return _fb_build_list_resp(self, list_req_data, reply_ip)
 
@@ -233,7 +307,8 @@ class GutesRelay:
             self.upstream_socks[term_id] = sock
         return self.upstream_socks[term_id]
 
-    def hexdump(self, data: bytes, max_bytes: int = 128) -> str:
+    @staticmethod
+    def hexdump(data: bytes, max_bytes: int = 128) -> str:
         """Return a compact hex dump string for logging."""
         truncated = len(data) > max_bytes
         d = data[:max_bytes]
@@ -309,7 +384,7 @@ class GutesRelay:
                     mars_resp = self._proxy_certify_to_mars(data, term_id, addr)
                     if mars_resp:
                         return mars_resp
-                    self.log(f"  [RELAY] Mars proxy failed for device CERTIFY")
+                    self.log("  [RELAY] Mars proxy failed for device CERTIFY")
                 return self._handle_certify_local(data, addr, term_id)
             return None  # proxy: forward
 
@@ -399,15 +474,19 @@ class GutesRelay:
         elif ftype == TYPE_KEEPALIVE:
             registry = self.state.registry
             if ack:
-                if term_id != 0 and term_id in self.state.clients:
-                    client = self.state.clients[term_id]
-                    if client.role == "doorbell" or (registry and registry.is_doorbell_ip(addr[0])):
-                        mac = client.device_mac or ""
-                        self.state.doorbell_last_acks[mac] = time.time()
-                        self.state.keepalive_misses[mac] = 0
-                        self.log(f"← KEEPALIVE_ACK from doorbell {addr[0]}:{addr[1]} "
-                                f"term_id={term_id} mac={mac} — misses reset")
-                        return None
+                # The camera cycles term_ids per keepalive, so client.device_mac is
+                # usually empty here — resolve the MAC from the registry by IP (the
+                # same way the keepalive-recv path below does).
+                is_doorbell = registry and registry.is_doorbell_ip(addr[0])
+                client = self.state.clients.get(term_id)
+                if (client and client.role == "doorbell") or is_doorbell:
+                    info = registry.get_by_lan_ip(addr[0]) if registry else None
+                    mac = (info.mac if info else "") or (client.device_mac if client else "")
+                    self.state.doorbell_last_acks[mac] = time.time()
+                    self.state.keepalive_misses[mac] = 0
+                    self.log(f"← KEEPALIVE_ACK from doorbell {addr[0]}:{addr[1]} "
+                            f"term_id={term_id} mac={mac} — misses reset")
+                    return None
                 self.log(f"← KEEPALIVE_ACK from {addr[0]}:{addr[1]} term_id={term_id}")
                 return None
             else:
@@ -490,14 +569,14 @@ class GutesRelay:
                     break
                 elif ftype == TYPE_CERTIFY_REQ and self.is_ack(struct.unpack_from('<I', pkt, 0x14)[0]):
                     # CERTIFY_ACK — forward to client but keep waiting for RESP
-                    self.log(f"  [MARS-PROXY] Got CERTIFY_ACK from Mars, forwarding")
+                    self.log("  [MARS-PROXY] Got CERTIFY_ACK from Mars, forwarding")
                     # Queue the ACK to send to client
                     self._extra_responses.append((pkt, client_addr))
             
             sock.close()
             
             if not resp_data:
-                self.log(f"  [MARS-PROXY] No CERTIFY_RESP from Mars (timeout)")
+                self.log("  [MARS-PROXY] No CERTIFY_RESP from Mars (timeout)")
                 return None
             
             # Extract session key from the CERTIFY_RESP
@@ -507,31 +586,16 @@ class GutesRelay:
             # Also need the client's key to derive the full session key
             # The client_key was in the CERTIFY_REQ payload (already extracted above)
             # Re-extract it from the original data
-            opt_flags = struct.unpack_from('<I', data, 0x14)[0]
-            encrypt_mode = (opt_flags >> 16) & 3
-            payload = data[0x18:]
-            if encrypt_mode == 1:
-                pfk = derive_per_frame_key(data[:0x18])
-                rc5 = RC5(block_bytes=8, rounds=6).setkey(pfk)
-                dec_len = (len(payload) // 8) * 8
-                if dec_len > 0:
-                    payload = rc5.decrypt(bytes(payload[:dec_len]))
-            
+            payload = self._decrypt_frame_payload(data)
+
             if len(payload) >= 40:
                 client_session_id = payload[0:8]
-                encrypted_client_key = payload[8:40]
-                
+                # payload[8:40] is the RC5-encrypted client key; not currently used.
+                _encrypted_client_key = payload[8:40]  # noqa: F841
+
                 # Extract server_key from Mars CERTIFY_RESP
-                resp_opt = struct.unpack_from('<I', resp_data, 0x14)[0]
-                resp_enc = (resp_opt >> 16) & 3
-                resp_payload = resp_data[0x18:]
-                if resp_enc == 1:
-                    pfk_resp = derive_per_frame_key(resp_data[:0x18])
-                    rc5_resp = RC5(block_bytes=8, rounds=6).setkey(pfk_resp)
-                    dec_len_resp = (len(resp_payload) // 8) * 8
-                    if dec_len_resp > 0:
-                        resp_payload = rc5_resp.decrypt(bytes(resp_payload[:dec_len_resp]))
-                
+                resp_payload = self._decrypt_frame_payload(resp_data)
+
                 if len(resp_payload) >= 40:
                     server_key_from_mars = resp_payload[8:40]
                     self.log(f"  [MARS-PROXY] Mars server_key={server_key_from_mars[:8].hex()}...")
@@ -549,14 +613,14 @@ class GutesRelay:
                         self.state.clients[term_id].certified = True
                         _calling_on_certified(self, term_id)
             
-            self.log(f"  [MARS-PROXY] Returning Mars CERTIFY_RESP to client")
+            self.log("  [MARS-PROXY] Returning Mars CERTIFY_RESP to client")
             return resp_data
             
         except Exception as e:
             self.log(f"  [MARS-PROXY] Error: {e}")
             return None
 
-    def _proxy_frame_to_mars(self, data: bytes, frame_name: str, client_addr: tuple = None) -> Optional[bytes]:
+    def _proxy_frame_to_mars(self, data: bytes, frame_name: str, client_addr: tuple | None = None) -> Optional[bytes]:
         """Proxy a single frame to Mars using persistent per-client upstream socket."""
         mars_host = self.upstream_host
         mars_port = self.upstream_port
@@ -566,7 +630,7 @@ class GutesRelay:
                 if results:
                     mars_host = results[0][4][0]
                     mars_port = 28800
-            except Exception:
+            except socket.gaierror:
                 return None
 
         # Use persistent upstream socket per client address for session continuity
@@ -618,15 +682,8 @@ class GutesRelay:
             return None  # ACK from client, no response needed
         
         # --- Extract client key from CERTIFY_REQ payload ---
-        encrypt_mode = (opt_flags >> 16) & 3
-        payload = data[0x18:]
-        if encrypt_mode == 1:
-            pfk = derive_per_frame_key(data[:0x18])
-            rc5 = RC5(block_bytes=8, rounds=6).setkey(pfk)
-            dec_len = (len(payload) // 8) * 8
-            if dec_len > 0:
-                payload = rc5.decrypt(bytes(payload[:dec_len]))
-        
+        payload = self._decrypt_frame_payload(data)
+
         if len(payload) < 40:
             self.log(f"  [RELAY] CERTIFY_REQ payload too short ({len(payload)}B), cannot extract client key")
             return None
@@ -634,7 +691,7 @@ class GutesRelay:
         hash_checksum = struct.unpack_from('<I', payload, 4)[0]
         encrypted_session_key = payload[8:40]
         
-        # Get device_mac for per-device key lookups (may be empty before CERTIFY_ID)
+        # Get device_mac for per-device key lookups (maybe empty before CERTIFY_ID)
         device_mac = (self.state.clients[term_id].device_mac
                       if term_id in self.state.clients else "")
 
@@ -672,12 +729,12 @@ class GutesRelay:
                 self._persist_session_key(term_id, captured_key)
             else:
                 # No captured key — proxy CERTIFY to Mars
-                self.log(f"  [RELAY] Session key decryption failed, proxying CERTIFY to Mars...")
+                self.log("  [RELAY] Session key decryption failed, proxying CERTIFY to Mars...")
                 mars_resp = self._proxy_certify_to_mars(data, term_id, addr)
                 if mars_resp:
                     return mars_resp
                 server_key = bytes(32)
-                self.log(f"  [RELAY] Mars proxy failed, using plaintext fallback")
+                self.log("  [RELAY] Mars proxy failed, using plaintext fallback")
         
         # Track doorbell's source port as its MTP port
         role = _calling_identify_role(self, term_id, addr)
@@ -766,37 +823,43 @@ class GutesRelay:
             if not self.state.keepalive_enabled:
                 continue
 
-            if self.state.doorbell_addr == ('', 0):
-                continue
+            # Iterate every connected doorbell (multi-device): mac -> (ip, port).
+            # Snapshot the items so a concurrent CERTIFY can't mutate mid-loop.
+            for mac, target_addr in list(self.state.doorbell_addrs.items()):
+                if not target_addr or target_addr == ('', 0):
+                    continue
 
-            target_addr = self.state.doorbell_addr
-            frame = self.build_keepalive(target_addr)
+                frame = self.build_keepalive(target_addr)
 
-            doorbell_client = self.state.clients.get(self.state.doorbell_term_id)
-            send_port = doorbell_client.our_port if doorbell_client else self.listen_ports[0]
-            sock = self.relay_socks.get(send_port) or next(iter(self.relay_socks.values()), None)
+                term_id = self.state.doorbell_term_ids.get(mac)
+                doorbell_client = self.state.clients.get(term_id) if term_id else None
+                send_port = doorbell_client.our_port if doorbell_client else self.listen_ports[0]
+                sock = self.relay_socks.get(send_port) or next(iter(self.relay_socks.values()), None)
 
-            if sock is None:
-                self.log(f"[KEEPALIVE] No socket available to send keepalive")
-                continue
+                if sock is None:
+                    self.log(f"[KEEPALIVE] No socket available to send keepalive (mac={mac})")
+                    continue
 
-            try:
-                sock.sendto(frame, target_addr)
-                self.state.keepalive_misses += 1
-                self.log(f"→ KEEPALIVE to {target_addr[0]}:{target_addr[1]} "
-                        f"(miss_count={self.state.keepalive_misses})")
-            except OSError as e:
-                self.log(f"[KEEPALIVE] Send error: {e}")
-                self.state.keepalive_misses += 1
+                misses = self.state.keepalive_misses.get(mac, 0)
+                try:
+                    sock.sendto(frame, target_addr)
+                    misses += 1
+                    self.state.keepalive_misses[mac] = misses
+                    self.log(f"→ KEEPALIVE to {target_addr[0]}:{target_addr[1]} "
+                            f"mac={mac} (miss_count={misses})")
+                except OSError as e:
+                    self.log(f"[KEEPALIVE] Send error (mac={mac}): {e}")
+                    misses += 1
+                    self.state.keepalive_misses[mac] = misses
 
-            if self.state.keepalive_misses >= MAX_MISSES:
-                self.log(f"[KEEPALIVE] WARNING: {MAX_MISSES} consecutive keepalives "
-                        f"unacknowledged — doorbell is dormant")
-                self.state.keepalive_misses = MAX_MISSES
+                if misses >= MAX_MISSES:
+                    self.log(f"[KEEPALIVE] WARNING: {MAX_MISSES} consecutive keepalives "
+                            f"unacknowledged — doorbell {mac} is dormant")
+                    self.state.keepalive_misses[mac] = MAX_MISSES
 
     async def run(self):
         """Main entry point."""
-        self.log(f"GUTES Relay v3 starting")
+        self.log("GUTES Relay v3 starting")
         self.log(f"  Mode: {self.mode.upper()}")
         self.log(f"  Local IP: {self.local_ip}")
         self.log(f"  Server term_id: {self.server_term_id}")
@@ -808,7 +871,9 @@ class GutesRelay:
             self.log(f"  Upstream: {self.upstream_host}:{self.upstream_port}")
         self.log("")
 
-        loop = asyncio.get_event_loop()
+        # Unclear if we need this; get_event_loop() can create/set a loop as a
+        # side effect, so keep the call even though the handle is unused here.
+        _loop = asyncio.get_event_loop()  # noqa: F841
 
         # Bind all relay ports
         for port in self.listen_ports:
@@ -823,11 +888,12 @@ class GutesRelay:
                 self.log(f"  WARN: Cannot bind :{port} ({e})")
 
         # Bind list port
-        self.list_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.list_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        list_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        list_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         try:
-            self.list_sock.bind(('0.0.0.0', self.list_port))
-            self.list_sock.settimeout(1.0)
+            list_sock.bind(('0.0.0.0', self.list_port))
+            list_sock.settimeout(1.0)
+            self.list_sock = list_sock
             self.log(f"  Listening on UDP :{self.list_port} (list)")
         except OSError as e:
             self.log(f"  WARN: Cannot bind list port :{self.list_port} ({e})")
@@ -863,6 +929,10 @@ class GutesRelay:
         if self.state.keepalive_enabled:
             tasks.append(asyncio.create_task(self._keepalive_loop()))
 
+        # Watch the registry cache for the entrypoint's post-startup write
+        if self.registry_path:
+            tasks.append(asyncio.create_task(self._registry_reload_loop()))
+
         # TCP signaling listener on port 28800 (relay mode - SDK falls back to TCP)
         if self.mode == "relay":
             for port in self.listen_ports:
@@ -879,16 +949,18 @@ class GutesRelay:
 
         await asyncio.gather(*tasks)
 
+    # noinspection PyUnusedLocal
     async def _recv_loop(self, sock: socket.socket, port: int, role: str):
         """Receive loop for a single socket."""
         loop = asyncio.get_event_loop()
         while True:
             try:
+                # noinspection PyTypeChecker,PyUnresolvedReferences
                 data, addr = await loop.run_in_executor(None, sock.recvfrom, 4096)
             except socket.timeout:
                 await asyncio.sleep(0)
                 continue
-            except OSError as e:
+            except OSError:
                 await asyncio.sleep(0.01)
                 continue
 
@@ -932,9 +1004,7 @@ class GutesRelay:
         
         try:
             upstream_sock.sendto(data, dest)
-            ftype = data[1] if len(data) > 1 else 0
-            type_name = FRAME_TYPES.get(ftype, f"0x{ftype:02X}")
-            self.log(f"  → FWD {type_name} to upstream {dest[0]}:{dest[1]}")
+            self.log(f"  → FWD {self._frame_type_name(data)} to upstream {dest[0]}:{dest[1]}")
         except OSError as e:
             self.log(f"  ERROR forwarding to upstream: {e}")
 
@@ -986,12 +1056,12 @@ class GutesRelay:
         while True:
             for term_id, sock in list(self.upstream_socks.items()):
                 try:
+                    # noinspection PyTypeChecker,PyUnresolvedReferences
                     data, upstream_addr = await loop.run_in_executor(None, sock.recvfrom, 4096)
                 except (socket.timeout, BlockingIOError, OSError):
                     continue
                 
-                ftype = data[1] if len(data) > 1 else 0
-                type_name = FRAME_TYPES.get(ftype, f"0x{ftype:02X}")
+                type_name = self._frame_type_name(data)
                 resp_term_id = self.decode_term_id(data) if len(data) >= HEADER_SIZE else 0
                 
                 opt = struct.unpack_from('<I', data, 0x14)[0] if len(data) >= 0x18 else 0
@@ -1018,6 +1088,7 @@ class GutesRelay:
             
             await asyncio.sleep(0.001)
 
+    # noinspection PyUnusedLocal
     async def _route_to_peer(self, data: bytes, sender_addr: tuple,
                              sender_port: int, sender_sock: socket.socket):
         """Route frame to the correct MAC-scoped peer (relay mode)."""
@@ -1087,7 +1158,7 @@ class GutesRelay:
         try:
             while True:
                 hdr = await reader.readexactly(4)
-                proto = hdr[0]
+                _proto = hdr[0]  # noqa: F841  # frame protocol byte, not currently used
                 ftype = hdr[1]
                 frm_len = struct.unpack_from('<H', hdr, 2)[0]
                 

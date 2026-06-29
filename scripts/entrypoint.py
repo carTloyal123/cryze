@@ -4,7 +4,6 @@
 # per-device go2rtc streams automatically — no manual IP config required.
 
 import concurrent.futures
-import json
 import os
 import shutil
 import signal
@@ -19,6 +18,7 @@ sys.path.insert(0, str(Path('/work/src')))
 sys.path.insert(0, str(Path('/work/src/network')))
 sys.path.insert(0, str(Path('/work/src/relay')))
 from log_config import get_logger
+from device_registry import DeviceRegistry
 from network_setup import (
     check_iptables,
     cleanup_all_iptables,
@@ -60,7 +60,8 @@ def load_env_file(path: Path = WORK / ".env") -> dict:
         if not line or line.startswith("#") or "=" not in line:
             continue
         key, _, val = line.partition("=")
-        key = key.strip(); val = val.strip()
+        key = key.strip()
+        val = val.strip()
         if len(val) >= 2 and val[0] == val[-1] and val[0] in ('"', "'"):
             val = val[1:-1]
         env[key] = val
@@ -152,7 +153,8 @@ __attribute__((weak)) int __android_log_vprint(int p, const char* t, const char*
     run(f"echo 'void __stub(void){{}}' | gcc -shared -o {LIBS_DIR}/libdl.so -x c - -fPIC")
     (LIBS_DIR / "libstdc++.so").symlink_to("/usr/lib/libstdc++.so.6")
     for lib in SDK_LIBS:
-        src = APK_LIBS / lib; dst = LIBS_DIR / lib
+        src = APK_LIBS / lib
+        dst = LIBS_DIR / lib
         log.info("Patching %s...", lib)
         shutil.copy2(src, dst)
         for needed in BIONIC_REMOVE:
@@ -181,8 +183,6 @@ def build_device_registry(dotenv: dict):
 
     Returns a populated DeviceRegistry with lan_ip set on any discovered device.
     """
-    from device_registry import DeviceRegistry
-
     cache_path = CACHE_DIR / "device_registry.json"
     CACHE_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -204,17 +204,83 @@ def build_device_registry(dotenv: dict):
     log.info("Found %d camera(s): %s",
              len(registry.devices), [d.mac for d in registry.devices])
 
-    # LAN discovery: concurrent broadcast + unicast probes
+    # Resolve each camera's LAN IP from the host ARP/neighbor table. The Wyze
+    # device id (e.g. GW_WC_80482CBB220D) embeds the camera's Ethernet MAC in its
+    # trailing 12 hex chars, so we can map MAC→IP by inspection — no static config.
+    # (broadcast/unicast LAN discovery is unreliable: the broadcast frame carries
+    # the MAC/port in an RC5-encrypted payload.)
+    _resolve_lan_ips_via_arp(registry)
+
+    # LAN discovery: concurrent broadcast + unicast probes (fills any gaps)
     _discover_lan_ips(registry)
 
     registry.save_cache(cache_path)
     return registry
 
 
+def _device_eth_mac(device_id: str) -> str:
+    """Extract the Ethernet MAC (AA:BB:CC:DD:EE:FF) from a Wyze device id.
+
+    The id's trailing 12 hex chars are the NIC MAC, e.g.
+    'GW_WC_80482CBB220D' -> '80:48:2C:BB:22:0D'.
+    """
+    hexchars = [c for c in device_id if c in '0123456789abcdefABCDEF']
+    tail = ''.join(hexchars[-12:])
+    if len(tail) != 12:
+        return ""
+    return ':'.join(tail[i:i+2] for i in range(0, 12, 2)).upper()
+
+
+def _arp_table() -> dict:
+    """Return {MAC(upper): ip} from the host neighbor table (/proc/net/arp)."""
+    table = {}
+    try:
+        with open('/proc/net/arp') as f:
+            next(f, None)  # header
+            for line in f:
+                parts = line.split()
+                if len(parts) >= 4:
+                    ip, _hw, _flags, mac = parts[0], parts[1], parts[2], parts[3]
+                    if mac and mac != '00:00:00:00:00:00':
+                        table[mac.upper()] = ip
+    except OSError as e:
+        log.warning("Cannot read ARP table: %s", e)
+    return table
+
+
+def _resolve_lan_ips_via_arp(registry) -> None:
+    """Populate each device's lan_ip by matching its Ethernet MAC in the ARP table.
+
+    Sends a best-effort broadcast ping first so dormant cameras are likely to have
+    a fresh neighbor entry.
+    """
+    # Nudge the ARP cache: a broadcast ping refreshes/creates neighbor entries.
+    subprocess.call("ping -b -c 1 -W 1 255.255.255.255 >/dev/null 2>&1 || true",
+                    shell=True)
+    time.sleep(0.5)
+
+    arp = _arp_table()
+    for info in registry.devices:
+        if info.lan_ip:
+            continue
+        eth_mac = _device_eth_mac(info.mac)
+        if not eth_mac:
+            log.warning("ARP: cannot derive MAC from device id %s", info.mac)
+            continue
+        ip = arp.get(eth_mac)
+        if ip:
+            registry.update_discovery(info.mac, ip, info.mtp_port, info.dst_id)
+            log.info("ARP: resolved %s (%s / %s) → %s", info.name, info.mac, eth_mac, ip)
+        else:
+            log.warning("ARP: %s (%s) not in neighbor table — will rely on LAN discovery",
+                        info.name, eth_mac)
+
+
 def _discover_lan_ips(registry, timeout: float = 15.0) -> None:
     """Concurrently probe each device for its LAN IP via UDP broadcast + unicast."""
     probe = bytearray(28)
-    probe[0] = 0x70; probe[1] = 0x02
+    probe[0] = 0x70
+    probe[1] = 0x02
     struct.pack_into('<H', probe, 2, 28)
 
     def probe_device(info) -> None:
@@ -228,7 +294,7 @@ def _discover_lan_ips(registry, timeout: float = 15.0) -> None:
                     sock.sendto(bytes(probe), ('255.255.255.255', 8899))
                     if info.cloud_ip:
                         sock.sendto(bytes(probe), (info.cloud_ip, 8899))
-                except Exception:
+                except OSError:
                     pass
                 try:
                     data, addr = sock.recvfrom(4096)
@@ -298,19 +364,34 @@ def write_go2rtc_streams(registry) -> None:
                   f"#video=h264#killsignal=2#killtimeout=10")
         streams_block += f"  {info.stream_name}:\n    - {source}\n"
 
+    # Ports are env-configurable so the bridge can co-exist with other go2rtc /
+    # RTSP services on the same host (defaults match a standalone deployment).
+    rtsp_port   = os.environ.get("RTSP_PORT", "8554")
+    webrtc_port = os.environ.get("WEBRTC_PORT", "8555")
+    api_port    = os.environ.get("API_PORT", "1984")
+
+    # WB_IP (or WEBRTC_CANDIDATES) pins the WebRTC candidate to a known LAN IP
+    # rather than relying on go2rtc auto-detection (which is unreliable with
+    # multiple interfaces / docker networking).
+    candidates = os.environ.get("WEBRTC_CANDIDATES", os.environ.get("WB_IP", ""))
+    candidates_block = ""
+    if candidates:
+        cand_list = "".join(f"\n    - {c.strip()}" for c in candidates.split(",") if c.strip())
+        candidates_block = f"\n  candidates:{cand_list}"
+
     config = f"""# go2rtc config — streams auto-generated by entrypoint.py at startup
 
 streams:
 {streams_block}
 rtsp:
-  listen: ":8554"
+  listen: ":{rtsp_port}"
   default_query: "video"
 
 webrtc:
-  listen: ":8555"
+  listen: ":{webrtc_port}"{candidates_block}
 
 api:
-  listen: ":1984"
+  listen: ":{api_port}"
 
 log:
   level: info
@@ -319,12 +400,6 @@ log:
     log.info("Wrote %d stream(s) to %s", len(registry.devices), GO2RTC_CFG)
     for info in registry.devices:
         log.info("  %s → %s", info.stream_name, info.mac)
-
-
-def register_go2rtc_streams(registry, api_url: str = "http://127.0.0.1:1984") -> None:
-    """Kept for compatibility — stream registration now happens via go2rtc.yaml
-    written before go2rtc starts. This function is a no-op."""
-    pass
 
 
 # ---------------------------------------------------------------------------
@@ -343,8 +418,9 @@ def start_relay(registry_path: str = "") -> subprocess.Popen | None:
             ips = list(set(r[4][0] for r in results))
             if ips:
                 upstream = f"{ips[0]}:28800"
-        except Exception:
-            pass
+        except _socket.gaierror as e:
+            log.warning("Mars DNS resolution failed, using default upstream %s: %s",
+                        upstream, e)
 
     cmd = [
         sys.executable, str(WORK / "src" / "relay" / "gutes_relay.py"),
@@ -354,6 +430,8 @@ def start_relay(registry_path: str = "") -> subprocess.Popen | None:
         "--session-cache", str(WORK / "cache" / "session_keys.json"),
         "--keepalive",
     ]
+    if mode == "proxy":
+        cmd += ["--upstream", upstream]
     if registry_path:
         cmd += ["--registry", registry_path]
 
@@ -428,7 +506,7 @@ def main() -> None:
     else:
         relay_proc = start_relay(registry_path=registry_path)
 
-    # 4. Start go2rtc
+    # 5. Start go2rtc
     env = {
         **os.environ,
         **dotenv,
@@ -437,23 +515,23 @@ def main() -> None:
         "P2P_URL":         dotenv.get("P2P_URL", "|127.0.0.1"),
     }
     log.info("Starting go2rtc...")
-    go2rtc_proc = subprocess.Popen(["go2rtc", "-config", str(GO2RTC_CFG)], env=env)
+    proc = subprocess.Popen(["go2rtc", "-config", str(GO2RTC_CFG)], env=env)
+    go2rtc_proc = proc
 
-    # 5. Register per-device streams via go2rtc REST API
-    register_go2rtc_streams(registry)
-
-    # 6. Print stream URLs
+    # Print stream URLs
     log.info("")
     log.info("=" * 60)
     log.info("  Streams registered (%d camera(s)):", len(registry.devices))
+    rtsp_port = os.environ.get("RTSP_PORT", "8554")
+    api_port  = os.environ.get("API_PORT", "1984")
     for d in registry.devices:
         log.info("    %-20s (%s)", d.name, d.mac)
-        log.info("      RTSP:   rtsp://localhost:8554/%s", d.stream_name)
-        log.info("      WebRTC: http://localhost:1984/?src=%s", d.stream_name)
+        log.info("      RTSP:   rtsp://localhost:%s/%s", rtsp_port, d.stream_name)
+        log.info("      WebRTC: http://localhost:%s/?src=%s", api_port, d.stream_name)
     log.info("=" * 60)
     log.info("")
 
-    rc = go2rtc_proc.wait()
+    rc = proc.wait()
     if not shutting_down:
         log.error("go2rtc exited unexpectedly (code %d)", rc)
         if relay_proc and relay_proc.poll() is None:

@@ -10,6 +10,7 @@ import time
 import fcntl
 import signal
 from pathlib import Path
+from typing import Optional
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from log_config import get_logger
@@ -36,7 +37,7 @@ MARS_HOSTNAME = b"wyze-mars-asrv.wyzecam.com"
 
 
 def run(cmd: list[str], check: bool = False) -> subprocess.CompletedProcess:
-    return subprocess.run(cmd, capture_output=True, text=True, timeout=10)
+    return subprocess.run(cmd, capture_output=True, text=True, timeout=10, check=check)
 
 
 def detect_relay_ip() -> str:
@@ -51,7 +52,7 @@ def detect_relay_ip() -> str:
         ip = s.getsockname()[0]
         s.close()
         return ip
-    except Exception:
+    except OSError:
         return ""
 
 
@@ -65,7 +66,7 @@ def detect_interface(relay_ip: str) -> str:
         for line in result.stdout.splitlines():
             if relay_ip in line:
                 return line.split()[1]
-    except Exception:
+    except (OSError, subprocess.SubprocessError, IndexError):
         pass
     # Try reading /proc/net/route for default route interface
     try:
@@ -74,22 +75,18 @@ def detect_interface(relay_ip: str) -> str:
                 parts = line.split()
                 if parts[1] == "00000000":  # default route
                     return parts[0]
-    except Exception:
+    except (OSError, IndexError):
         pass
-    # Try netifaces approach via socket
-    try:
-        import fcntl
-        # Try common interface names
-        for name in ["eno1", "eth0", "enp0s3", "wlan0", "en0"]:
-            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-            try:
-                fcntl.ioctl(s.fileno(), 0x8927, struct.pack("256s", name.encode()))
-                s.close()
-                return name
-            except OSError:
-                s.close()
-    except Exception:
-        pass
+    # Probe common interface names via SIOCGIFADDR (0x8927)
+    for name in ["eno1", "eth0", "enp0s3", "wlan0", "en0"]:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        try:
+            fcntl.ioctl(s.fileno(), 0x8927, struct.pack("256s", name.encode()))
+            return name
+        except OSError:
+            pass
+        finally:
+            s.close()
     return "eth0"
 
 
@@ -102,7 +99,7 @@ def detect_gateway() -> str:
         parts = result.stdout.strip().split()
         if "via" in parts:
             return parts[parts.index("via") + 1]
-    except Exception:
+    except (OSError, subprocess.SubprocessError, IndexError):
         pass
     return GATEWAY_IP
 
@@ -114,7 +111,7 @@ def resolve_mars_ips() -> set[str]:
         results = socket.getaddrinfo("wyze-mars-asrv.wyzecam.com", None, socket.AF_INET)
         for r in results:
             ips.add(r[4][0])
-    except Exception:
+    except socket.gaierror:
         pass
     return ips
 
@@ -199,17 +196,37 @@ def get_mac(ifname: str) -> bytes:
     return info[18:24]
 
 
-def get_target_mac(ip: str) -> bytes:
-    """Get target's MAC from ARP cache, or broadcast."""
+def get_target_mac(ip: str) -> Optional[bytes]:
+    """Return *ip*'s MAC from the ARP cache, or None if unknown.
+
+    NEVER returns broadcast. A spoofed ARP reply must be unicast to the target
+    device only — returning broadcast here previously caused the "gateway is at
+    <us>" reply to flood the whole subnet. This poisoned every host's ARP cache and
+    blackholing LAN-wide internet through this box.
+    """
     try:
         with open("/proc/net/arp") as f:
             for line in f:
                 parts = line.split()
                 if parts[0] == ip and parts[3] != "00:00:00:00:00:00":
                     return bytes.fromhex(parts[3].replace(":", ""))
-    except Exception:
+    except (OSError, IndexError, ValueError):
         pass
-    return b"\xff\xff\xff\xff\xff\xff"
+    return None
+
+
+def resolve_target_mac(ip: str, attempts: int = 5) -> Optional[bytes]:
+    """Resolve *ip*'s MAC, pinging to populate the ARP cache if needed."""
+    mac = get_target_mac(ip)
+    if mac:
+        return mac
+    for _ in range(attempts):
+        subprocess.run(["ping", "-c", "1", "-W", "1", ip],
+                       stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        mac = get_target_mac(ip)
+        if mac:
+            return mac
+    return None
 
 
 def build_arp_reply(src_mac: bytes, src_ip: str, dst_mac: bytes, dst_ip: str) -> bytes:
@@ -228,12 +245,21 @@ def start_arp_redirect(device_ip: str, gateway_ip: str, iface: str):
     its traffic through this host where iptables DNAT can intercept it.
     """
     our_mac = get_mac(iface)
-    target_mac = get_target_mac(device_ip)
+    target_mac = resolve_target_mac(device_ip)
+
+    if not target_mac:
+        # Refuse to spoof if we can't unicast to the device. Broadcasting the
+        # "gateway is at <us>" reply would poison the entire subnet.
+        log.warning("  ARP redirect SKIPPED for %s: device MAC unknown "
+                    "(refusing to broadcast spoofed ARP)", device_ip)
+        return None
 
     pid = os.fork()
     if pid > 0:
         mac_str = ":".join(f"{b:02x}" for b in our_mac)
-        log.info("  ARP redirect: %s -> %s is at %s (pid=%d)", device_ip, gateway_ip, mac_str, pid)
+        tgt_str = ":".join(f"{b:02x}" for b in target_mac)
+        log.info("  ARP redirect: tell %s (%s) that %s is at %s (pid=%d)",
+                 device_ip, tgt_str, gateway_ip, mac_str, pid)
         return pid
 
     # Child process — run forever sending ARP replies
@@ -253,7 +279,7 @@ def start_arp_redirect(device_ip: str, gateway_ip: str, iface: str):
         while True:
             s.send(pkt)
             time.sleep(2.0)
-    except Exception:
+    except OSError:
         pass
     finally:
         sys.exit(0)
@@ -352,7 +378,7 @@ def dns_responder_loop(relay_ip: str):
         # Parse QNAME from question section
         try:
             qname, qname_end = parse_dns_name(data, 12)
-        except Exception:
+        except (IndexError, ValueError):
             qname = b""
 
         qname_lower = qname.lower()
@@ -374,7 +400,7 @@ def dns_responder_loop(relay_ip: str):
                 resp, _ = fwd.recvfrom(4096)
                 fwd.close()
                 sock.sendto(resp, addr)
-            except Exception:
+            except OSError:
                 pass
 
 
@@ -432,8 +458,8 @@ def start_dns_intercept(device_ips: list[str], relay_ip: str) -> int:
 
     try:
         dns_responder_loop(relay_ip)
-    except Exception:
-        pass
+    except Exception as e:
+        log.warning("DNS responder exited: %s", e)
     finally:
         sys.exit(0)
 
@@ -501,7 +527,7 @@ def cleanup_all_iptables(device_ips: list[str] | None = None) -> None:
     run(["iptables", "-t", "nat", "-F", DNAT_CHAIN])
     run(["iptables", "-t", "nat", "-X", DNAT_CHAIN])
 
-    # LAN-only block chain
+    # LAN-only blockchain
     run(["iptables", "-D", "OUTPUT", "-j", BLOCK_CHAIN])
     run(["iptables", "-F", BLOCK_CHAIN])
     run(["iptables", "-X", BLOCK_CHAIN])
@@ -513,7 +539,7 @@ def cleanup_all_iptables(device_ips: list[str] | None = None) -> None:
     log.info("  iptables cleanup complete")
 
 
-def cleanup_on_exit(signum, frame):
+def cleanup_on_exit(_signum, _frame):
     """Clean up iptables rules on SIGTERM/SIGINT."""
     log.info("Cleaning up network rules...")
     # Clean up DNS REDIRECT rules
@@ -582,7 +608,8 @@ def main():
     arp_pids = []
     for dev_ip in device_ips:
         pid = start_arp_redirect(dev_ip, gateway_ip, iface)
-        arp_pids.append(pid)
+        if pid:
+            arp_pids.append(pid)
 
     child_pids = [dns_pid] + arp_pids
     log.info("Network setup complete. Child pids: %s (dns=%d, arp=%s)", child_pids, dns_pid, arp_pids)
