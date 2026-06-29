@@ -766,33 +766,39 @@ class GutesRelay:
             if not self.state.keepalive_enabled:
                 continue
 
-            if self.state.doorbell_addr == ('', 0):
-                continue
+            # Iterate every connected doorbell (multi-device): mac -> (ip, port).
+            # Snapshot the items so a concurrent CERTIFY can't mutate mid-loop.
+            for mac, target_addr in list(self.state.doorbell_addrs.items()):
+                if not target_addr or target_addr == ('', 0):
+                    continue
 
-            target_addr = self.state.doorbell_addr
-            frame = self.build_keepalive(target_addr)
+                frame = self.build_keepalive(target_addr)
 
-            doorbell_client = self.state.clients.get(self.state.doorbell_term_id)
-            send_port = doorbell_client.our_port if doorbell_client else self.listen_ports[0]
-            sock = self.relay_socks.get(send_port) or next(iter(self.relay_socks.values()), None)
+                term_id = self.state.doorbell_term_ids.get(mac)
+                doorbell_client = self.state.clients.get(term_id) if term_id else None
+                send_port = doorbell_client.our_port if doorbell_client else self.listen_ports[0]
+                sock = self.relay_socks.get(send_port) or next(iter(self.relay_socks.values()), None)
 
-            if sock is None:
-                self.log(f"[KEEPALIVE] No socket available to send keepalive")
-                continue
+                if sock is None:
+                    self.log(f"[KEEPALIVE] No socket available to send keepalive (mac={mac})")
+                    continue
 
-            try:
-                sock.sendto(frame, target_addr)
-                self.state.keepalive_misses += 1
-                self.log(f"→ KEEPALIVE to {target_addr[0]}:{target_addr[1]} "
-                        f"(miss_count={self.state.keepalive_misses})")
-            except OSError as e:
-                self.log(f"[KEEPALIVE] Send error: {e}")
-                self.state.keepalive_misses += 1
+                misses = self.state.keepalive_misses.get(mac, 0)
+                try:
+                    sock.sendto(frame, target_addr)
+                    misses += 1
+                    self.state.keepalive_misses[mac] = misses
+                    self.log(f"→ KEEPALIVE to {target_addr[0]}:{target_addr[1]} "
+                            f"mac={mac} (miss_count={misses})")
+                except OSError as e:
+                    self.log(f"[KEEPALIVE] Send error (mac={mac}): {e}")
+                    misses += 1
+                    self.state.keepalive_misses[mac] = misses
 
-            if self.state.keepalive_misses >= MAX_MISSES:
-                self.log(f"[KEEPALIVE] WARNING: {MAX_MISSES} consecutive keepalives "
-                        f"unacknowledged — doorbell is dormant")
-                self.state.keepalive_misses = MAX_MISSES
+                if misses >= MAX_MISSES:
+                    self.log(f"[KEEPALIVE] WARNING: {MAX_MISSES} consecutive keepalives "
+                            f"unacknowledged — doorbell {mac} is dormant")
+                    self.state.keepalive_misses[mac] = MAX_MISSES
 
     async def run(self):
         """Main entry point."""
