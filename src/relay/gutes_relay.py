@@ -431,15 +431,19 @@ class GutesRelay:
         elif ftype == TYPE_KEEPALIVE:
             registry = self.state.registry
             if ack:
-                if term_id != 0 and term_id in self.state.clients:
-                    client = self.state.clients[term_id]
-                    if client.role == "doorbell" or (registry and registry.is_doorbell_ip(addr[0])):
-                        mac = client.device_mac or ""
-                        self.state.doorbell_last_acks[mac] = time.time()
-                        self.state.keepalive_misses[mac] = 0
-                        self.log(f"← KEEPALIVE_ACK from doorbell {addr[0]}:{addr[1]} "
-                                f"term_id={term_id} mac={mac} — misses reset")
-                        return None
+                # The camera cycles term_ids per keepalive, so client.device_mac is
+                # usually empty here — resolve the MAC from the registry by IP (the
+                # same way the keepalive-recv path below does).
+                is_doorbell = registry and registry.is_doorbell_ip(addr[0])
+                client = self.state.clients.get(term_id)
+                if (client and client.role == "doorbell") or is_doorbell:
+                    info = registry.get_by_lan_ip(addr[0]) if registry else None
+                    mac = (info.mac if info else "") or (client.device_mac if client else "")
+                    self.state.doorbell_last_acks[mac] = time.time()
+                    self.state.keepalive_misses[mac] = 0
+                    self.log(f"← KEEPALIVE_ACK from doorbell {addr[0]}:{addr[1]} "
+                            f"term_id={term_id} mac={mac} — misses reset")
+                    return None
                 self.log(f"← KEEPALIVE_ACK from {addr[0]}:{addr[1]} term_id={term_id}")
                 return None
             else:
