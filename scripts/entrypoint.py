@@ -204,11 +204,77 @@ def build_device_registry(dotenv: dict):
     log.info("Found %d camera(s): %s",
              len(registry.devices), [d.mac for d in registry.devices])
 
-    # LAN discovery: concurrent broadcast + unicast probes
+    # Resolve each camera's LAN IP from the host ARP/neighbor table. The Wyze
+    # device id (e.g. GW_WC_80482CBB220D) embeds the camera's Ethernet MAC in its
+    # trailing 12 hex chars, so we can map MAC→IP by inspection — no static config.
+    # (broadcast/unicast LAN discovery is unreliable: the broadcast frame carries
+    # the MAC/port in an RC5-encrypted payload.)
+    _resolve_lan_ips_via_arp(registry)
+
+    # LAN discovery: concurrent broadcast + unicast probes (fills any gaps)
     _discover_lan_ips(registry)
 
     registry.save_cache(cache_path)
     return registry
+
+
+def _device_eth_mac(device_id: str) -> str:
+    """Extract the Ethernet MAC (AA:BB:CC:DD:EE:FF) from a Wyze device id.
+
+    The id's trailing 12 hex chars are the NIC MAC, e.g.
+    'GW_WC_80482CBB220D' -> '80:48:2C:BB:22:0D'.
+    """
+    hexchars = [c for c in device_id if c in '0123456789abcdefABCDEF']
+    tail = ''.join(hexchars[-12:])
+    if len(tail) != 12:
+        return ""
+    return ':'.join(tail[i:i+2] for i in range(0, 12, 2)).upper()
+
+
+def _arp_table() -> dict:
+    """Return {MAC(upper): ip} from the host neighbor table (/proc/net/arp)."""
+    table = {}
+    try:
+        with open('/proc/net/arp') as f:
+            next(f, None)  # header
+            for line in f:
+                parts = line.split()
+                if len(parts) >= 4:
+                    ip, _hw, _flags, mac = parts[0], parts[1], parts[2], parts[3]
+                    if mac and mac != '00:00:00:00:00:00':
+                        table[mac.upper()] = ip
+    except OSError as e:
+        log.warning("Cannot read ARP table: %s", e)
+    return table
+
+
+def _resolve_lan_ips_via_arp(registry) -> None:
+    """Populate each device's lan_ip by matching its Ethernet MAC in the ARP table.
+
+    Sends a best-effort broadcast ping first so dormant cameras are likely to have
+    a fresh neighbor entry.
+    """
+    # Nudge the ARP cache: a broadcast ping refreshes/creates neighbor entries.
+    subprocess.call("ping -b -c 1 -W 1 255.255.255.255 >/dev/null 2>&1 || true",
+                    shell=True)
+    import time as _time
+    _time.sleep(0.5)
+
+    arp = _arp_table()
+    for info in registry.devices:
+        if info.lan_ip:
+            continue
+        eth_mac = _device_eth_mac(info.mac)
+        if not eth_mac:
+            log.warning("ARP: cannot derive MAC from device id %s", info.mac)
+            continue
+        ip = arp.get(eth_mac)
+        if ip:
+            registry.update_discovery(info.mac, ip, info.mtp_port, info.dst_id)
+            log.info("ARP: resolved %s (%s / %s) → %s", info.name, info.mac, eth_mac, ip)
+        else:
+            log.warning("ARP: %s (%s) not in neighbor table — will rely on LAN discovery",
+                        info.name, eth_mac)
 
 
 def _discover_lan_ips(registry, timeout: float = 15.0) -> None:
