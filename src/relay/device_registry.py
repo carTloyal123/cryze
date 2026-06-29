@@ -4,6 +4,7 @@ import base64
 import hashlib
 import json
 import os
+import re
 import socket
 import struct
 import sys
@@ -35,6 +36,17 @@ _SC          = "9f275790cab94a72bd206c8876429f3c"
 _SV_DEVICES  = "c86fa16fc99d4d6580f4efeae8b4b13c"
 
 _REGISTRY_TTL = 3600  # seconds before re-fetching from API (1 hour)
+
+
+def _slugify_stream_name(name: str, mac_clean: str) -> str:
+    """Make a go2rtc-safe stream key from a camera's display name.
+
+    go2rtc shows the stream key in its web UI, so a readable key (e.g.
+    'front_door_cam') is friendlier than the MAC. Lowercase, non-alphanumerics
+    collapsed to underscores; falls back to camera_<mac> if the name is empty.
+    """
+    slug = re.sub(r'[^a-z0-9]+', '_', name.lower()).strip('_')
+    return slug or f'camera_{mac_clean}'
 
 
 # ---------------------------------------------------------------------------
@@ -175,6 +187,7 @@ class DeviceRegistry:
 
         raw_list = dev_resp.get('data', {}).get('device_list', [])
         devices = []
+        used_slugs: dict[str, int] = {}
         for dev in raw_list:
             model = dev.get('product_model', '')
             ptype = dev.get('product_type', '')
@@ -184,15 +197,25 @@ class DeviceRegistry:
             if filter_macs is not None and mac not in filter_macs:
                 continue
             mac_clean = mac.replace(':', '').lower()
+            name = dev.get('nickname', dev.get('product_model', mac))
+
+            # Readable, go2rtc-safe stream key from the camera name. Disambiguate
+            # duplicate names with a short MAC suffix so keys stay unique.
+            slug = _slugify_stream_name(name, mac_clean)
+            if slug in used_slugs:
+                slug = f'{slug}_{mac_clean[-4:]}'
+            used_slugs[slug] = used_slugs.get(slug, 0) + 1
+
             info = DeviceInfo(
                 mac=mac,
-                name=dev.get('nickname', dev.get('product_model', mac)),
+                name=name,
                 model=model,
                 cloud_ip=dev.get('ip', ''),
-                stream_name=f'camera_{mac_clean}',
+                stream_name=slug,
             )
             devices.append(info)
-            log.info("  Found camera: %s (%s) model=%s", info.name, info.mac, info.model)
+            log.info("  Found camera: %s (%s) model=%s stream=%s",
+                     info.name, info.mac, info.model, info.stream_name)
 
         if not devices:
             raise RuntimeError(
