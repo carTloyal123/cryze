@@ -4,7 +4,6 @@
 # per-device go2rtc streams automatically — no manual IP config required.
 
 import concurrent.futures
-import json
 import os
 import shutil
 import signal
@@ -19,6 +18,7 @@ sys.path.insert(0, str(Path('/work/src')))
 sys.path.insert(0, str(Path('/work/src/network')))
 sys.path.insert(0, str(Path('/work/src/relay')))
 from log_config import get_logger
+from device_registry import DeviceRegistry
 from network_setup import (
     check_iptables,
     cleanup_all_iptables,
@@ -60,7 +60,8 @@ def load_env_file(path: Path = WORK / ".env") -> dict:
         if not line or line.startswith("#") or "=" not in line:
             continue
         key, _, val = line.partition("=")
-        key = key.strip(); val = val.strip()
+        key = key.strip()
+        val = val.strip()
         if len(val) >= 2 and val[0] == val[-1] and val[0] in ('"', "'"):
             val = val[1:-1]
         env[key] = val
@@ -152,7 +153,8 @@ __attribute__((weak)) int __android_log_vprint(int p, const char* t, const char*
     run(f"echo 'void __stub(void){{}}' | gcc -shared -o {LIBS_DIR}/libdl.so -x c - -fPIC")
     (LIBS_DIR / "libstdc++.so").symlink_to("/usr/lib/libstdc++.so.6")
     for lib in SDK_LIBS:
-        src = APK_LIBS / lib; dst = LIBS_DIR / lib
+        src = APK_LIBS / lib
+        dst = LIBS_DIR / lib
         log.info("Patching %s...", lib)
         shutil.copy2(src, dst)
         for needed in BIONIC_REMOVE:
@@ -181,8 +183,6 @@ def build_device_registry(dotenv: dict):
 
     Returns a populated DeviceRegistry with lan_ip set on any discovered device.
     """
-    from device_registry import DeviceRegistry
-
     cache_path = CACHE_DIR / "device_registry.json"
     CACHE_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -257,8 +257,7 @@ def _resolve_lan_ips_via_arp(registry) -> None:
     # Nudge the ARP cache: a broadcast ping refreshes/creates neighbor entries.
     subprocess.call("ping -b -c 1 -W 1 255.255.255.255 >/dev/null 2>&1 || true",
                     shell=True)
-    import time as _time
-    _time.sleep(0.5)
+    time.sleep(0.5)
 
     arp = _arp_table()
     for info in registry.devices:
@@ -280,7 +279,8 @@ def _resolve_lan_ips_via_arp(registry) -> None:
 def _discover_lan_ips(registry, timeout: float = 15.0) -> None:
     """Concurrently probe each device for its LAN IP via UDP broadcast + unicast."""
     probe = bytearray(28)
-    probe[0] = 0x70; probe[1] = 0x02
+    probe[0] = 0x70
+    probe[1] = 0x02
     struct.pack_into('<H', probe, 2, 28)
 
     def probe_device(info) -> None:
@@ -294,7 +294,7 @@ def _discover_lan_ips(registry, timeout: float = 15.0) -> None:
                     sock.sendto(bytes(probe), ('255.255.255.255', 8899))
                     if info.cloud_ip:
                         sock.sendto(bytes(probe), (info.cloud_ip, 8899))
-                except Exception:
+                except OSError:
                     pass
                 try:
                     data, addr = sock.recvfrom(4096)
@@ -402,12 +402,6 @@ log:
         log.info("  %s → %s", info.stream_name, info.mac)
 
 
-def register_go2rtc_streams(registry, api_url: str = "http://127.0.0.1:1984") -> None:
-    """Kept for compatibility — stream registration now happens via go2rtc.yaml
-    written before go2rtc starts. This function is a no-op."""
-    pass
-
-
 # ---------------------------------------------------------------------------
 # Relay and shutdown
 # ---------------------------------------------------------------------------
@@ -424,8 +418,9 @@ def start_relay(registry_path: str = "") -> subprocess.Popen | None:
             ips = list(set(r[4][0] for r in results))
             if ips:
                 upstream = f"{ips[0]}:28800"
-        except Exception:
-            pass
+        except _socket.gaierror as e:
+            log.warning("Mars DNS resolution failed, using default upstream %s: %s",
+                        upstream, e)
 
     cmd = [
         sys.executable, str(WORK / "src" / "relay" / "gutes_relay.py"),
@@ -435,6 +430,8 @@ def start_relay(registry_path: str = "") -> subprocess.Popen | None:
         "--session-cache", str(WORK / "cache" / "session_keys.json"),
         "--keepalive",
     ]
+    if mode == "proxy":
+        cmd += ["--upstream", upstream]
     if registry_path:
         cmd += ["--registry", registry_path]
 
@@ -509,7 +506,7 @@ def main() -> None:
     else:
         relay_proc = start_relay(registry_path=registry_path)
 
-    # 4. Start go2rtc
+    # 5. Start go2rtc
     env = {
         **os.environ,
         **dotenv,
@@ -518,12 +515,10 @@ def main() -> None:
         "P2P_URL":         dotenv.get("P2P_URL", "|127.0.0.1"),
     }
     log.info("Starting go2rtc...")
-    go2rtc_proc = subprocess.Popen(["go2rtc", "-config", str(GO2RTC_CFG)], env=env)
+    proc = subprocess.Popen(["go2rtc", "-config", str(GO2RTC_CFG)], env=env)
+    go2rtc_proc = proc
 
-    # 5. Register per-device streams via go2rtc REST API
-    register_go2rtc_streams(registry)
-
-    # 6. Print stream URLs
+    # Print stream URLs
     log.info("")
     log.info("=" * 60)
     log.info("  Streams registered (%d camera(s)):", len(registry.devices))
@@ -536,7 +531,7 @@ def main() -> None:
     log.info("=" * 60)
     log.info("")
 
-    rc = go2rtc_proc.wait()
+    rc = proc.wait()
     if not shutting_down:
         log.error("go2rtc exited unexpectedly (code %d)", rc)
         if relay_proc and relay_proc.poll() is None:

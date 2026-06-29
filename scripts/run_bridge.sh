@@ -9,20 +9,29 @@
 set -e
 
 DEVICE_MAC=""
-EXTRA_ARGS=""
 
-while [ $# -gt 0 ]; do
-    case "$1" in
-        --device)
-            DEVICE_MAC="$2"
-            shift 2
-            ;;
-        *)
-            EXTRA_ARGS="$EXTRA_ARGS $1"
-            shift
-            ;;
-    esac
+# Pull --device out of the args; everything else is collected back into the
+# positional parameters so it can be forwarded as "$@" (no word-splitting /
+# globbing hazards from stuffing args into a string).
+#
+# `for arg do` snapshots the original positional list, so appending extras to
+# "$@" inside the loop is safe; afterward we shift off the original args,
+# leaving only the forwarded extras in "$@" (order preserved).
+orig_argc=$#
+want_device=0
+for arg do
+    if [ "$want_device" -eq 1 ]; then
+        DEVICE_MAC="$arg"
+        want_device=0
+        continue
+    fi
+    if [ "$arg" = "--device" ]; then
+        want_device=1
+        continue
+    fi
+    set -- "$@" "$arg"
 done
+shift "$orig_argc"
 
 if [ -z "$DEVICE_MAC" ]; then
     echo "ERROR: run_bridge.sh requires --device <MAC>" >&2
@@ -78,7 +87,7 @@ rc=1
 i=0
 while [ "$stop" -eq 0 ] && [ "$i" -lt "$MAX_TRIES" ]; do
     i=$((i + 1))
-    /work/build/bridge --stdout --device "$DEVICE_MAC" $EXTRA_ARGS &
+    /work/build/bridge --stdout --device "$DEVICE_MAC" "$@" &
     child=$!
     # `|| rc=$?` captures the bridge's exit without set -e aborting the script.
     rc=0

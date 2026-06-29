@@ -3,6 +3,8 @@
 from dataclasses import dataclass, field
 from typing import Optional
 
+from device_registry import DeviceRegistry
+
 
 @dataclass
 class ClientSession:
@@ -63,7 +65,7 @@ class RelayState:
     """Global relay state — all per-device fields are keyed by MAC string."""
 
     # All connected clients, indexed by term_id
-    clients: dict = field(default_factory=dict)            # term_id -> ClientSession
+    clients: dict[int, ClientSession] = field(default_factory=dict)  # term_id -> ClientSession
     addr_to_term: dict = field(default_factory=dict)       # (ip, port) -> term_id
     next_session_id: int = 7640526817926134784             # Match real Mars session IDs
 
@@ -76,23 +78,23 @@ class RelayState:
     # ----------------------------------------------------------------
     # Per-device role term IDs  (mac -> term_id)
     # ----------------------------------------------------------------
-    chime_term_ids:    dict = field(default_factory=dict)  # mac -> term_id
-    doorbell_term_ids: dict = field(default_factory=dict)  # mac -> term_id
-    bridge_term_ids:   dict = field(default_factory=dict)  # mac -> term_id
+    chime_term_ids:    dict[str, int] = field(default_factory=dict)  # mac -> term_id
+    doorbell_term_ids: dict[str, int] = field(default_factory=dict)  # mac -> term_id
+    bridge_term_ids:   dict[str, int] = field(default_factory=dict)  # mac -> term_id
 
     # ----------------------------------------------------------------
     # Per-device keepalive state  (mac -> value)
     # ----------------------------------------------------------------
-    doorbell_addrs:     dict = field(default_factory=dict)  # mac -> (ip, port)
-    doorbell_last_acks: dict = field(default_factory=dict)  # mac -> float timestamp
-    keepalive_misses:   dict = field(default_factory=dict)  # mac -> int count
+    doorbell_addrs:     dict[str, tuple] = field(default_factory=dict)  # mac -> (ip, port)
+    doorbell_last_acks: dict[str, float] = field(default_factory=dict)  # mac -> timestamp
+    keepalive_misses:   dict[str, int] = field(default_factory=dict)  # mac -> int count
     keepalive_enabled: bool = False  # global flag
 
     # ----------------------------------------------------------------
     # Per-device broadcast discovery  (mac -> value)
     # ----------------------------------------------------------------
-    doorbell_mtp_ports: dict = field(default_factory=dict)  # mac -> int
-    doorbell_dst_ids:   dict = field(default_factory=dict)  # mac -> int
+    doorbell_mtp_ports: dict[str, int] = field(default_factory=dict)  # mac -> int
+    doorbell_dst_ids:   dict[str, int] = field(default_factory=dict)  # mac -> int
 
     # ----------------------------------------------------------------
     # Per-device pending CALLING queue  (mac -> list[PendingWakeup])
@@ -116,7 +118,7 @@ class RelayState:
     # ----------------------------------------------------------------
     # DeviceRegistry reference (injected at relay startup)
     # ----------------------------------------------------------------
-    registry: Optional[object] = None  # DeviceRegistry instance
+    registry: Optional[DeviceRegistry] = None
 
     # ----------------------------------------------------------------
     # Convenience helpers

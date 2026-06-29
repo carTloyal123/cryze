@@ -1,17 +1,17 @@
 """Device registry — enumerate, discover, and track all GWELL cameras."""
 
 import base64
+import binascii
 import hashlib
 import json
-import os
 import re
-import socket
 import struct
 import sys
 import time
 import urllib.error
 import urllib.request
-from dataclasses import dataclass, field
+import uuid
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional
 
@@ -122,12 +122,14 @@ class DeviceRegistry:
         """Authenticate with Wyze and enumerate all GW_* cameras.
 
         Args:
+            email:       Wyze account email.
+            password:    Wyze account password.
+            key_id:      Wyze developer API key id.
+            api_key:     Wyze developer API key.
             filter_macs: If not None, only include these MACs (uppercase).
                          None = enroll all GW_* cameras.
         """
-        import uuid as _uuid
-
-        phone_id = str(_uuid.uuid4())
+        phone_id = str(uuid.uuid4())
 
         def _md5(s: str) -> str:
             return hashlib.md5(s.encode()).hexdigest()
@@ -349,7 +351,7 @@ class DeviceRegistry:
                 except (ValueError, IndexError):
                     try:
                         token_bytes = base64.b64decode(token)
-                    except Exception:
+                    except (ValueError, binascii.Error):
                         continue
                 if len(token_bytes) >= 0x40:
                     return token_bytes[0x30:0x40]
@@ -389,7 +391,7 @@ class DeviceRegistry:
                 dec_len = (len(payload) // 8) * 8
                 if dec_len >= 40:
                     payload = rc5_pf.decrypt(bytes(payload[:dec_len]))
-            except Exception:
+            except (ValueError, struct.error, IndexError):
                 return None
 
         if len(payload) < 40:
@@ -414,7 +416,7 @@ class DeviceRegistry:
                     continue
                 log.info("Identified bridge MAC=%s from CERTIFY payload", device.mac)
                 return device.mac
-            except Exception:
+            except (ValueError, struct.error, IndexError):
                 continue
 
         return None
